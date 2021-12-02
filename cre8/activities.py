@@ -19,11 +19,11 @@ class Activity:
         id: int,
         name: str,
         duration: timedelta,
-        money_price: Union[float, Callable[[int], float]=0,
-        juice_price: Union[float, Callable[[int], float]=0,
-        money_rate: Union[float, Callable[[int], float]=0,
-        juice_rate: Union[float, Callable[[int], float]=0,
-        cost_per_run: Union[float, Callable[[int], float]=0,
+        money_price: Union[float, Callable[[int], float]]=0,
+        juice_price: Union[float, Callable[[int], float]]=0,
+        money_rate: Union[float, Callable[[int], float]]=0,
+        juice_rate: Union[float, Callable[[int], float]]=0,
+        cost_per_run: Union[float, Callable[[int], float]]=0,
     ):
     
         self.name = name
@@ -86,13 +86,13 @@ Outlets = [
 ]
 
 def from_id(id: int) -> Activity:
-	for act in Jobs:
-		if act.id == id:
-			return act
-	for act in Outlets:
-		if act.id == id:
-			return act
-	return ValueError("No activity with exists with ID: {!s}".format(id))
+    for act in Jobs:
+        if act.id == id:
+            return act
+    for act in Outlets:
+        if act.id == id:
+            return act
+    return ValueError("No activity with exists with ID: {!s}".format(id))
 
 class OwnedActivities:
     """
@@ -107,36 +107,36 @@ class OwnedActivities:
     def execute(self, game_time: float):
         if self.execution is not None:
             raise TypeError("Can't start an execution when one is already running!")
-		self.execution = Execution(
-			game_time,
-			game_time + self.activity.duration.total_seconds(),
-			self.activity.juice_rate(self.count),
-			self.activity.money_rate(self.count),
-		)
-		 
-	@property
-	def name(self) -> str:
-		return self.activity.name
-		
-	@property
-	def money_production(self) -> int:
-		return self.activity.money_rate(self.count)
-		
-	@property
-	def juice_production(self) -> int:
-		return self.activity.juice_rate(self.count)
-		
-	@property
-	def juice_price(self) -> float:
-		return self.action.juice_price(self.count)
-	
-	@property
-	def cost_per_run(self) -> int:
-		return self.action.cost_per_run(self.count)
-		 
-	@property
-	def next_price(self) -> int:
-		return self.activity.money_price(self.count)
+        self.execution = Execution(
+            game_time,
+            game_time + self.activity.duration.total_seconds(),
+            self.activity.juice_rate(self.count),
+            self.activity.money_rate(self.count),
+        )
+         
+    @property
+    def name(self) -> str:
+        return self.activity.name
+        
+    @property
+    def money_production(self) -> int:
+        return self.activity.money_rate(self.count)
+        
+    @property
+    def juice_production(self) -> int:
+        return self.activity.juice_rate(self.count)
+        
+    @property
+    def juice_price(self) -> float:
+        return self.action.juice_price(self.count)
+    
+    @property
+    def cost_per_run(self) -> int:
+        return self.action.cost_per_run(self.count)
+         
+    @property
+    def next_price(self) -> int:
+        return self.activity.money_price(self.count)
     
     @property  
     def count(self) -> int:
@@ -148,22 +148,22 @@ class OwnedActivities:
         if self.execution is not None:
             self.execution.juice = self.activity.juice_rate(self.count)
             self.execution.money = self.activity.money_rate(self.count)
-			
-	def to_dict(self):
-		d = {
-			'activity': self.activity.id,
-			'count': self.count
-		}
-		if self.execution is not None:
-			d['execution'] = self.execution.to_dict()
-		
-	@classmethod
-	def from_dict(self, d):
-		act = from_id(d['activity'])
-		oa = OwnedActivities(d['count'], act)
-		if 'execution' in d:
-			oa.execution = Execution.from_dict(d['execution'])
-		
+            
+    def to_dict(self):
+        d = {
+            'activity': self.activity.id,
+            'count': self.count
+        }
+        if self.execution is not None:
+            d['execution'] = self.execution.to_dict()
+        
+    @classmethod
+    def from_dict(self, d):
+        act = from_id(d['activity'])
+        oa = OwnedActivities(d['count'], act)
+        if 'execution' in d:
+            oa.execution = Execution.from_dict(d['execution'])
+        
 
 
 class Execution:
@@ -184,13 +184,13 @@ class Execution:
         self.end = end
         self.juice = juice
         self.money = money
-		
-	def remaining(self, game_time) -> timedelta:
-		now = self.start + game_time
-		if now >= self.end:
-			return timedelta(seconds=0)
-		else:
-			return timedelta(seconds=self.end-now)
+        
+    def remaining(self, game_time) -> timedelta:
+        now = self.start + game_time
+        if now >= self.end:
+            return timedelta(seconds=0)
+        else:
+            return timedelta(seconds=self.end-now)
         
     def progress(self, game_time) -> float:
         """Return current progress as percent, where 1.0 is fully complete."""
@@ -200,15 +200,15 @@ class Execution:
         else:
             delta = game_time - self.start
             return delta / (self.end - self.start)
-			
-	def to_dict(self):
-		return {
-			'start': self.start,
-			'end': self.end,
-			'juice': self.juice,
-			'money': self.money
-		}
+            
+    def to_dict(self):
+        return {
+            'start': self.start,
+            'end': self.end,
+            'juice': self.juice,
+            'money': self.money
+        }
 
-	@classmethod
-	def from_dict(self, d):
-		return Execution(d['start'], d['end'], d['juice'], d['money'])
+    @classmethod
+    def from_dict(self, d):
+        return Execution(d['start'], d['end'], d['juice'], d['money'])
