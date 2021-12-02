@@ -1,0 +1,6 @@
+.*.py
+*.pyc
+*.pyb
+.DS_Store
+
+*.swp
