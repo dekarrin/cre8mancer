@@ -31,6 +31,7 @@ def prepare_state(state_file: str) -> Tuple[GameState, Avancement]:
 			return
 	if gs is None:
 		gs = GameState()
+		gs.jobs.append(OwnedActivities(1, activities.from_id(0)))
 	else:
 		# TODO: do advancement using shutdown_time and current time before continuing
 		pass
