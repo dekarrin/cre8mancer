@@ -75,6 +75,12 @@ Jobs = [
     Activity(2, 'Create Spreadsheets', 100, juice_price=0.17, money_price=10000, money_rate=27.0)
 ]
 
+# +------------------------------+
+# | Eat Bagels     ($20) x242193 |
+# | $100        $100/C, 0.03CJ/C |
+# |                              |
+# +------------------------------+
+
 Outlets = [
     Activity(1024, 'Binge Netflix Show', 1, cost_per_run=5.0, money_price=200.0, juice_rate=0.02),
     Activity(1025, 'Write Fanfiction', 25, cost_per_run=25, money_price=10000.0, juice_price=20.0, juice_rate=1.0),
