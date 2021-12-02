@@ -3,6 +3,8 @@ import pickle
 from datetime import datetime, timezone
 from typing import Tuple
 
+from .activities import OwnedActivities
+
 
 CurrentVersion = 1
 
@@ -16,8 +18,8 @@ class GameState:
     def __init__(self):
         self.money = 0
         self.juice = 0.0
-        self.jobs = {}
-        self.outlets = {}
+        self.jobs = []
+        self.outlets = []
         self.time = 0.0
         
     @classmethod
@@ -25,8 +27,8 @@ class GameState:
         gs = type(self)()
         gs.money = d['money']
         gs.juice = d['juice']
-        gs.jobs = {OwnedActivities.from_dict(job) for job in d['jobs']}
-        gs.outlets = {OwnedActivities.from_dict(outlet) for outlet in d['outlets']}
+        gs.jobs = [OwnedActivities.from_dict(job) for job in d['jobs']]
+        gs.outlets = [OwnedActivities.from_dict(outlet) for outlet in d['outlets']]
         gs.time = time
         return gs
         
@@ -66,7 +68,7 @@ def save(file_name: str, gs: GameState):
             raise SerializedStateError("Could not write state file: {!s}".format(str(e)))
 
 
-def load(file_name: str) -> Tuple[GameState, datetime]
+def load(file_name: str) -> Tuple[GameState, datetime]:
     """
     Loads state. Returns (None, None) when a file does not yet exist, and raises
     SerializedStateError if there is an issue loading an existing state

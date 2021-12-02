@@ -1,6 +1,6 @@
 from typing import Callable, Union
 
-from time import timedelta
+from datetime import timedelta
 
 
 # for activity pass the rates either a single number that is "rate per click per item" or a function that
@@ -19,13 +19,13 @@ class Activity:
         id: int,
         name: str,
         duration: timedelta,
-        money_price: Union[float, Callable[[int], float]]=0,
+        money_price: Union[int, Callable[[int], int]]=0,
         juice_price: Union[float, Callable[[int], float]]=0,
-        money_rate: Union[float, Callable[[int], float]]=0,
+        money_rate: Union[int, Callable[[int], int]]=0,
         juice_rate: Union[float, Callable[[int], float]]=0,
-        cost_per_run: Union[float, Callable[[int], float]]=0,
+        cost_per_run: Union[int, Callable[[int], int]]=0,
     ):
-    
+        self.id = id
         self.name = name
         
         self.duration = duration
@@ -35,7 +35,7 @@ class Activity:
         # cost_per_run
         if isinstance(cost_per_run, float) or isinstance(cost_per_run, int):
             def cpr_func(count):
-                return float(cost_per_run) * count
+                return int(cost_per_run) * count
             self.cost_per_run = cpr_func
         else:
             self.cost_per_run = cost_per_run
@@ -43,7 +43,7 @@ class Activity:
         # money_price
         if isinstance(money_price, float) or isinstance(money_price, int):
             def money_price_func(count):
-                return float(money_price)
+                return int(money_price)
             self.money_price = money_price_func
         else:
             self.money_price = money_price
@@ -59,7 +59,7 @@ class Activity:
         # money_rate
         if isinstance(money_rate, float) or isinstance(money_rate, int):
             def money_func(count):
-                return count * float(money_rate)
+                return count * int(money_rate)
             self.money_rate = money_func
         else:
             self.money_rate = money_rate
@@ -123,16 +123,16 @@ class OwnedActivities:
         return self.activity.money_rate(self.count)
         
     @property
-    def juice_production(self) -> int:
+    def juice_production(self) -> float:
         return self.activity.juice_rate(self.count)
         
     @property
     def juice_price(self) -> float:
-        return self.action.juice_price(self.count)
+        return self.activity.juice_price(self.count)
     
     @property
     def cost_per_run(self) -> int:
-        return self.action.cost_per_run(self.count)
+        return self.activity.cost_per_run(self.count)
          
     @property
     def next_price(self) -> int:

@@ -1,8 +1,7 @@
 from .timer import FrameClock
 from .activities import OwnedActivities
-from . import state
+from . import state, activities, layout
 from .state import GameState
-from . import layout
 import random
 import time
 from typing import Tuple
@@ -12,7 +11,7 @@ class Advancement:
     pass
 
 
-def prepare_state(state_file: str) -> Tuple[GameState, Avancement]:
+def prepare_state(state_file: str) -> Tuple[GameState, Advancement]:
     """Get a ready-to-use GameState. If loaded from disk, advancement is done so that the
     returned game state is updated with everything that needed to have been done since
     the last run.
@@ -42,13 +41,13 @@ def prepare_state(state_file: str) -> Tuple[GameState, Avancement]:
 def status(state_file: str='cre8.p'):
     gs, _ = prepare_state(state_file)
     
-    msg = "Game Time: {:d}".format(gs.time)
+    msg = "Game Time: {:.2f}".format(gs.time)
     msg += "\nMoney: ${:d}".format(gs.money)
     msg += "\nCreative Juice: {:.3f}".format(gs.juice)
     msg += "\n\nJobs:\n"
     
     width = 50
-    bar = '+' + ('-' * (width - 1)) + '+'
+    bar = '+' + ('-' * (width - 2)) + '+'
     msg += bar + '\n'
     for job in gs.jobs:
         if job.execution is not None:
