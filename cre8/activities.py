@@ -7,7 +7,10 @@ from time import timedelta
 # takes the number of that activity and returns the rate per click, for those which have varying value
 # of each successive item.
 #
-# price follows same rule, either "price per item" or a function that accepts the current count and returns how much the next one costs.
+# juice_price follows same rule, either "price per item" or a function that gives the total based on
+# the current count.
+#
+# money_price accepts the current count and returns how much the next one costs.
 #
 # cost_per_run is different and specifically gives dollars it takes for each run *per item*.
 class Activity:
@@ -33,9 +36,9 @@ class Activity:
         if isinstance(cost_per_run, float) or isinstance(cost_per_run, int):
             def cpr_func(count):
                 return float(cost_per_run) * count
-            self.cost_per_run = money_cost_func
+            self.cost_per_run = cpr_func
         else:
-            self.money_cost = money_cost
+            self.cost_per_run = cost_per_run
         
         # money_price
         if isinstance(money_price, float) or isinstance(money_price, int):
@@ -75,11 +78,6 @@ Jobs = [
     Activity(2, 'Create Spreadsheets', 100, juice_price=0.17, money_price=10000, money_rate=27.0)
 ]
 
-# +------------------------------+
-# | Eat Bagels     ($20) x242193 |
-# | $100        $100/C, 0.03CJ/C |
-# |                              |
-# +------------------------------+
 
 Outlets = [
     Activity(1024, 'Binge Netflix Show', 1, cost_per_run=5.0, money_price=200.0, juice_rate=0.02),
@@ -109,12 +107,36 @@ class OwnedActivities:
     def execute(self, game_time: float):
         if self.execution is not None:
             raise TypeError("Can't start an execution when one is already running!")
-         self.execution = Execution(
-            game_time,
-            game_time + self.activity.duration.total_seconds(),
-            self.activity.juice_rate(self.count),
-            self.activity.money_rate(self.count),
-         )
+		self.execution = Execution(
+			game_time,
+			game_time + self.activity.duration.total_seconds(),
+			self.activity.juice_rate(self.count),
+			self.activity.money_rate(self.count),
+		)
+		 
+	@property
+	def name(self) -> str:
+		return self.activity.name
+		
+	@property
+	def money_production(self) -> int:
+		return self.activity.money_rate(self.count)
+		
+	@property
+	def juice_production(self) -> int:
+		return self.activity.juice_rate(self.count)
+		
+	@property
+	def juice_price(self) -> float:
+		return self.action.juice_price(self.count)
+	
+	@property
+	def cost_per_run(self) -> int:
+		return self.action.cost_per_run(self.count)
+		 
+	@property
+	def next_price(self) -> int:
+		return self.activity.money_price(self.count)
     
     @property  
     def count(self) -> int:
@@ -162,6 +184,13 @@ class Execution:
         self.end = end
         self.juice = juice
         self.money = money
+		
+	def remaining(self, game_time) -> timedelta:
+		now = self.start + game_time
+		if now >= self.end:
+			return timedelta(seconds=0)
+		else:
+			return timedelta(seconds=self.end-now)
         
     def progress(self, game_time) -> float:
         """Return current progress as percent, where 1.0 is fully complete."""

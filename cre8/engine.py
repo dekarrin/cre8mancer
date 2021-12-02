@@ -2,6 +2,7 @@ from .timer import FrameClock
 from .activities import OwnedActivities
 from . import state
 from .state import GameState
+from . import layout
 import random
 import time
 from typing import Tuple
@@ -43,15 +44,58 @@ def status(state_file: str='cre8.p'):
 	msg = "Game Time: {:d}".format(gs.time)
 	msg += "\nMoney: ${:d}".format(gs.money)
 	msg += "\nCreative Juice: {:.3f}".format(gs.juice)
-	msg += "\n\nJobs:"
-	for x in gs.jobs:
+	msg += "\n\nJobs:\n"
+	
+	width = 50
+	bar = '+' + ('-' * (width - 1)) + '+'
+	msg += bar + '\n'
+	for job in gs.jobs:
+		if job.execution is not None:
+			exec_prog = job.execution.progress(gs.time)
+			exec_rem = job.execution.remaining(gs.time)
+		else:
+			exec_prog = None
+			exec_rem = job.activity.duration
+			
+		msg += layout.make_act_card(
+			job.name,
+			job.next_price,
+			job.count,
+			job.count,
+			job.cost_per_run,
+			job.juice_price,
+			job.money_production,
+			job.juice_production,
+			exec_prog,
+			exec_rem,
+			card_width=width
+		)
+		msg += '\n' + bar + '\n'
+	
+	msg += '\n\nOutlets:\n'
+	msg += bar + '\n'
+	for out in gs.outlets:
+		if out.execution is not None:
+			exec_prog = out.execution.progress(gs.time)
+			exec_rem = out.execution.remaining(gs.time)
+		else:
+			exec_prog = None
+			exec_rem = out.activity.duration
+			
+		msg += layout.make_act_card(
+			out.name,
+			out.next_price,
+			out.count,
+			out.count,
+			out.cost_per_run,
+			out.juice_price,
+			out.money_production,
+			out.juice_production,
+			exec_prog,
+			exec_rem,
+			card_width=width
+		)
+		msg += '\n' + bar + '\n'
 		
-	
-	
-    clock = FrameClock(1.0)
-    clock.start()
-    for x in range(1000):
-        print("FIRED! {:s} - NEXT: {!s}".format(datetime.today().strftime('%Y-%m-%d @ %H:%M:%S.%f'), clock._target()))
-        if random.random() > 0.95:
-        clock.tick()
+	print(msg)
     
