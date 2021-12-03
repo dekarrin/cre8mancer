@@ -63,7 +63,7 @@ def save(file_name: str, gs: GameState):
     
     formatted_data = {
         'meta': {
-            'shutdown_time': datetime.utcnow(timezone.utc),
+            'shutdown_time': datetime.now(timezone.utc),
             'version': CurrentVersion
         },
         'game': gs.to_dict()
@@ -110,7 +110,7 @@ def load(file_name: str) -> Tuple[GameState, float]:
                 gs_data = unpickled_data['game']
                 gs = GameState.from_dict(gs_data)
                 
-                now_time = datetime.utcnow(timezone.utc)
+                now_time = datetime.now(timezone.utc)
                 if shutdown_time > now_time:
                     raise SerializedStateError("Serialized state was last shut down in the future, the system clock may have been tampered with.")
                 seconds_since_shutdown = (now_time - shutdown_time).total_seconds()

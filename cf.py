@@ -11,7 +11,9 @@ def run_from_cli():
     status_parser.set_defaults(func=exec_status)
     
     click_parser = subparsers.add_parser('click', help="Click on one of your many lovely items")
-    click_parser.add_argument('type', help="The thing you want to target!", choices=[
+    click_parser.add_argument('type', help="The kind of thing you want to target", choices=['job', 'outlet'])
+    click_parser.add_argument('activity', help="The index in of the item to click from the full list of all of them", type=int)
+    click_parser.set_defaults(func=exec_click)
     
     
     args = parser.parse_args()
@@ -19,6 +21,9 @@ def run_from_cli():
 
 def exec_status(args):
     engine.status(args.state)
+    
+def exec_click(args):
+    engine.click(args.type, args.activity, args.state)
 
 if __name__ == '__main__':
     try:
