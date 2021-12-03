@@ -7,6 +7,13 @@ import time
 from typing import Tuple
 from datetime import datetime
 
+
+class RulesViolationError(Exception):
+    """Raised when a caller attempts to do something that is technically programatically
+    valid but disallowed by the game rules."""
+    def __init__(self, msg):
+        super().__init__(msg)
+
 class Advancement:
     """Contains info on AFK advancement after such is made"""
     def __init__(self, idle_seconds: int, money: int, juice: float):
@@ -35,9 +42,10 @@ def prepare_state(state_file: str) -> Tuple[GameState, Advancement]:
     if gs is None:
         gs = GameState()
         gs.jobs.append(OwnedActivities(1, activities.from_id(0)))
+        return gs, None
     else:
-        advance(gs, idle_seconds)
-    return gs, None
+        adv = advance(gs, idle_seconds)
+        return gs, adv
 
 
 def advance(gs: GameState, idle_seconds: float) -> Advancement:
@@ -62,9 +70,45 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     gs.money += adv.money
     gs.juice += adv.juice
     return adv
+    
 
-def click(state_file: str='cre8.p'):
-    pass
+def click(target_type: str, target_idx: int, state_file: str='cre8.p'):
+    """
+    Click on one of the things. target_idx is relative to global job and outlet list, NOT
+    location in GameState, however GameState should match the ones available.
+    """
+    gs, _ = prepare_state(state_file)
+    
+    target = None
+    if target_type == 'job':
+        job_def = activities.Jobs[target_idx].id
+        for j in self.jobs:
+            if j.activity.id == job_def.id:
+                target = j
+        if target is None:
+            msg = "You don't own any of {!r}; buy at least one first".format(job_def.name)
+            raise RulesViolationError(msg)
+    elif target_type == 'outlet':
+        outlet_def = activities.Outlets[target_idx].id
+        for o in self.outlets:
+            if o.activity.id == outlet_def.id:
+                target = o
+        if target is None:
+            msg = "You don't own any of {!r}; buy at least one first".format(outlet_def.name)
+            raise RulesViolationError(msg)            
+    else:
+        raise ValueError("target_type must be one of 'job' or 'outlet'")
+            
+    # we have the target, now check to make sure an execution isnt already running
+    if target.execution is not None:
+        msg = "You've already started {!r}!".format(target.name)
+        msg += "\nWait for it to finish or stop it before clicking it again."
+        raise RulesViolationError(msg)
+        
+    # okay, we can start an execution
+    target.execute(gs.time)
+    
+    state.save(state_file, gs)
 
 def status(state_file: str='cre8.p'):
     gs, _ = prepare_state(state_file)
