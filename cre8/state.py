@@ -22,6 +22,14 @@ class GameState:
         self.outlets = []
         self.time = 0.0
         
+    @property
+    def free_juice(self) -> float:
+        total_used = 0.0
+        for ao in [self.jobs + self.outlets]:
+            if ao.execution is not None:
+                total_used += ao.juice_price
+        return self.juice - total_used
+        
     @classmethod
     def from_dict(d):
         gs = type(self)()
@@ -68,7 +76,7 @@ def save(file_name: str, gs: GameState):
             raise SerializedStateError("Could not write state file: {!s}".format(str(e)))
 
 
-def load(file_name: str) -> Tuple[GameState, datetime]:
+def load(file_name: str) -> Tuple[GameState, float]:
     """
     Loads state. Returns (None, None) when a file does not yet exist, and raises
     SerializedStateError if there is an issue loading an existing state
@@ -79,10 +87,11 @@ def load(file_name: str) -> Tuple[GameState, datetime]:
     yet exist at all.
     
     :param file_name: The state file to load relative to the working directory.
-    :return: A tuple containing the loaded GameState and the time that the game was
-    last shut down (distinct from the in-game monotonic clock). If no state file was
-    located in file_name, then the tuple will be None, None.
+    :return: A tuple containing the loaded GameState and the number of seconds that have passed
+    since the game was last shut down (distinct from the in-game monotonic clock). If
+    no state file was located in file_name, then the tuple will be None, None.
     """
+    
     try:
         with open(file_name, 'rb') as fp:
             try:
@@ -100,7 +109,13 @@ def load(file_name: str) -> Tuple[GameState, datetime]:
                 shutdown_time = metadata['shutdown_time']
                 gs_data = unpickled_data['game']
                 gs = GameState.from_dict(gs_data)
-                return gs, shutdown_time
+                
+                now_time = datetime.utcnow(timezone.utc)
+                if shutdown_time > now_time:
+                    raise SerializedStateError("Serialized state was last shut down in the future, the system clock may have been tampered with.")
+                seconds_since_shutdown = (now_time - shutdown_time).total_seconds()
+                
+                return gs, seconds_since_shutdown
             else:
                 raise SerializedStateError("state file's version ({!r}) is invalid".format(version))
             
