@@ -106,7 +106,7 @@ def load(file_name: str) -> Tuple[GameState, float]:
                 unpickled_data = pickle.load(fp)
             except PickleError as e:
                 raise SerializedStateError("Could not decode state data: {!s}".format(str(e)))
-            
+                
             if 'meta' not in unpickled_data:
                 raise SerializedStateError("Missing 'meta' key in decoded state file")
             metadata = unpickled_data['meta']

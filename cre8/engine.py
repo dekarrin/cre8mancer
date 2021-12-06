@@ -62,10 +62,10 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
             if oa.execution.remaining(gs.time + idle_seconds).total_seconds() <= 0:
                 adv.money += oa.execution.money
                 adv.juice += oa.execution.juice
-            
-            # TODO if automated, calculate next execution(s).
-            # for now, just stop the execution
-            oa.execution = None
+                
+                # TODO if automated, calculate next execution(s).
+                # for now, just stop the execution
+                oa.execution = None
             
     gs.time += adv.idle_seconds
     gs.money += adv.money

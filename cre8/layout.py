@@ -47,9 +47,11 @@ def make_act_card(
         max_time_len = 10  # assuming three digits for hour
         prog_bar_len = card_text_space - max_time_len - 1  # extra 1 for padding between
         prog_notches = prog_bar_len - 2  # account for the 'ends' of the prog bar.
+        print("prog_notches: " + str(prog_notches))
         filled_notches = math.floor(prog_notches * execution_prog)
+        print("filled_notches: " + str(filled_notches))
         empty_notches = prog_notches - filled_notches
-        bot_left = '|' + ('-' * filled_notches) + (' ' * unfilled_notches) + '|'
+        bot_left = '|' + ('-' * filled_notches) + (' ' * empty_notches) + '|'
     else:
         bot_left = 'X'
     bot_right = format_timer(remaining_duration)

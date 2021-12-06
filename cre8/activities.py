@@ -19,7 +19,7 @@ class Activity:
         self,
         id: int,
         name: str,
-        duration: timedelta,
+        duration: Union[timedelta, int, float],
         money_price: Union[int, Callable[[int], int]]=0,
         juice_price: Union[float, Callable[[int], float]]=0,
         money_rate: Union[int, Callable[[int], int]]=0,
@@ -82,7 +82,7 @@ class Activity:
         return msg.format(self.id, self.name, self.duration)
             
 Jobs = [
-    Activity(0, 'Eat Bagels', 1.0, money_price=20.0, money_rate=1.0),
+    Activity(0, 'Eat Bagels', 1, money_price=20.0, money_rate=1.0),
     Activity(1, 'Data Entry', 10.0, juice_price=0.05, money_price=100.0, money_rate=2.0),
     Activity(2, 'Create Spreadsheets', 100, juice_price=0.17, money_price=10000, money_rate=27.0)
 ]
@@ -132,16 +132,14 @@ class Execution:
         return msg.format(self.start, self.end, self.money, self.juice)
         
     def remaining(self, game_time) -> timedelta:
-        now = self.start + game_time
-        if now >= self.end:
+        if game_time >= self.end:
             return timedelta(seconds=0)
         else:
-            return timedelta(seconds=self.end-now)
+            return timedelta(seconds=self.end-game_time)
         
     def progress(self, game_time) -> float:
         """Return current progress as percent, where 1.0 is fully complete."""
-        now = self.start + game_time
-        if now >= self.end:
+        if game_time >= self.end:
             return 1.0
         else:
             delta = game_time - self.start
@@ -174,12 +172,13 @@ class OwnedActivities:
     def execute(self, game_time: float):
         if self.execution is not None:
             raise TypeError("Can't start an execution when one is already running!")
-        self.execution = Execution(
+        ex = Execution(
             game_time,
             game_time + self.activity.duration.total_seconds(),
             self.activity.juice_rate(self.count),
             self.activity.money_rate(self.count),
         )
+        self.execution = ex
         
     def __str__(self):
         msg = "OwnedActivities<{:d}x {:n}, ".format(self.count, self.name)
