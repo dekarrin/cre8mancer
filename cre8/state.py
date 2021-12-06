@@ -30,15 +30,13 @@ class GameState:
                 total_used += ao.juice_price
         return self.juice - total_used
         
-    @classmethod
-    def from_dict(d):
-        gs = type(self)()
-        gs.money = d['money']
-        gs.juice = d['juice']
-        gs.jobs = [OwnedActivities.from_dict(job) for job in d['jobs']]
-        gs.outlets = [OwnedActivities.from_dict(outlet) for outlet in d['outlets']]
-        gs.time = time
-        return gs
+    def __str__(self):
+        msg = "GameState<time: {:.2f}, money: {:d}, cj: {:.4f}, jobs: {!s}, outlets: {!s}>"
+        return msg.format(self.time, self.money, self.juice, self.jobs, self.outlets)
+        
+    def __repr__(self):
+        msg = "GameState(time={!r}, money={!r}, juice={!r}, jobs={!r}, outlets: {!r})"
+        return msg.format(self.time, self.money, self.juice, self.jobs, self.outlets)
         
     def to_dict(self):
         return {
@@ -48,6 +46,16 @@ class GameState:
             'outlets': [x.to_dict() for x in self.outlets],
             'time': self.time
         }
+    
+    @staticmethod
+    def from_dict(d):
+        gs = GameState()
+        gs.money = d['money']
+        gs.juice = d['juice']
+        gs.jobs = [OwnedActivities.from_dict(job) for job in d['jobs']]
+        gs.outlets = [OwnedActivities.from_dict(outlet) for outlet in d['outlets']]
+        gs.time = d['time']
+        return gs
 
 
 def save(file_name: str, gs: GameState):
@@ -68,6 +76,9 @@ def save(file_name: str, gs: GameState):
         },
         'game': gs.to_dict()
     }
+    
+    import pprint
+    pprint.pprint(formatted_data)
     
     with open(file_name, 'wb') as fp:
         try:

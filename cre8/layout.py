@@ -1,6 +1,7 @@
 import math
 from typing import Optional
 from datetime import timedelta
+from .format import format_timer
 
 TextCardWidth = 50
 
@@ -51,18 +52,7 @@ def make_act_card(
         bot_left = '|' + ('-' * filled_notches) + (' ' * unfilled_notches) + '|'
     else:
         bot_left = 'X'
-    remaining_secs = remaining_duration.total_seconds()
-    hours = remaining_secs // 3600
-    remaining_secs -= (hours * 3600)
-    mins = remaining_secs // 60
-    remaining_secs -= (mins * 60)
-    secs = math.floor(remaining_secs)    
-    if hours > 0:
-        bot_right = '{:d}h{:d}m{:d}s'.format(hours, mins, secs)
-    elif mins > 0:
-        bot_right = '{:d}m{:d}s'.format(mins, secs)
-    else:
-        bot_right = '{:d}s'.format(secs)
+    bot_right = format_timer(remaining_duration)
     bot_text_len = len(bot_left) + len(bot_right)
     bot_space_needed = card_text_space - bot_text_len
     bot_text = bot_left + (' ' * bot_space_needed) + bot_right
