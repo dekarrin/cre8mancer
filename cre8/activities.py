@@ -148,12 +148,13 @@ class Execution:
             return delta / (self.end - self.start)
             
     def to_dict(self):
-        return {
+        d = {
             'start': self.start,
             'end': self.end,
             'juice': self.juice,
             'money': self.money
         }
+        return d
 
     @staticmethod
     def from_dict(self, d):
@@ -247,4 +248,6 @@ class OwnedActivities:
         oa = OwnedActivities(d['count'], act)
         if 'execution' in d:
             oa.execution = Execution.from_dict(d['execution'])
+        return oa
+
             

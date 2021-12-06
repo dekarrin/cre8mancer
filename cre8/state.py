@@ -77,9 +77,6 @@ def save(file_name: str, gs: GameState):
         'game': gs.to_dict()
     }
     
-    import pprint
-    pprint.pprint(formatted_data)
-    
     with open(file_name, 'wb') as fp:
         try:
             pickle.dump(formatted_data, fp)

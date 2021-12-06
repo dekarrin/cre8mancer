@@ -44,8 +44,6 @@ def prepare_state(state_file: str) -> Tuple[GameState, Advancement]:
         gs.jobs.append(OwnedActivities(1, activities.from_id(0)))
         return gs, None
     else:
-        import pprint
-        pprint.pprint(gs)
         adv = advance(gs, idle_seconds)
         return gs, adv
 
