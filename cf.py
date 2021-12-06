@@ -1,4 +1,5 @@
 from cre8 import engine
+from cre8.engine import RulesViolationError
 
 import argparse
 
@@ -30,3 +31,5 @@ if __name__ == '__main__':
         run_from_cli()
     except KeyboardInterrupt:
         pass
+    except RulesViolationError as e:
+        print(str(e))

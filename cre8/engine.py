@@ -14,6 +14,7 @@ class RulesViolationError(Exception):
     def __init__(self, msg):
         super().__init__(msg)
 
+
 class Advancement:
     """Contains info on AFK advancement after such is made"""
     def __init__(self, idle_seconds: int, money: int, juice: float):
@@ -58,7 +59,7 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     adv = Advancement(idle_seconds, 0, 0)
     for oa in gs.jobs + gs.outlets:
         if oa.execution is not None:
-            if oa.execution.remaining(gs.time + idle_seconds) <= 0:
+            if oa.execution.remaining(gs.time + idle_seconds).total_seconds() <= 0:
                 adv.money += oa.execution.money
                 adv.juice += oa.execution.juice
             
@@ -81,16 +82,16 @@ def click(target_type: str, target_idx: int, state_file: str='cre8.p'):
     
     target = None
     if target_type == 'job':
-        job_def = activities.Jobs[target_idx].id
-        for j in self.jobs:
+        job_def = activities.Jobs[target_idx]
+        for j in gs.jobs:
             if j.activity.id == job_def.id:
                 target = j
         if target is None:
             msg = "You don't own any of {!r}; buy at least one first".format(job_def.name)
             raise RulesViolationError(msg)
     elif target_type == 'outlet':
-        outlet_def = activities.Outlets[target_idx].id
-        for o in self.outlets:
+        outlet_def = activities.Outlets[target_idx]
+        for o in gs.outlets:
             if o.activity.id == outlet_def.id:
                 target = o
         if target is None:

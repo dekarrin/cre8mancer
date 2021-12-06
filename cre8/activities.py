@@ -157,7 +157,7 @@ class Execution:
         return d
 
     @staticmethod
-    def from_dict(self, d):
+    def from_dict(d):
         return Execution(d['start'], d['end'], d['juice'], d['money'])
 
 
