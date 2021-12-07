@@ -1,31 +1,54 @@
-from typing import Callable, Union, Optional
+from typing import Callable, Union, Optional, Sequence
 
 from datetime import timedelta
 from .format import format_timer
 
 
-# for activity pass the rates either a single number that is "rate per click per item" or a function that
-# takes the number of that activity and returns the rate per click, for those which have varying value
-# of each successive item.
-#
-# juice_price follows same rule, either "price per item" or a function that gives the total based on
-# the current count.
-#
-# money_price accepts the current count and returns how much the next one costs.
-#
-# cost_per_run is different and specifically gives dollars it takes for each run *per item*.
 class Activity:
     def __init__(
         self,
         id: int,
         name: str,
         duration: Union[timedelta, int, float],
-        money_price: Union[int, Callable[[int], int]]=0,
-        juice_price: Union[float, Callable[[int], float]]=0,
+        purchase_price: Union[int, Callable[[int], int]]=0,
+        money_cost: Union[int, Callable[[int], int]]=0,
+        juice_cost: Union[float, Callable[[int], float]]=0,
         money_rate: Union[int, Callable[[int], int]]=0,
         juice_rate: Union[float, Callable[[int], float]]=0,
-        cost_per_run: Union[int, Callable[[int], int]]=0,
     ):
+        """
+        Create new Activity.
+        
+        :param id: The ID of the Activity. Must be unique across all instances
+        of Activity.
+        :param name: The display name of the Activity.
+        :param duration: The amount of time that one execution takes. This can
+        either be a number of seconds or a timedelta.
+        :param purchase_price: How much an instance costs to buy from the
+        store. This can be either a single number for a uniform price or a
+        function that accepts the current number of owned instances and returns
+        the price of purchasing the next one.
+        :param money_cost: The amoutn of money needed to start an execution of a
+        single instance of this Activity. This can be either a single number for
+        a uniform cost or a function that accepts the current number of owned
+        instances and returns the amount of additional money needed to power the
+        execution of the next instance.
+        :param juice_cost: The amount of juice needed to power an execution of a
+        single instance of this Activity. This can be either a single number for
+        a uniform cost or a function that accepts the current number of owned
+        instances and returns the amount of additional juice needed to power the
+        execution of the next instance.
+        :param money_rate: The amount of money produced by an execution of a
+        single instance of this Activity. This can be either a single number for
+        a uniform production or a function that accepts the current number of
+        owned instances and returns the amount of additional money that the next
+        instance will produce.
+        :param juice_rate: The amount of juice produced by an execution of a
+        single instance of this Activity. This can be either a single number for
+        a uniform production or a function that accepts the current number of
+        owned instances and returns the amount of additional juice that the next
+        instance will produce.
+        """
         self.id = id
         self.name = name
         
@@ -33,34 +56,34 @@ class Activity:
         if isinstance(duration, int) or isinstance(duration, float):
             self.duration = timedelta(seconds=duration)
         
-        # cost_per_run
-        if isinstance(cost_per_run, float) or isinstance(cost_per_run, int):
-            def cpr_func(count):
-                return int(cost_per_run) * count
-            self.cost_per_run = cpr_func
+        # money_cost
+        if isinstance(money_cost, float) or isinstance(money_cost, int):
+            def money_cost_func(count):
+                return int(money_cost)
+            self.money_cost = money_cost_func
         else:
-            self.cost_per_run = cost_per_run
+            self.money_cost = money_cost
         
-        # money_price
-        if isinstance(money_price, float) or isinstance(money_price, int):
-            def money_price_func(count):
-                return int(money_price)
-            self.money_price = money_price_func
+        # purchase_price
+        if isinstance(purchase_price, float) or isinstance(purhcase_price, int):
+            def purchase_price_func(count):
+                return int(purchase_price)
+            self.purchase_price = purchase_price_func
         else:
-            self.money_price = money_price
+            self.purchase_price = purchase_price
             
-        # juice_price
-        if isinstance(juice_price, float) or isinstance(juice_price, int):
-            def juice_price_func(count):
-                return float(juice_price)
-            self.juice_price = juice_price_func
+        # juice_cost
+        if isinstance(juice_cost, float) or isinstance(juice_cost, int):
+            def juice_cost_func(count):
+                return float(juice_cost)
+            self.juice_cost = juice_cost_func
         else:
-            self.juice_price = juice_price
+            self.juice_cost = juice_cost
         
         # money_rate
         if isinstance(money_rate, float) or isinstance(money_rate, int):
             def money_func(count):
-                return count * int(money_rate)
+                return int(money_rate)
             self.money_rate = money_func
         else:
             self.money_rate = money_rate
@@ -68,7 +91,7 @@ class Activity:
         # juice_rate
         if isinstance(juice_rate, float) or isinstance(juice_rate, int):
             def juice_func(count):
-                return count * float(juice_rate)
+                return float(juice_rate)
             self.juice_rate = juice_func
         else:
             self.juice_rate = juice_rate
@@ -81,18 +104,21 @@ class Activity:
         msg = "Activity(id={!r}, name={!r}, duration={!r})"
         return msg.format(self.id, self.name, self.duration)
             
+            
+# TODO: consistent order of args in Jobs and Outlets
 Jobs = [
-    Activity(0, 'Eat Bagels', 1, money_price=20.0, money_rate=1.0),
-    Activity(1, 'Data Entry', 10.0, juice_price=0.05, money_price=100.0, money_rate=2.0),
-    Activity(2, 'Create Spreadsheets', 100, juice_price=0.17, money_price=10000, money_rate=27.0)
+    Activity(0, 'Eat Bagels', 1, purchase_price=20.0, money_rate=1.0),
+    Activity(1, 'Data Entry', 10.0, juice_cost=0.05, purchase_price=100.0, money_rate=2.0),
+    Activity(2, 'Create Spreadsheets', 100, juice_cost=0.17, purchase_price=10000, money_rate=27.0)
 ]
 
 
 Outlets = [
-    Activity(1024, 'Binge Netflix Show', 1, cost_per_run=5.0, money_price=200.0, juice_rate=0.02),
-    Activity(1025, 'Write Fanfiction', 25, cost_per_run=25, money_price=10000.0, juice_price=20.0, juice_rate=1.0),
-    Activity(1026, 'Make Poetry', 200, cost_per_run=100, money_price=100000.0, juice_price=420.0, juice_rate=5.0)
+    Activity(1024, 'Binge Netflix Show', 1, money_cost=5.0, purchase_price=200.0, juice_rate=0.02),
+    Activity(1025, 'Write Fanfiction', 25, money_cost=25, purchase_price=10000.0, juice_cost=20.0, juice_rate=1.0),
+    Activity(1026, 'Make Poetry', 200, money_cost=100, purchase_price=100000.0, juice_cost=420.0, juice_rate=5.0)
 ]
+
 
 def from_id(id: int) -> Activity:
     for act in Jobs:
@@ -201,25 +227,30 @@ class OwnedActivities:
     def name(self) -> str:
         return self.activity.name
         
+    #TODO: Refactor these names to better match the property names in Activity.
     @property
     def money_production(self) -> int:
-        return self.activity.money_rate(self.count)
+        total = sum(self.activity.money_rate(c) for c in range(self.count))
+        return total
         
     @property
     def juice_production(self) -> float:
-        return self.activity.juice_rate(self.count)
+        total = sum(self.activity.juice_rate(c) for c in range(self.count))
+        return total
         
     @property
     def juice_price(self) -> float:
-        return self.activity.juice_price(self.count)
+        total = sum(self.activity.juice_cost(c) for c in range(self.count))
+        return total
     
     @property
     def cost_per_run(self) -> int:
-        return self.activity.cost_per_run(self.count)
+        total = sum(self.activity.money_cost(c) for c in range(self.count))
+        return total
          
     @property
     def next_price(self) -> int:
-        return self.activity.money_price(self.count)
+        return self.activity.purchase_price(self.count)
     
     @property  
     def count(self) -> int:
@@ -249,4 +280,48 @@ class OwnedActivities:
             oa.execution = Execution.from_dict(d['execution'])
         return oa
 
-            
+
+def index_of_job(store_item: Union[int, Activity], jobs: Sequence[OwnedActivities]) -> int:
+    """Get the index of a job within a given Sequence that matches the
+    job definition given by the store_item.
+    
+    :param store_item: Either the index in Jobs of the job to be found or the Activity
+    object itself from Jobs.
+    :param jobs: The list of jobs to search.
+    :return: The index within jobs of the matching item, or -1 if the item
+    is not found in the given sequence.
+    """
+    global Jobs
+    
+    if isinstance(store_item, Activity):
+        job_def = store_item
+    else:
+        job_def = Jobs[store_item]
+    
+    for idx, j in enumerate(jobs):
+        if j.activity.id == job_def.id:
+            return idx
+    return -1
+    
+    
+def index_of_outlet(store_item: Union[int, Activity], outlets: Sequence[OwnedActivities]) -> int:
+    """Get the index of an outlet within a given Sequence that matches the
+    Outlet definition given by the store_item.
+    
+    :param store_item: Either the index in Outlets of the outlet to be found or the Activity
+    object itself from Outlets.
+    :param outlets: The list of outlets to search.
+    :return: The index within outlet of the matching item, or -1 if the item
+    is not found in the given sequence.
+    """
+    global Outlets
+    
+    if isinstance(store_item, Activity):
+        outlet_def = store_item
+    else:
+        outlet_def = Outlets[store_item]
+    
+    for idx, o in enumerate(outlets):
+        if o.activity.id == outlet_def.id:
+            return idx
+    return -1

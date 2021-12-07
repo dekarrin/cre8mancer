@@ -73,7 +73,7 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     return adv
     
 
-def click(target_type: str, target_idx: int, state_file: str='cre8.p'):
+def click(target_type: str, target_idx: int, state_file: str='st8cre8.p'):
     """
     Click on one of the things. target_idx is relative to global job and outlet list, NOT
     location in GameState, however GameState should match the ones available.
@@ -83,20 +83,18 @@ def click(target_type: str, target_idx: int, state_file: str='cre8.p'):
     target = None
     if target_type == 'job':
         job_def = activities.Jobs[target_idx]
-        for j in gs.jobs:
-            if j.activity.id == job_def.id:
-                target = j
-        if target is None:
+        idx = activities.index_of_job(target_idx, gs.jobs)
+        if idx < 0:
             msg = "You don't own any of {!r}; buy at least one first".format(job_def.name)
             raise RulesViolationError(msg)
+        target = gs.jobs[idx]
     elif target_type == 'outlet':
         outlet_def = activities.Outlets[target_idx]
-        for o in gs.outlets:
-            if o.activity.id == outlet_def.id:
-                target = o
-        if target is None:
+        idx = activities.index_of_outlet(target_idx, gs.outlets)
+        if idx < 0:
             msg = "You don't own any of {!r}; buy at least one first".format(outlet_def.name)
-            raise RulesViolationError(msg)            
+            raise RulesViolationError(msg)
+        target = gs.outlets[idx]
     else:
         raise ValueError("target_type must be one of 'job' or 'outlet'")
             
@@ -111,7 +109,62 @@ def click(target_type: str, target_idx: int, state_file: str='cre8.p'):
     
     state.save(state_file, gs)
 
-def status(state_file: str='cre8.p'):
+
+def list(state_file: str='st8cre8.p'):
+    gs, _ = prepare_state(state_file)
+    
+    msg = "Store:\n"
+    msg += "\nJobs:\n"
+    
+    msg += layout.bar() + '\n'
+    for j in activites.Jobs:
+        # we need to get the current number of owned instances of the item
+        # to calculate prices
+        cur_idx = activites.index_of_job(j, gs.jobs)
+        if cur_idx < 0:
+            cur_count = 0
+        else:
+            cur_count = gs.jobs[cur_idx].count
+    
+        msg += layout.make_act_store_listing(
+            j.name,
+            j.purchase_price(cur_count),
+            j.money_cost(cur_count),
+            j.juice_cost(cur_count),
+            j.money_rate(cur_count),
+            j.juice_rate(cur_count),
+            j.duration
+        )
+        msg += '\n' + layout.bar() + '\n'
+        
+    msg += '\nOutlets:\n'
+    msg += layout.bar() + '\n'
+    for o in activites.Outlets:
+        # we need to get the current number of owned instances of the item
+        # to calculate prices
+        cur_idx = activites.index_of_outlet(o, gs.outlets)
+        if cur_idx < 0:
+            cur_count = 0
+        else:
+            cur_count = gs.outlets[cur_idx].count
+    
+        msg += layout.make_act_store_listing(
+            o.name,
+            o.purchase_price(cur_count),
+            o.money_cost(cur_count),
+            o.juice_cost(cur_count),
+            o.money_rate(cur_count),
+            o.juice_rate(cur_count),
+            o.duration
+        )
+        msg += '\n' + layout.bar() + '\n'
+        
+    print(msg)
+    
+    state.save(state_file, gs)
+    
+
+def status(state_file: str='st8cre8.p'):
     gs, _ = prepare_state(state_file)
     
     msg = "Game Time: {:.2f}".format(gs.time)
@@ -119,9 +172,7 @@ def status(state_file: str='cre8.p'):
     msg += "\nCreative Juice: {:.3f}".format(gs.juice)
     msg += "\n\nJobs:\n"
     
-    width = 50
-    bar = '+' + ('-' * (width - 2)) + '+'
-    msg += bar + '\n'
+    msg += layout.bar() + '\n'
     for job in gs.jobs:
         if job.execution is not None:
             exec_prog = job.execution.progress(gs.time)
@@ -140,13 +191,12 @@ def status(state_file: str='cre8.p'):
             job.money_production,
             job.juice_production,
             exec_prog,
-            exec_rem,
-            card_width=width
+            exec_rem
         )
         msg += '\n' + bar + '\n'
     
     msg += '\n\nOutlets:\n'
-    msg += bar + '\n'
+    msg += layout.bar() + '\n'
     for out in gs.outlets:
         if out.execution is not None:
             exec_prog = out.execution.progress(gs.time)
@@ -165,8 +215,7 @@ def status(state_file: str='cre8.p'):
             out.money_production,
             out.juice_production,
             exec_prog,
-            exec_rem,
-            card_width=width
+            exec_rem
         )
         msg += '\n' + bar + '\n'
         
