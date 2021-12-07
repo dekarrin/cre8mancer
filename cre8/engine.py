@@ -71,6 +71,42 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     gs.money += adv.money
     gs.juice += adv.juice
     return adv
+
+
+def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
+    """
+    Purchase somefin from the shop, glu8!
+    """
+    gs, _ = prepare_state(state_file)
+
+    if target_type == 'job':
+        idx = activities.index_of_job(target_idx, gs.jobs)
+        if idx < 0:
+            # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
+            # consistent w full job list glub
+            target = OwnedActivities(0, activities.Jobs[target_idx])
+            gs.jobs.append(target)
+        else:
+            target = gs.jobs[idx]
+    elif target_type == 'outlet':
+        idx = activities.index_of_outlet(target_idx, gs.outlets)
+        if idx < 0:
+            # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
+            # consistent w full outlets list glub
+            target = OwnedActivities(0, activities.Outlets[target_idx])
+            gs.outlets.append(target)
+        else:
+            target = gs.jobs[idx]
+    else:
+        raise ValueError("target_type must be one of 'job' or 'outlet'")
+
+    if target.next_price <= gs.money:
+        gs.money -= target.next_price
+        target.count += 1
+    else:
+        raise RulesViolationError("You don't have enough money for that")
+
+    state.save(state_file, gs)
     
 
 def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):

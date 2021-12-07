@@ -135,14 +135,14 @@ class Execution:
     Represent a particular 'click' of an OwnedActivities instance.
     """
 
-    def __init__(self, start: float, end: float, juice: float, money: int):
+    def __init__(self, start: float, end: float, money: int, juice: float):
         """
         Begin a new execution.
         
         :param start: The game time that this execution started at.
         :param end: The game time that this execution ends at.
-        :param juice: The amount of creative juice that will be awarded to the player upon completion of this Execution.
         :param money: The amount of money that will be awarded to the player upon completion of this Execution.
+        :param juice: The amount of creative juice that will be awarded to the player upon completion of this Execution.
         """
         self.start = start
         self.end = end
@@ -182,7 +182,7 @@ class Execution:
 
     @staticmethod
     def from_dict(d):
-        return Execution(d['start'], d['end'], d['juice'], d['money'])
+        return Execution(d['start'], d['end'], d['money'], d['juice'])
 
 
 class OwnedActivities:
@@ -201,8 +201,8 @@ class OwnedActivities:
         ex = Execution(
             game_time,
             game_time + self.activity.duration.total_seconds(),
-            self.activity.juice_rate(self.count),
-            self.activity.money_rate(self.count),
+            sum(self.activity.money_rate(c) for c in range(self.count)),
+            sum(self.activity.juice_rate(c) for c in range(self.count))
         )
         self.execution = ex
         
@@ -260,8 +260,8 @@ class OwnedActivities:
     def count(self, new_count: int):
         self._count = new_count
         if self.execution is not None:
-            self.execution.juice = self.activity.juice_rate(self.count)
-            self.execution.money = self.activity.money_rate(self.count)
+            self.execution.money = sum(self.activity.money_rate(c) for c in range(self.count))
+            self.execution.juice = sum(self.activity.juice_rate(c) for c in range(self.count))
             
     def to_dict(self):
         d = {
