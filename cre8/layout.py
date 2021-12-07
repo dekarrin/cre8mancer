@@ -36,7 +36,7 @@ def make_act_store_listing(
     else:
         top_right += (' ' * (len(bot_right) - len(top_right)))
     
-    top_left = "${:d} {:s}".format(name, price_for_next)
+    top_left = "${:d} {:s}".format(price_for_next, name)
     top_text_len = len(top_left) + len(top_right)
     top_space_needed = card_text_space - top_text_len
     top_text = top_left + (' ' * top_space_needed) + top_right
@@ -44,7 +44,7 @@ def make_act_store_listing(
     bot_left = format_timer(duration)
     bot_text_len = len(bot_left) + len(bot_right)
     bot_space_needed = card_text_space - bot_text_len
-    bot_text = bot_left + (' ') * bot_space_needed) + bot_right
+    bot_text = bot_left + (' ' * bot_space_needed) + bot_right
     
     # now put 'em all together!!!!!!!!
     full_text = ''

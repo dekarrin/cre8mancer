@@ -65,7 +65,7 @@ class Activity:
             self.money_cost = money_cost
         
         # purchase_price
-        if isinstance(purchase_price, float) or isinstance(purhcase_price, int):
+        if isinstance(purchase_price, float) or isinstance(purchase_price, int):
             def purchase_price_func(count):
                 return int(purchase_price)
             self.purchase_price = purchase_price_func

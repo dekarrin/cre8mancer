@@ -110,17 +110,17 @@ def click(target_type: str, target_idx: int, state_file: str='st8cre8.p'):
     state.save(state_file, gs)
 
 
-def list(state_file: str='st8cre8.p'):
+def show_store(state_file: str='st8cre8.p'):
     gs, _ = prepare_state(state_file)
     
     msg = "Store:\n"
     msg += "\nJobs:\n"
     
     msg += layout.bar() + '\n'
-    for j in activites.Jobs:
+    for j in activities.Jobs:
         # we need to get the current number of owned instances of the item
         # to calculate prices
-        cur_idx = activites.index_of_job(j, gs.jobs)
+        cur_idx = activities.index_of_job(j, gs.jobs)
         if cur_idx < 0:
             cur_count = 0
         else:
@@ -139,10 +139,10 @@ def list(state_file: str='st8cre8.p'):
         
     msg += '\nOutlets:\n'
     msg += layout.bar() + '\n'
-    for o in activites.Outlets:
+    for o in activities.Outlets:
         # we need to get the current number of owned instances of the item
         # to calculate prices
-        cur_idx = activites.index_of_outlet(o, gs.outlets)
+        cur_idx = activities.index_of_outlet(o, gs.outlets)
         if cur_idx < 0:
             cur_count = 0
         else:
@@ -193,7 +193,7 @@ def status(state_file: str='st8cre8.p'):
             exec_prog,
             exec_rem
         )
-        msg += '\n' + bar + '\n'
+        msg += '\n' + layout.bar() + '\n'
     
     msg += '\n\nOutlets:\n'
     msg += layout.bar() + '\n'
@@ -217,7 +217,7 @@ def status(state_file: str='st8cre8.p'):
             exec_prog,
             exec_rem
         )
-        msg += '\n' + bar + '\n'
+        msg += '\n' + layout.bar() + '\n'
         
     print(msg)
     

@@ -16,6 +16,9 @@ def run_from_cli():
     click_parser.add_argument('activity', help="The index in of the item to click from the full list of all of them", type=int)
     click_parser.set_defaults(func=exec_click)
     
+    store_parser = subparsers.add_parser('store', help="Show the items available to buy")
+    store_parser.set_defaults(func=exec_store)
+    
     
     args = parser.parse_args()
     args.func(args)
@@ -25,6 +28,9 @@ def exec_status(args):
     
 def exec_click(args):
     engine.click(args.type, args.activity, args.state)
+    
+def exec_store(args):
+    engine.show_store(args.state)
 
 if __name__ == '__main__':
     try:
