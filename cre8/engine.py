@@ -1,11 +1,8 @@
-from .timer import FrameClock
 from .activities import OwnedActivities
 from . import state, activities, layout
 from .state import GameState
-import random
-import time
-from typing import Tuple
-from datetime import datetime
+from typing import Tuple, Optional
+import sys
 
 
 class RulesViolationError(Exception):
@@ -17,20 +14,22 @@ class RulesViolationError(Exception):
 
 class Advancement:
     """Contains info on AFK advancement after such is made"""
-    def __init__(self, idle_seconds: int, money: int, juice: float):
+    def __init__(self, idle_seconds: float, money: int, juice: float):
         self.juice = juice
         self.money = money
         self.idle_seconds = idle_seconds
 
 
-def prepare_state(state_file: str) -> Tuple[GameState, Advancement]:
+def prepare_state(state_file: str) -> Tuple[GameState, Optional[Advancement]]:
     """Get a ready-to-use GameState. If loaded from disk, advancement is done so that the
     returned game state is updated with everything that needed to have been done since
     the last run.
     
     If no state file exists, a new one is created and returned.
     """
-    
+    gs = None
+    idle_seconds = 0
+
     try:
         gs, idle_seconds = state.load(state_file)
     except state.SerializedStateError as e:
@@ -39,7 +38,8 @@ def prepare_state(state_file: str) -> Tuple[GameState, Advancement]:
         while overwrite.upper() != 'Y' and overwrite.upper() != 'N':
             overwrite = input("Please enter Y or N: ")
         if overwrite == 'N':
-            return
+            raise
+
     if gs is None:
         gs = GameState()
         gs.jobs.append(OwnedActivities(1, activities.from_id(0)))
@@ -73,14 +73,13 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     return adv
     
 
-def click(target_type: str, target_idx: int, state_file: str='st8cre8.p'):
+def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
     """
     Click on one of the things. target_idx is relative to global job and outlet list, NOT
     location in GameState, however GameState should match the ones available.
     """
     gs, _ = prepare_state(state_file)
-    
-    target = None
+
     if target_type == 'job':
         job_def = activities.Jobs[target_idx]
         idx = activities.index_of_job(target_idx, gs.jobs)
@@ -110,7 +109,7 @@ def click(target_type: str, target_idx: int, state_file: str='st8cre8.p'):
     state.save(state_file, gs)
 
 
-def show_store(state_file: str='st8cre8.p'):
+def show_store(state_file: str = 'st8cre8.p'):
     gs, _ = prepare_state(state_file)
     
     msg = "Store:\n"
@@ -164,7 +163,7 @@ def show_store(state_file: str='st8cre8.p'):
     state.save(state_file, gs)
     
 
-def status(state_file: str='st8cre8.p'):
+def status(state_file: str = 'st8cre8.p'):
     gs, _ = prepare_state(state_file)
     
     msg = "Game Time: {:.2f}".format(gs.time)

@@ -10,11 +10,11 @@ class Activity:
         id: int,
         name: str,
         duration: Union[timedelta, int, float],
-        purchase_price: Union[int, Callable[[int], int]]=0,
-        money_cost: Union[int, Callable[[int], int]]=0,
-        juice_cost: Union[float, Callable[[int], float]]=0,
-        money_rate: Union[int, Callable[[int], int]]=0,
-        juice_rate: Union[float, Callable[[int], float]]=0,
+        purchase_price: Union[int, Callable[[int], int]] = 0,
+        money_cost: Union[int, Callable[[int], int]] = 0,
+        juice_cost: Union[float, Callable[[int], float]] = 0,
+        money_rate: Union[int, Callable[[int], int]] = 0,
+        juice_rate: Union[float, Callable[[int], float]] = 0,
     ):
         """
         Create new Activity.
@@ -58,7 +58,7 @@ class Activity:
         
         # money_cost
         if isinstance(money_cost, float) or isinstance(money_cost, int):
-            def money_cost_func(count):
+            def money_cost_func(_):
                 return int(money_cost)
             self.money_cost = money_cost_func
         else:
@@ -66,7 +66,7 @@ class Activity:
         
         # purchase_price
         if isinstance(purchase_price, float) or isinstance(purchase_price, int):
-            def purchase_price_func(count):
+            def purchase_price_func(_):
                 return int(purchase_price)
             self.purchase_price = purchase_price_func
         else:
@@ -74,7 +74,7 @@ class Activity:
             
         # juice_cost
         if isinstance(juice_cost, float) or isinstance(juice_cost, int):
-            def juice_cost_func(count):
+            def juice_cost_func(_):
                 return float(juice_cost)
             self.juice_cost = juice_cost_func
         else:
@@ -82,7 +82,7 @@ class Activity:
         
         # money_rate
         if isinstance(money_rate, float) or isinstance(money_rate, int):
-            def money_func(count):
+            def money_func(_):
                 return int(money_rate)
             self.money_rate = money_func
         else:
@@ -90,7 +90,7 @@ class Activity:
             
         # juice_rate
         if isinstance(juice_rate, float) or isinstance(juice_rate, int):
-            def juice_func(count):
+            def juice_func(_):
                 return float(juice_rate)
             self.juice_rate = juice_func
         else:
@@ -107,16 +107,16 @@ class Activity:
             
 # TODO: consistent order of args in Jobs and Outlets
 Jobs = [
-    Activity(0, 'Eat Bagels', 1, purchase_price=20.0, money_rate=1.0),
-    Activity(1, 'Data Entry', 10.0, juice_cost=0.05, purchase_price=100.0, money_rate=2.0),
-    Activity(2, 'Create Spreadsheets', 100, juice_cost=0.17, purchase_price=10000, money_rate=27.0)
+    Activity(0, 'Eat Bagels', 1, purchase_price=20, money_rate=1),
+    Activity(1, 'Data Entry', 10.0, juice_cost=0.05, purchase_price=100, money_rate=2),
+    Activity(2, 'Create Spreadsheets', 100, juice_cost=0.17, purchase_price=10000, money_rate=27)
 ]
 
 
 Outlets = [
-    Activity(1024, 'Binge Netflix Show', 1, money_cost=5.0, purchase_price=200.0, juice_rate=0.02),
-    Activity(1025, 'Write Fanfiction', 25, money_cost=25, purchase_price=10000.0, juice_cost=20.0, juice_rate=1.0),
-    Activity(1026, 'Make Poetry', 200, money_cost=100, purchase_price=100000.0, juice_cost=420.0, juice_rate=5.0)
+    Activity(1024, 'Binge Netflix Show', 1, money_cost=5, purchase_price=200, juice_rate=0.02),
+    Activity(1025, 'Write Fanfiction', 25, money_cost=25, purchase_price=10000, juice_cost=20.0, juice_rate=1.0),
+    Activity(1026, 'Make Poetry', 200, money_cost=100, purchase_price=100000, juice_cost=420.0, juice_rate=5.0)
 ]
 
 
@@ -127,7 +127,7 @@ def from_id(id: int) -> Activity:
     for act in Outlets:
         if act.id == id:
             return act
-    return ValueError("No activity exists with ID: {!s}".format(id))
+    raise ValueError("No activity exists with ID: {!s}".format(id))
     
 
 class Execution:
@@ -190,7 +190,7 @@ class OwnedActivities:
     A set of Activities that also contains the number of that activity that a user owns as well as the number
     of that activity that are currently active. Can be directly queried for production numbers given a time delta.
     """
-    def __init__(self, count: int, activity: Activity, execution: Optional[Execution]=None):
+    def __init__(self, count: int, activity: Activity, execution: Optional[Execution] = None):
         self.activity = activity
         self._count = count
         self.execution: Optional[Execution] = execution
@@ -207,11 +207,11 @@ class OwnedActivities:
         self.execution = ex
         
     def __str__(self):
-        msg = "OwnedActivities<{:d}x {:n}, ".format(self.count, self.name)
+        msg = "OwnedActivities<{:d}x {:s}, ".format(self.count, self.name)
         msg += "next_click: {prod: (${:d}, {:.4f}J), ".format(self.money_production, self.juice_production)
         msg += "cost: (${:d}, {:.4f}J)}, ".format(self.cost_per_run, self.juice_price)
         msg += "next_price: ${:d}, ".format(self.next_price)
-        msg += "exec_time: {:s} ".format(self.timer(self.activity.duration))
+        msg += "exec_time: {:s} ".format(format_timer(self.activity.duration))
         if self.execution is not None:
             msg += "(Running)"
         else:
@@ -227,7 +227,7 @@ class OwnedActivities:
     def name(self) -> str:
         return self.activity.name
         
-    #TODO: Refactor these names to better match the property names in Activity.
+    # TODO: Refactor these names to better match the property names in Activity.
     @property
     def money_production(self) -> int:
         total = sum(self.activity.money_rate(c) for c in range(self.count))

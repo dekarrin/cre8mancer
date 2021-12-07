@@ -1,7 +1,6 @@
-import sys
 import pickle
 from datetime import datetime, timezone
-from typing import Tuple
+from typing import Tuple, Optional
 
 from .activities import OwnedActivities
 
@@ -25,7 +24,7 @@ class GameState:
     @property
     def free_juice(self) -> float:
         total_used = 0.0
-        for ao in [self.jobs + self.outlets]:
+        for ao in self.jobs + self.outlets:
             if ao.execution is not None:
                 total_used += ao.juice_price
         return self.juice - total_used
@@ -80,11 +79,11 @@ def save(file_name: str, gs: GameState):
     with open(file_name, 'wb') as fp:
         try:
             pickle.dump(formatted_data, fp)
-        except PickleError as e:
+        except pickle.PickleError as e:
             raise SerializedStateError("Could not write state file: {!s}".format(str(e)))
 
 
-def load(file_name: str) -> Tuple[GameState, float]:
+def load(file_name: str) -> Tuple[Optional[GameState], float]:
     """
     Loads state. Returns (None, None) when a file does not yet exist, and raises
     SerializedStateError if there is an issue loading an existing state
@@ -104,7 +103,7 @@ def load(file_name: str) -> Tuple[GameState, float]:
         with open(file_name, 'rb') as fp:
             try:
                 unpickled_data = pickle.load(fp)
-            except PickleError as e:
+            except pickle.PickleError as e:
                 raise SerializedStateError("Could not decode state data: {!s}".format(str(e)))
                 
             if 'meta' not in unpickled_data:
@@ -120,7 +119,9 @@ def load(file_name: str) -> Tuple[GameState, float]:
                 
                 now_time = datetime.now(timezone.utc)
                 if shutdown_time > now_time:
-                    raise SerializedStateError("Serialized state was last shut down in the future, the system clock may have been tampered with.")
+                    errmsg = "Serialized state was last shut down in the future, the system clock may"
+                    errmsg += " have been tampered with."
+                    raise SerializedStateError(errmsg)
                 seconds_since_shutdown = (now_time - shutdown_time).total_seconds()
                 
                 return gs, seconds_since_shutdown
@@ -129,4 +130,4 @@ def load(file_name: str) -> Tuple[GameState, float]:
             
     except FileNotFoundError:
         # This is okay, it just means the file isnt there yet. Return None to indicate this.
-        return None, None
+        return None, 0.0

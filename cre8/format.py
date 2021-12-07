@@ -1,6 +1,7 @@
 import math
 from datetime import timedelta
 
+
 def format_timer(remaining_duration: timedelta):
     remaining_secs = remaining_duration.total_seconds()
     hours = int(remaining_secs // 3600)

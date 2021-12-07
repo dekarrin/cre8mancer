@@ -5,14 +5,15 @@ from .format import format_timer
 
 DefaultTextCardWidth = 50
 
+
 def bar(width=DefaultTextCardWidth):
     return '+' + ('-' * (width - 2)) + '+'
 
+
 # TODO: refactor this and make_act_card to take arguments in same order as
-# Activity
 def make_act_store_listing(
     name: str,
-    price_for_next: float,
+    price_for_next: int,
     cost_per_run: int,
     juice_required: float,
     money_produced: int,
@@ -52,9 +53,10 @@ def make_act_store_listing(
     full_text += '| ' + bot_text + ' |'
     return full_text
 
+
 def make_act_card(
     name: str,
-    price_for_next: float,
+    price_for_next: int,
     count: int,
     active: int,
     cost_per_run: int,
