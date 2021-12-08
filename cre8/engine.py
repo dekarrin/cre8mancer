@@ -42,7 +42,7 @@ def prepare_state(state_file: str) -> Tuple[GameState, Optional[Advancement]]:
 
     if gs is None:
         gs = GameState()
-        gs.jobs.append(OwnedActivities(1, activities.from_id(0)))
+        gs.jobs.append(OwnedActivities(1, 1, activities.from_id(0)))
         return gs, None
     else:
         adv = advance(gs, idle_seconds)
@@ -231,6 +231,25 @@ def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         if target.count > 1:
             msg += " Try deactivating some instances first."
         raise RulesViolationError(msg)
+        
+    msg = gs.status_line + '\n'
+    exec_prog = target.execution.progress(gs.time)
+    exec_rem = target.execution.remaining(gs.time)
+    msg += '\n' + layout.bar() + '\n'
+    msg += layout.make_act_card(
+        target.name,
+        target.next_price,
+        target.count,
+        target.active,
+        target.cost_per_run,
+        target.juice_price,
+        target.money_production,
+        target.juice_production,
+        exec_prog,
+        exec_rem
+    )
+    msg += '\n' + layout.bar() + '\n'
+    print(msg)
     
     state.save(state_file, gs)
 
@@ -294,7 +313,7 @@ def status(state_file: str = 'st8cre8.p'):
     
     msg = "Game Time: {:.2f}".format(gs.time)
     msg += "\nMoney: ${:d}".format(gs.money)
-    msg += "\nCreative Juice: {:.3f}".format(gs.juice)
+    msg += "\nCreative Juice: {:.4f}/{:.4f}".format(gs.free_juice, gs.juice)
     msg += "\n\nJobs:\n"
     
     msg += layout.bar() + '\n'

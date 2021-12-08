@@ -28,6 +28,11 @@ class GameState:
             if ao.execution is not None:
                 total_used += ao.juice_price
         return self.juice - total_used
+    
+    @property
+    def status_line(self) -> str:
+        line = "${:d} {:.4f}/{:.4f}CJ T:{:.2f}"
+        return line.format(self.money, self.free_juice, self.juice, self.time)
         
     def __str__(self):
         msg = "GameState<time: {:.2f}, money: {:d}, cj: {:.4f}, jobs: {!s}, outlets: {!s}>"

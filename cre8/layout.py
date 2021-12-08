@@ -54,6 +54,7 @@ def make_act_store_listing(
     return full_text
 
 
+# TODO: refactor to accept an OwnedActivity and a game time.
 def make_act_card(
     name: str,
     price_for_next: int,
