@@ -71,6 +71,93 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     gs.money += adv.money
     gs.juice += adv.juice
     return adv
+    
+    
+def deactivate(target_type: str, target_idx: int, amount: int = 1, state_file: str = 'st8cre8.p'):
+    """
+    Turn one or more items to deactive state.
+    """
+    gs, _ = prepare_state(state_file)
+    
+    if amount < 1:
+        raise RulesViolationError("You can't deactivate less than 1 item!")
+    
+    target, act_def = find_target(gs, target_type, target_idx)
+    if target is None:
+        msg = "You don't own any of {!r}; buy at least one first".format(act_def.name)
+        raise RulesViolationError(msg)
+        
+    amount = min(target.active, amount)
+    target.active -= amount
+    
+    if target.execution is not None:
+        exec_prog = target.execution.progress(gs.time)
+        exec_rem = target.execution.remaining(gs.time)
+    else:
+        exec_prog = None
+        exec_rem = target.activity.duration
+    msg = layout.bar() + '\n'
+    msg += layout.make_act_card(
+        target.name,
+        target.next_price,
+        target.count,
+        target.active,
+        target.cost_per_run,
+        target.juice_price,
+        target.money_production,
+        target.juice_production,
+        exec_prog,
+        exec_rem
+    )
+    msg += '\n' + layout.bar() + '\n'
+    
+    state.save(state_file, gs)
+    
+    
+def activate(target_type: str, target_idx: int, amount: int = 1, state_file: str = 'st8cre8.p'):
+    """
+    Turn one or more items to active state.
+    """
+    gs, _ = prepare_state(state_file)
+    
+    if amount < 1:
+        raise RulesViolationError("You can't activate less than 1 item!")
+    
+    target, act_def = find_target(gs, target_type, target_idx)
+    if target is None:
+        msg = "You don't own any of {!r}; buy at least one first".format(act_def.name)
+        raise RulesViolationError(msg)
+        
+    amount = min(target.count - target.active, amount)
+    
+    target.active += amount
+    if gs.free_juice < 0:
+        msg = "You don't have enough juice to do that."
+        raise RulesViolationError(msg)
+        
+    if target.execution is not None:
+        exec_prog = target.execution.progress(gs.time)
+        exec_rem = target.execution.remaining(gs.time)
+    else:
+        exec_prog = None
+        exec_rem = target.activity.duration
+    msg = layout.bar() + '\n'
+    msg += layout.make_act_card(
+        target.name,
+        target.next_price,
+        target.count,
+        target.active,
+        target.cost_per_run,
+        target.juice_price,
+        target.money_production,
+        target.juice_production,
+        exec_prog,
+        exec_rem
+    )
+    msg += '\n' + layout.bar() + '\n'
+    
+    state.save(state_file, gs)
+    
 
 
 def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
@@ -103,10 +190,14 @@ def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
     if target.next_price <= gs.money:
         gs.money -= target.next_price
         target.count += 1
+        target.active += 1
+        if gs.free_juice < 0:
+            target.active -= 1
     else:
         raise RulesViolationError("You don't have enough money for that")
 
     state.save(state_file, gs)
+    
     
 
 def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
@@ -116,22 +207,10 @@ def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
     """
     gs, _ = prepare_state(state_file)
 
-    if target_type == 'job':
-        job_def = activities.Jobs[target_idx]
-        idx = activities.index_of_job(target_idx, gs.jobs)
-        if idx < 0:
-            msg = "You don't own any of {!r}; buy at least one first".format(job_def.name)
-            raise RulesViolationError(msg)
-        target = gs.jobs[idx]
-    elif target_type == 'outlet':
-        outlet_def = activities.Outlets[target_idx]
-        idx = activities.index_of_outlet(target_idx, gs.outlets)
-        if idx < 0:
-            msg = "You don't own any of {!r}; buy at least one first".format(outlet_def.name)
-            raise RulesViolationError(msg)
-        target = gs.outlets[idx]
-    else:
-        raise ValueError("target_type must be one of 'job' or 'outlet'")
+    target, act_def = find_target(gs, target_type, target_idx)
+    if target is None:
+        msg = "You don't own any of {!r}; buy at least one first".format(act_def.name)
+        raise RulesViolationError(msg)
             
     # we have the target, now check to make sure an execution isnt already running
     if target.execution is not None:
@@ -141,6 +220,13 @@ def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         
     # okay, we can start an execution
     target.execute(gs.time)
+    
+    # but make sure we didnt just violate amount of free juice
+    if gs.free_juice < 0:
+        msg = "You don't have enough juice for that."
+        if target.count > 1:
+            msg += " Try deactivating some instances first."
+        raise RulesViolationError(msg)
     
     state.save(state_file, gs)
 
@@ -220,7 +306,7 @@ def status(state_file: str = 'st8cre8.p'):
             job.name,
             job.next_price,
             job.count,
-            job.count,
+            job.active,
             job.cost_per_run,
             job.juice_price,
             job.money_production,
@@ -244,7 +330,7 @@ def status(state_file: str = 'st8cre8.p'):
             out.name,
             out.next_price,
             out.count,
-            out.count,
+            out.active,
             out.cost_per_run,
             out.juice_price,
             out.money_production,
@@ -258,3 +344,21 @@ def status(state_file: str = 'st8cre8.p'):
     
     state.save(state_file, gs)
     
+
+def find_target(gs: GameState, target_type: str, target_idx: int) -> Tuple[Optional[OwnedActivities], Activity]:
+    if target_type == 'job':
+        job_def = activities.Jobs[target_idx]
+        idx = activities.index_of_job(target_idx, gs.jobs)
+        if idx < 0:
+            return None, job_def
+        target = gs.jobs[idx]
+        return target, job_def
+    elif target_type == 'outlet':
+        outlet_def = activities.Outlets[target_idx]
+        idx = activities.index_of_outlet(target_idx, gs.outlets)
+        if idx < 0:
+            return None, out_def
+        target = gs.outlets[idx]
+        return target, out_def
+    else:
+        raise ValueError("target_type must be one of 'job' or 'outlet'") 

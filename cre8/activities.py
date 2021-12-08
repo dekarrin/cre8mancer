@@ -190,9 +190,10 @@ class OwnedActivities:
     A set of Activities that also contains the number of that activity that a user owns as well as the number
     of that activity that are currently active. Can be directly queried for production numbers given a time delta.
     """
-    def __init__(self, count: int, activity: Activity, execution: Optional[Execution] = None):
+    def __init__(self, count: int, active: int, activity: Activity, execution: Optional[Execution] = None):
         self.activity = activity
         self._count = count
+        self._active = active
         self.execution: Optional[Execution] = execution
     
     def execute(self, game_time: float):
@@ -201,13 +202,13 @@ class OwnedActivities:
         ex = Execution(
             game_time,
             game_time + self.activity.duration.total_seconds(),
-            sum(self.activity.money_rate(c) for c in range(self.count)),
-            sum(self.activity.juice_rate(c) for c in range(self.count))
+            sum(self.activity.money_rate(c) for c in range(self.active)),
+            sum(self.activity.juice_rate(c) for c in range(self.active))
         )
         self.execution = ex
         
     def __str__(self):
-        msg = "OwnedActivities<{:d}x {:s}, ".format(self.count, self.name)
+        msg = "OwnedActivities<{:d}/{:d}x {:s}, ".format(self.active, self.count, self.name)
         msg += "next_click: {prod: (${:d}, {:.4f}J), ".format(self.money_production, self.juice_production)
         msg += "cost: (${:d}, {:.4f}J)}, ".format(self.cost_per_run, self.juice_price)
         msg += "next_price: ${:d}, ".format(self.next_price)
@@ -220,8 +221,8 @@ class OwnedActivities:
         return msg
         
     def __repr__(self):
-        msg = "OwnedActivities(count={!r}, activity={!r}, execution={!r})"
-        return msg.format(self.count, self.activity, self.execution)
+        msg = "OwnedActivities(count={!r}, active={!r}, activity={!r}, execution={!r})"
+        return msg.format(self.count, self.active, self.activity, self.execution)
          
     @property
     def name(self) -> str:
@@ -230,28 +231,29 @@ class OwnedActivities:
     # TODO: Refactor these names to better match the property names in Activity.
     @property
     def money_production(self) -> int:
-        total = sum(self.activity.money_rate(c) for c in range(self.count))
+        total = sum(self.activity.money_rate(c) for c in range(self.active))
         return total
         
     @property
     def juice_production(self) -> float:
-        total = sum(self.activity.juice_rate(c) for c in range(self.count))
+        total = sum(self.activity.juice_rate(c) for c in range(self.active))
         return total
         
     @property
     def juice_price(self) -> float:
-        total = sum(self.activity.juice_cost(c) for c in range(self.count))
+        total = sum(self.activity.juice_cost(c) for c in range(self.active))
         return total
     
     @property
     def cost_per_run(self) -> int:
-        total = sum(self.activity.money_cost(c) for c in range(self.count))
+        total = sum(self.activity.money_cost(c) for c in range(self.active))
         return total
          
     @property
     def next_price(self) -> int:
         return self.activity.purchase_price(self.count)
     
+    # TODO: with introduction of active, count no longer needs to be a @property
     @property  
     def count(self) -> int:
         return self._count
@@ -259,14 +261,28 @@ class OwnedActivities:
     @count.setter
     def count(self, new_count: int):
         self._count = new_count
+            
+    @property
+    def active(self) -> int:
+        return self._active
+        
+    @active.setter
+    def active(self, new_amount: int):
+        if new_amount > self.count:
+            msg = "Can't set active instances to value higher than the total count: {:d}"
+            raise ValueError(msg.format(new_amount))
+        
+        self._active = new_amount
         if self.execution is not None:
-            self.execution.money = sum(self.activity.money_rate(c) for c in range(self.count))
-            self.execution.juice = sum(self.activity.juice_rate(c) for c in range(self.count))
+            self.execution.money = sum(self.activity.money_rate(c) for c in range(self.active))
+            self.execution.juice = sum(self.activity.juice_rate(c) for c in range(self.active))
+        
             
     def to_dict(self):
         d = {
             'activity': self.activity.id,
-            'count': self.count
+            'count': self.count,
+            'active': self.active
         }
         if self.execution is not None:
             d['execution'] = self.execution.to_dict()
@@ -275,7 +291,7 @@ class OwnedActivities:
     @staticmethod
     def from_dict(d):
         act = from_id(d['activity'])
-        oa = OwnedActivities(d['count'], act)
+        oa = OwnedActivities(d['count'], d.get('active', d['count']), act)
         if 'execution' in d:
             oa.execution = Execution.from_dict(d['execution'])
         return oa
