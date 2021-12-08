@@ -107,7 +107,7 @@ class Activity:
             
 # TODO: consistent order of args in Jobs and Outlets
 Jobs = [
-    Activity(0, 'Eat Bagels', 1, purchase_price=20, money_rate=1),
+    Activity(0, 'Eat Bagels', 1, purchase_price=lambda x: round(20+(1.3**x)), money_rate=1),
     Activity(1, 'Data Entry', 10.0, juice_cost=0.05, purchase_price=100, money_rate=2),
     Activity(2, 'Create Spreadsheets', 100, juice_cost=0.17, purchase_price=10000, money_rate=27)
 ]
