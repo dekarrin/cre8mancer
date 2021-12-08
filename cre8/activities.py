@@ -291,7 +291,7 @@ class OwnedActivities:
     @staticmethod
     def from_dict(d):
         act = from_id(d['activity'])
-        oa = OwnedActivities(d['count'], d.get('active', d['count']), act)
+        oa = OwnedActivities(d['count'], d['active'], act)
         if 'execution' in d:
             oa.execution = Execution.from_dict(d['execution'])
         return oa

@@ -26,7 +26,25 @@ def run_from_cli():
     buy_activity_help = "The index of the item to buy from the full list of all items in the store"
     buy_parser.add_argument('activity', help=buy_activity_help, type=int)
     buy_parser.set_defaults(func=exec_buy)
-
+    
+    act_parser = subparsers.add_parser('activate', help="Activate a job or outlet")
+    act_type_help = "The kind of activity you want to activate"
+    act_parser.add_argument('type', help=act_type_help, choices=['job', 'outlet'])
+    act_activity_help = "The index of the item to activate from the full list of all of them"
+    act_parser.add_argument('activity', help=act_activity_help, type=int)
+    act_count_help = "The number of instances to activate"
+    act_parser.add_argument('-c', '--count', help=act_count_help, type=int, default=1)
+    act_parser.set_defaults(func=exec_activate)
+    
+    deact_parser = subparsers.add_parser('deactivate', help="Deactivate a job or outlet")
+    deact_type_help = "The kind of activity you want to deactivate"
+    deact_parser.add_argument('type', help=deact_type_help, choices=['job', 'outlet'])
+    deact_activity_help = "The index of the item to deactivate from the full list of all of them"
+    deact_parser.add_argument('activity', help=deact_activity_help, type=int)
+    deact_count_help = "The number of instances to deactivate"
+    deact_parser.add_argument('-c', '--count', help=deact_count_help, type=int, default=1)
+    deact_parser.set_defaults(func=exec_deactivate)
+    
     args = parser.parse_args()
     args.func(args)
 
@@ -45,6 +63,14 @@ def exec_store(args):
 
 def exec_buy(args):
     engine.buy(args.type, args.activity, args.state)
+    
+    
+def exec_activate(args):
+    engine.activate(args.type, args.activity, args.count, args.state)
+    
+    
+def exec_deactivate(args):
+    engine.deactivate(args.type, args.activity, args.count, args.state)
 
 
 if __name__ == '__main__':

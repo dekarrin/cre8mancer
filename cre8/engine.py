@@ -1,4 +1,4 @@
-from .activities import OwnedActivities
+from .activities import OwnedActivities, Activity
 from . import state, activities, layout
 from .state import GameState
 from typing import Tuple, Optional
@@ -88,6 +88,8 @@ def deactivate(target_type: str, target_idx: int, amount: int = 1, state_file: s
         raise RulesViolationError(msg)
         
     amount = min(target.active, amount)
+    if amount == 0:
+        raise RulesViolationError("{!r} is already at 0 instances.".format(target.name))
     target.active -= amount
     
     if target.execution is not None:
@@ -129,6 +131,8 @@ def activate(target_type: str, target_idx: int, amount: int = 1, state_file: str
         raise RulesViolationError(msg)
         
     amount = min(target.count - target.active, amount)
+    if amount == 0:
+        raise RulesViolationError("{!r} is already at the maximum number of instances".format(target.name))
     
     target.active += amount
     if gs.free_juice < 0:
