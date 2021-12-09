@@ -141,7 +141,7 @@ def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         if idx < 0:
             # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
             # consistent w full job list glub
-            target = OwnedActivities(0, activities.Jobs[target_idx])
+            target = OwnedActivities(0, 0, activities.Jobs[target_idx])
             gs.jobs.append(target)
         else:
             target = gs.jobs[idx]
@@ -150,7 +150,7 @@ def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         if idx < 0:
             # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
             # consistent w full outlets list glub
-            target = OwnedActivities(0, activities.Outlets[target_idx])
+            target = OwnedActivities(0, 0, activities.Outlets[target_idx])
             gs.outlets.append(target)
         else:
             target = gs.jobs[idx]
@@ -192,8 +192,12 @@ def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         msg = "All of {!r} is deactivated! Activate at least one before clicking."
         raise RulesViolationError(msg.format(target.name))
         
+    if target.money_cost > gs.money:
+        raise RulesViolationError("You don't have enough money for that.")
+        
     # okay, we can start an execution
     target.execute(gs.time)
+    gs.money -= target.money_cost
     
     # but make sure we didnt just violate amount of free juice
     if gs.free_juice < 0:
@@ -214,7 +218,8 @@ def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
 def show_store(state_file: str = 'st8cre8.p'):
     gs, _ = prepare_state(state_file)
     
-    msg = "Store:\n"
+    msg = gs.status_line + '\n\n'
+    msg += "Store:\n"
     msg += "\nJobs:\n"
     
     msg += layout.bar() + '\n'
@@ -285,8 +290,8 @@ def find_target(gs: GameState, target_type: str, target_idx: int) -> Tuple[Optio
         outlet_def = activities.Outlets[target_idx]
         idx = activities.index_of_outlet(target_idx, gs.outlets)
         if idx < 0:
-            return None, out_def
+            return None, outlet_def
         target = gs.outlets[idx]
-        return target, out_def
+        return target, outlet_def
     else:
         raise ValueError("target_type must be one of 'job' or 'outlet'") 

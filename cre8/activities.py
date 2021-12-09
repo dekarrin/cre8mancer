@@ -108,15 +108,15 @@ class Activity:
 # TODO: consistent order of args in Jobs and Outlets
 Jobs = [
     Activity(0, 'Eat Bagels', 1, price=lambda x: round(19+(1.3**x)), money_rate=1),
-    Activity(1, 'Data Entry', 10.0, juice_cost=0.05, price=100, money_rate=2),
+    Activity(1, 'Data Entry', 10.0, money_cost=5, juice_cost=0.05, price=100, money_rate=2),
     Activity(2, 'Create Spreadsheets', 100, juice_cost=0.17, price=10000, money_rate=27)
 ]
 
 
 Outlets = [
-    Activity(1024, 'Binge Netflix Show', 1, money_cost=5, price=200, juice_rate=0.002),
-    Activity(1025, 'Write Fanfiction', 25, money_cost=25, price=10000, juice_cost=20.0, juice_rate=1.0),
-    Activity(1026, 'Make Poetry', 200, money_cost=100, price=100000, juice_cost=420.0, juice_rate=5.0)
+    Activity(1024, 'Binge Netflix Show', 1, money_cost=50, price=200, juice_rate=0.002),
+    Activity(1025, 'Write Fanfiction', 25, money_cost=250, price=10000, juice_cost=20.0, juice_rate=1.0),
+    Activity(1026, 'Make Poetry', 200, money_cost=1000, price=100000, juice_cost=420.0, juice_rate=5.0)
 ]
 
 
