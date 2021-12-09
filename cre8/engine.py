@@ -188,6 +188,10 @@ def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         msg += "\nWait for it to finish or stop it before clicking it again."
         raise RulesViolationError(msg)
         
+    if target.active < 1:
+        msg = "All of {!r} is deactivated! Activate at least one before clicking."
+        raise RulesViolationError(msg.format(target.name))
+        
     # okay, we can start an execution
     target.execute(gs.time)
     
