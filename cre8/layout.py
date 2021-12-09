@@ -68,7 +68,7 @@ def make_act_card(oa: OwnedActivities, t: float, width=DefaultTextCardWidth) -> 
     # +------------------------------------------------+
     
     # -2 for padding, -2 for borders
-    card_text_space = card_width - 2 - 2
+    card_text_space = width - 2 - 2
 
     inactive = oa.count - oa.active
     # top line
