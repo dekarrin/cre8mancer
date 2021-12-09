@@ -92,25 +92,8 @@ def deactivate(target_type: str, target_idx: int, amount: int = 1, state_file: s
         raise RulesViolationError("{!r} is already at 0 instances.".format(target.name))
     target.active -= amount
     
-    if target.execution is not None:
-        exec_prog = target.execution.progress(gs.time)
-        exec_rem = target.execution.remaining(gs.time)
-    else:
-        exec_prog = None
-        exec_rem = target.activity.duration
     msg = layout.bar() + '\n'
-    msg += layout.make_act_card(
-        target.name,
-        target.next_price,
-        target.count,
-        target.active,
-        target.cost_per_run,
-        target.juice_price,
-        target.money_production,
-        target.juice_production,
-        exec_prog,
-        exec_rem
-    )
+    msg += layout.make_act_card(target, gs.time)
     msg += '\n' + layout.bar() + '\n'
     
     state.save(state_file, gs)
@@ -138,26 +121,9 @@ def activate(target_type: str, target_idx: int, amount: int = 1, state_file: str
     if gs.free_juice < 0:
         msg = "You don't have enough juice to do that."
         raise RulesViolationError(msg)
-        
-    if target.execution is not None:
-        exec_prog = target.execution.progress(gs.time)
-        exec_rem = target.execution.remaining(gs.time)
-    else:
-        exec_prog = None
-        exec_rem = target.activity.duration
+    
     msg = layout.bar() + '\n'
-    msg += layout.make_act_card(
-        target.name,
-        target.next_price,
-        target.count,
-        target.active,
-        target.cost_per_run,
-        target.juice_price,
-        target.money_production,
-        target.juice_production,
-        exec_prog,
-        exec_rem
-    )
+    msg += layout.make_act_card(target, gs.time)
     msg += '\n' + layout.bar() + '\n'
     
     state.save(state_file, gs)
@@ -191,8 +157,8 @@ def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
     else:
         raise ValueError("target_type must be one of 'job' or 'outlet'")
 
-    if target.next_price <= gs.money:
-        gs.money -= target.next_price
+    if target.price <= gs.money:
+        gs.money -= target.price
         target.count += 1
         target.active += 1
         if gs.free_juice < 0:
@@ -233,21 +199,8 @@ def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         raise RulesViolationError(msg)
         
     msg = gs.status_line + '\n'
-    exec_prog = target.execution.progress(gs.time)
-    exec_rem = target.execution.remaining(gs.time)
     msg += '\n' + layout.bar() + '\n'
-    msg += layout.make_act_card(
-        target.name,
-        target.next_price,
-        target.count,
-        target.active,
-        target.cost_per_run,
-        target.juice_price,
-        target.money_production,
-        target.juice_production,
-        exec_prog,
-        exec_rem
-    )
+    msg += layout.make_act_card(target, gs.time)
     msg += '\n' + layout.bar() + '\n'
     print(msg)
     
@@ -270,15 +223,7 @@ def show_store(state_file: str = 'st8cre8.p'):
         else:
             cur_count = gs.jobs[cur_idx].count
     
-        msg += layout.make_act_store_listing(
-            j.name,
-            j.purchase_price(cur_count),
-            j.money_cost(cur_count),
-            j.juice_cost(cur_count),
-            j.money_rate(cur_count),
-            j.juice_rate(cur_count),
-            j.duration
-        )
+        msg += layout.make_act_store_listing(j, cur_count)
         msg += '\n' + layout.bar() + '\n'
         
     msg += '\nOutlets:\n'
@@ -292,15 +237,7 @@ def show_store(state_file: str = 'st8cre8.p'):
         else:
             cur_count = gs.outlets[cur_idx].count
     
-        msg += layout.make_act_store_listing(
-            o.name,
-            o.purchase_price(cur_count),
-            o.money_cost(cur_count),
-            o.juice_cost(cur_count),
-            o.money_rate(cur_count),
-            o.juice_rate(cur_count),
-            o.duration
-        )
+        msg += layout.make_act_store_listing(o, cur_count)
         msg += '\n' + layout.bar() + '\n'
         
     print(msg)
@@ -318,49 +255,13 @@ def status(state_file: str = 'st8cre8.p'):
     
     msg += layout.bar() + '\n'
     for job in gs.jobs:
-        if job.execution is not None:
-            exec_prog = job.execution.progress(gs.time)
-            exec_rem = job.execution.remaining(gs.time)
-        else:
-            exec_prog = None
-            exec_rem = job.activity.duration
-            
-        msg += layout.make_act_card(
-            job.name,
-            job.next_price,
-            job.count,
-            job.active,
-            job.cost_per_run,
-            job.juice_price,
-            job.money_production,
-            job.juice_production,
-            exec_prog,
-            exec_rem
-        )
+        msg += layout.make_act_card(job, gs.time)
         msg += '\n' + layout.bar() + '\n'
     
     msg += '\n\nOutlets:\n'
     msg += layout.bar() + '\n'
     for out in gs.outlets:
-        if out.execution is not None:
-            exec_prog = out.execution.progress(gs.time)
-            exec_rem = out.execution.remaining(gs.time)
-        else:
-            exec_prog = None
-            exec_rem = out.activity.duration
-            
-        msg += layout.make_act_card(
-            out.name,
-            out.next_price,
-            out.count,
-            out.active,
-            out.cost_per_run,
-            out.juice_price,
-            out.money_production,
-            out.juice_production,
-            exec_prog,
-            exec_rem
-        )
+        msg += layout.make_act_card(out, gs.time)
         msg += '\n' + layout.bar() + '\n'
         
     print(msg)

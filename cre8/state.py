@@ -26,12 +26,12 @@ class GameState:
         total_used = 0.0
         for ao in self.jobs + self.outlets:
             if ao.execution is not None:
-                total_used += ao.juice_price
+                total_used += ao.juice_cost
         return self.juice - total_used
     
     @property
     def status_line(self) -> str:
-        line = "${:d} {:.4f}/{:.4f}CJ T:{:.2f}"
+        line = "${:d} {:.4f}/{:.4f}J T:{:.2f}"
         return line.format(self.money, self.free_juice, self.juice, self.time)
         
     def __str__(self):

@@ -10,7 +10,7 @@ class Activity:
         id: int,
         name: str,
         duration: Union[timedelta, int, float],
-        purchase_price: Union[int, Callable[[int], int]] = 0,
+        price: Union[int, Callable[[int], int]] = 0,
         money_cost: Union[int, Callable[[int], int]] = 0,
         juice_cost: Union[float, Callable[[int], float]] = 0,
         money_rate: Union[int, Callable[[int], int]] = 0,
@@ -24,7 +24,7 @@ class Activity:
         :param name: The display name of the Activity.
         :param duration: The amount of time that one execution takes. This can
         either be a number of seconds or a timedelta.
-        :param purchase_price: How much an instance costs to buy from the
+        :param price: How much an instance costs to buy from the
         store. This can be either a single number for a uniform price or a
         function that accepts the current number of owned instances and returns
         the price of purchasing the next one.
@@ -64,13 +64,13 @@ class Activity:
         else:
             self.money_cost = money_cost
         
-        # purchase_price
-        if isinstance(purchase_price, float) or isinstance(purchase_price, int):
-            def purchase_price_func(_):
-                return int(purchase_price)
-            self.purchase_price = purchase_price_func
+        # price
+        if isinstance(price, float) or isinstance(price, int):
+            def price_func(_):
+                return int(price)
+            self.price = price_func
         else:
-            self.purchase_price = purchase_price
+            self.price = price
             
         # juice_cost
         if isinstance(juice_cost, float) or isinstance(juice_cost, int):
@@ -107,16 +107,16 @@ class Activity:
             
 # TODO: consistent order of args in Jobs and Outlets
 Jobs = [
-    Activity(0, 'Eat Bagels', 1, purchase_price=lambda x: round(19+(1.3**x)), money_rate=1),
-    Activity(1, 'Data Entry', 10.0, juice_cost=0.05, purchase_price=100, money_rate=2),
-    Activity(2, 'Create Spreadsheets', 100, juice_cost=0.17, purchase_price=10000, money_rate=27)
+    Activity(0, 'Eat Bagels', 1, price=lambda x: round(19+(1.3**x)), money_rate=1),
+    Activity(1, 'Data Entry', 10.0, juice_cost=0.05, price=100, money_rate=2),
+    Activity(2, 'Create Spreadsheets', 100, juice_cost=0.17, price=10000, money_rate=27)
 ]
 
 
 Outlets = [
-    Activity(1024, 'Binge Netflix Show', 1, money_cost=5, purchase_price=200, juice_rate=0.02),
-    Activity(1025, 'Write Fanfiction', 25, money_cost=25, purchase_price=10000, juice_cost=20.0, juice_rate=1.0),
-    Activity(1026, 'Make Poetry', 200, money_cost=100, purchase_price=100000, juice_cost=420.0, juice_rate=5.0)
+    Activity(1024, 'Binge Netflix Show', 1, money_cost=5, price=200, juice_rate=0.002),
+    Activity(1025, 'Write Fanfiction', 25, money_cost=25, price=10000, juice_cost=20.0, juice_rate=1.0),
+    Activity(1026, 'Make Poetry', 200, money_cost=100, price=100000, juice_cost=420.0, juice_rate=5.0)
 ]
 
 
@@ -210,8 +210,8 @@ class OwnedActivities:
     def __str__(self):
         msg = "OwnedActivities<{:d}/{:d}x {:s}, ".format(self.active, self.count, self.name)
         msg += "next_click: {prod: (${:d}, {:.4f}J), ".format(self.money_production, self.juice_production)
-        msg += "cost: (${:d}, {:.4f}J)}, ".format(self.cost_per_run, self.juice_price)
-        msg += "next_price: ${:d}, ".format(self.next_price)
+        msg += "cost: (${:d}, {:.4f}J)}, ".format(self.money_cost, self.juice_cost)
+        msg += "price: ${:d}, ".format(self.price)
         msg += "exec_time: {:s} ".format(format_timer(self.activity.duration))
         if self.execution is not None:
             msg += "(Running)"
@@ -240,18 +240,18 @@ class OwnedActivities:
         return total
         
     @property
-    def juice_price(self) -> float:
+    def juice_cost(self) -> float:
         total = sum(self.activity.juice_cost(c) for c in range(self.active))
         return total
     
     @property
-    def cost_per_run(self) -> int:
+    def money_cost(self) -> int:
         total = sum(self.activity.money_cost(c) for c in range(self.active))
         return total
          
     @property
-    def next_price(self) -> int:
-        return self.activity.purchase_price(self.count)
+    def price(self) -> int:
+        return self.activity.price(self.count)
     
     # TODO: with introduction of active, count no longer needs to be a @property
     @property  

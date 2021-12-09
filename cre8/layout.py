@@ -2,6 +2,7 @@ import math
 from typing import Optional
 from datetime import timedelta
 from .format import format_timer
+from .activities import Activity, OwnedActivities
 
 DefaultTextCardWidth = 50
 
@@ -10,39 +11,37 @@ def bar(width=DefaultTextCardWidth):
     return '+' + ('-' * (width - 2)) + '+'
 
 
-# TODO: refactor this and make_act_card to take arguments in same order as
-def make_act_store_listing(
-    name: str,
-    price_for_next: int,
-    cost_per_run: int,
-    juice_required: float,
-    money_produced: int,
-    juice_produced: float,
-    duration: timedelta,
-    card_width=DefaultTextCardWidth
-):
+def make_act_store_listing(act: Activity, count: int, width=DefaultTextCardWidth) -> str:
+    """
+    Create a card for the store that shows the price, consumtion, and production
+    of the next purchased instance of the Activity.
+    
+    :param act: The Activity to make the store card for.
+    :param count: The current number of owned instances of that activity.
+    :param width: The width of the card to produce.
+    """
     # +------------------------------------------------+
     # | $20 Eat Bagels               - $100/C (0.00J)  |
     # | 999h60m55s                   + $100/C (0.003J) |
     # +------------------------------------------------+
     
-    card_text_space = card_width - 2 - 2
+    card_text_space = width - 2 - 2
     
     # need to do calculation out of order bc + and - should left-align, so
     # calculate the size of both and add right padding to the shorter
-    top_right = "- ${:d}/C ({:.2f}J)".format(cost_per_run, juice_required)
-    bot_right = "+ ${:d}/C ({:.4f}J)".format(money_produced, juice_produced)
+    top_right = "- ${:d}/C ({:.2f}J)".format(act.money_cost(count), act.juice_cost(count))
+    bot_right = "+ ${:d}/C ({:.4f}J)".format(act.money_rate(count), act.juice_rate(count))
     if len(top_right) > len(bot_right):
         bot_right += (' ' * (len(top_right) - len(bot_right)))
     else:
         top_right += (' ' * (len(bot_right) - len(top_right)))
     
-    top_left = "${:d} {:s}".format(price_for_next, name)
+    top_left = "${:d} {:s}".format(act.price(count), act.name)
     top_text_len = len(top_left) + len(top_right)
     top_space_needed = card_text_space - top_text_len
     top_text = top_left + (' ' * top_space_needed) + top_right
     
-    bot_left = format_timer(duration)
+    bot_left = format_timer(act.duration)
     bot_text_len = len(bot_left) + len(bot_right)
     bot_space_needed = card_text_space - bot_text_len
     bot_text = bot_left + (' ' * bot_space_needed) + bot_right
@@ -54,20 +53,14 @@ def make_act_store_listing(
     return full_text
 
 
-# TODO: refactor to accept an OwnedActivity and a game time.
-def make_act_card(
-    name: str,
-    price_for_next: int,
-    count: int,
-    active: int,
-    cost_per_run: int,
-    juice_required: float,
-    money_produced: int,
-    juice_produced: float,
-    execution_prog: Optional[float],
-    remaining_duration: timedelta,
-    card_width=DefaultTextCardWidth
-):
+def make_act_card(oa: OwnedActivities, t: float, width=DefaultTextCardWidth) -> str:
+    """
+    Create a card that shows the status of an OwnedActivities.
+    
+    :param oa: The OwnedActivities to make the card for.
+    :param t: The current game time represented in seconds since start.
+    :param width: The width of the card to produce.
+    """
     # +------------------------------------------------+
     # | Eat Bagels                    ($20) x242193:IN |
     # | $100 (0J)                     $100/C, 0.03CJ/C |
@@ -77,27 +70,31 @@ def make_act_card(
     # -2 for padding, -2 for borders
     card_text_space = card_width - 2 - 2
 
-    inactive = count - active
+    inactive = oa.count - oa.active
     # top line
-    top_left = name
-    top_right = "(${:d}) x{:d}:{:d}".format(price_for_next, active, inactive)
+    top_left = oa.name
+    top_right = "(${:d}) x{:d}:{:d}".format(oa.price, oa.active, inactive)
     top_text_len = len(top_left) + len(top_right)
     top_space_needed = card_text_space - top_text_len
     top_text = top_left + (' ' * top_space_needed) + top_right
     
     # mid line
-    mid_left = "${:d} ({:.2f}J)".format(cost_per_run, juice_required)
-    mid_right = "${:d}/C {:.4f}J/C".format(money_produced, juice_produced)
+    mid_left = "${:d} ({:.2f}J)".format(oa.money_cost, oa.juice_cost)
+    mid_right = "${:d}/C {:.4f}J/C".format(oa.money_production, oa.juice_production)
     mid_text_len = len(mid_left) + len(mid_right)
     mid_space_needed = card_text_space - mid_text_len
     mid_text = mid_left + (' ' * mid_space_needed) + mid_right
     
     # bot line
-    if execution_prog is not None:
+    remaining_duration = oa.activity.duration
+    if oa.execution is not None:
+        remaining_duration = oa.execution.remaining(t)
+        prog = oa.execution.progress(t)
+        
         max_time_len = 10  # assuming three digits for hour
         prog_bar_len = card_text_space - max_time_len - 1  # extra 1 for padding between
         prog_notches = prog_bar_len - 2  # account for the 'ends' of the prog bar.
-        filled_notches = math.floor(prog_notches * execution_prog)
+        filled_notches = math.floor(prog_notches * prog)
         empty_notches = prog_notches - filled_notches
         bot_left = '|' + ('-' * filled_notches) + (' ' * empty_notches) + '|'
     else:
