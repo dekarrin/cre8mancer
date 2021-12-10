@@ -12,12 +12,16 @@ def seed_func(ex: Execution) -> float:
     state.
     """
 
-    amount = 0.4 * (((ex.end - ex.start) / 3) ** 1.15)
-    mon_factor = 0.1 * math.log(ex.money)
-    cj_factor = 0.2 * math.log(ex.juice)
+    amount = 0.4 * ((max(ex.end - ex.start, 1) / 3) ** 1.15)
+    print(amount)
+    mon_factor = 0.1 * (math.log(ex.money) if ex.money > 1 else 1)
+    print(mon_factor)
+    cj_factor = 0.2 * (math.log(ex.juice * 10000) if ex.juice > 0.0001 else 1)
+    print(cj_factor)
     # TODO: balance by current 'value'
 
     total = amount * mon_factor * cj_factor
+    print("SEED: {:f}".format(total))
     return total
 
 
@@ -309,4 +313,4 @@ def find_target(gs: GameState, target_type: str, target_idx: int) -> Tuple[Optio
         target = gs.outlets[idx]
         return target, outlet_def
     else:
-        raise ValueError("target_type must be one of 'job' or 'outlet'") 
+        raise ValueError("target_type must be one of 'job' or 'outlet'")
