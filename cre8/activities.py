@@ -302,8 +302,7 @@ class OwnedActivities:
         if self.execution is not None:
             self.execution.money = sum(self.activity.money_rate(c) for c in range(self.active))
             self.execution.juice = sum(self.activity.juice_rate(c) for c in range(self.active))
-        
-            
+
     def to_dict(self):
         d = {
             'activity': self.activity.id,
@@ -313,7 +312,7 @@ class OwnedActivities:
         if self.execution is not None:
             d['execution'] = self.execution.to_dict()
         return d
-        
+
     @staticmethod
     def from_dict(d):
         act = from_id(d['activity'])
