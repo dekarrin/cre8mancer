@@ -3,21 +3,22 @@ from . import state, activities, layout
 from .state import GameState
 from typing import Tuple, Optional
 import sys
+import math
 
 
-
-def seed_func(gs: GameState, ex: Execution) -> float:
+def seed_func(ex: Execution) -> float:
     """
     Generate additional seed based on the completion of an execution and current game
     state.
     """
-    
-    # TOOD: more for more money in bank
-    # TODO: more for more juice in bank
-    # TODO: more for higher juice from exec but balance by current 'value'
-    # TODO: more for higher money from exec but balance by current 'value'
-    # TODO: less for low-time items
-    pass
+
+    amount = 0.4 * (((ex.end - ex.start) / 3) ** 1.15)
+    mon_factor = 0.1 * math.log(ex.money)
+    cj_factor = 0.2 * math.log(ex.juice)
+    # TODO: balance by current 'value'
+
+    total = amount * mon_factor * cj_factor
+    return total
 
 
 class RulesViolationError(Exception):
@@ -29,10 +30,11 @@ class RulesViolationError(Exception):
 
 class Advancement:
     """Contains info on AFK advancement after such is made"""
-    def __init__(self, idle_seconds: float, money: int, juice: float):
+    def __init__(self, idle_seconds: float, money: int, juice: float, seeds: float):
         self.juice = juice
         self.money = money
         self.idle_seconds = idle_seconds
+        self.seeds = seeds
 
 
 def prepare_state(state_file: str) -> Tuple[GameState, Optional[Advancement]]:
@@ -66,17 +68,18 @@ def prepare_state(state_file: str) -> Tuple[GameState, Optional[Advancement]]:
 
 def advance(gs: GameState, idle_seconds: float) -> Advancement:
     """
-    Advance the gamestate based on how much time has passed since shutdown.
+    Advance the game state based on how much time has passed since shutdown.
     
     Advancements are applied to the game state and an object representing the
     advancement is returned in case the caller wishes to know.
     """
-    adv = Advancement(idle_seconds, 0, 0)
+    adv = Advancement(idle_seconds, 0, 0, 0.0)
     for oa in gs.jobs + gs.outlets:
         if oa.execution is not None:
             if oa.execution.remaining(gs.time + idle_seconds).total_seconds() <= 0:
                 adv.money += oa.execution.money
                 adv.juice += oa.execution.juice
+                adv.seeds += seed_func(oa.execution)
                 
                 # TODO if automated, calculate next execution(s).
                 # for now, just stop the execution
@@ -85,6 +88,7 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     gs.time += adv.idle_seconds
     gs.money += adv.money
     gs.juice += adv.juice
+    gs.seeds += adv.seeds
     return adv
     
     
@@ -142,7 +146,6 @@ def activate(target_type: str, target_idx: int, amount: int = 1, state_file: str
     msg += '\n' + layout.bar() + '\n'
     
     state.save(state_file, gs)
-    
 
 
 def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
@@ -182,7 +185,6 @@ def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         raise RulesViolationError("You don't have enough money for that")
 
     state.save(state_file, gs)
-    
     
 
 def click(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
