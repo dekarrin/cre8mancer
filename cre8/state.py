@@ -53,7 +53,6 @@ class History:
     @staticmethod
     def from_dict(d: Dict) -> 'History':
         return History(d['time'], d['money'], d['juice'], d['prestiges'])
-    
 
 
 class GameState:
