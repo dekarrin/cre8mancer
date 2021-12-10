@@ -15,6 +15,7 @@ class Activity:
         juice_cost: Union[float, Callable[[int], float]] = 0,
         money_rate: Union[int, Callable[[int], int]] = 0,
         juice_rate: Union[float, Callable[[int], float]] = 0,
+        auto_price: Union[int, Callable[[int], int]] = 0,
     ):
         """
         Create new Activity.
@@ -48,6 +49,10 @@ class Activity:
         a uniform production or a function that accepts the current number of
         owned instances and returns the amount of additional juice that the next
         instance will produce.
+        :param auto_price: How much each automation costs in ideas. Keep in mind
+        that each one will *double* the prior production. This can either be a
+        single number for a uniform cost for each or a function that accepts the
+        current number of automations and returns the price of the next one.
         """
         self.id = id
         self.name = name
@@ -157,6 +162,15 @@ class Execution:
         msg = "Execution(start={!r}, end={!r}, money={!r}, juice={!r})"
         return msg.format(self.start, self.end, self.money, self.juice)
         
+    def copy(self) -> 'Execution':
+        """
+        Create a copy of this Execution.
+        
+        :return: An Execution that is a duplicate of this one.
+        """
+        clone = Execution(start=self.start, end=self.end, juice=self.juice, money=self.money)
+        return clone
+        
     def remaining(self, game_time) -> timedelta:
         if game_time >= self.end:
             return timedelta(seconds=0)
@@ -195,6 +209,18 @@ class OwnedActivities:
         self._count = count
         self._active = active
         self.execution: Optional[Execution] = execution
+        
+    def copy(self) -> 'OwnedActivities':
+        """
+        Create a copy of this OwnedActivities. Modifying the copy or any attribute of it
+        will have no effect on this one.
+        
+        :return: An OwnedActivities instance that is a duplicate of this one.
+        """
+        clone = OwnedActivities(self.count, self.active, self.activity)
+        if self.execution is not None:
+            clone.execution == self.execution.copy()
+        return clone
     
     def execute(self, game_time: float):
         if self.execution is not None:

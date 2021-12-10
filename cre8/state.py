@@ -1,6 +1,6 @@
 import pickle
 from datetime import datetime, timezone
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict, Any
 
 from .activities import OwnedActivities
 
@@ -13,6 +13,48 @@ class SerializedStateError(Exception):
         super().__init__(msg)
 
 
+class History:
+    """
+    Contains historical data that is retained on prestige for record-keeping
+    and prestige rate increase.
+    """
+    
+    def __init__(self, time: float, money: int, juice: float, prestiges: int):
+        self.time = time
+        self.money = money
+        self.juice = juice
+        self.prestiges = prestiges
+        
+    def to_dict(self) -> Dict[str, Any]:
+        d = {
+            'time': self.time,
+            'money': self.money,
+            'juice': self.juice,
+            'prestiges': self.prestiges
+        }
+        
+    def copy(self) -> 'History':
+        """
+        Create a History that is a copy of this one.
+        
+        :return: A copy of this History.
+        """
+        return History(self.time, self.money, self.juice, self.prestiges)
+        
+    def __str__(self) -> str:
+        msg = "History[{:.2f}s for ${:d} and ${:.4f}J over {:d} prestiges]"
+        return msg.format(self.time, self.money, self.juice, self.prestiges)
+        
+    def __repr__(self) -> str:
+        msg = "History(time={!r}, money={!r}, juice={!r}, prestiges={!r})"
+        return msg.format(self.time, self.money, self.juice, self.prestiges)
+        
+    @staticmethod
+    def from_dict(d: Dict) -> 'History':
+        return History(d['time'], d['money'], d['juice'], d['prestiges'])
+    
+
+
 class GameState:
     def __init__(self):
         self.money = 0
@@ -20,6 +62,9 @@ class GameState:
         self.jobs = []
         self.outlets = []
         self.time = 0.0
+        self.ideas = 0  # prestiging gives you ideas on what to do
+        self.seeds = 0  # seeds sprout into ideas on prestige
+        self.history = History(time=0.0, money=0, juice=0, prestiges=0)
         
     @property
     def free_juice(self) -> float:
@@ -31,24 +76,121 @@ class GameState:
     
     @property
     def status_line(self) -> str:
-        line = "${:d} {:.4f}/{:.4f}J T:{:.2f}"
-        return line.format(self.money, self.free_juice, self.juice, self.time)
+        line = "${:d} {:.4f}/{:.4f}J  {:d}S->{:d}i  T:{:.2f}"
+        return line.format(self.money, self.free_juice, self.juice, self.seeds, self.ideas, self.time)
         
     def __str__(self):
-        msg = "GameState<time: {:.2f}, money: {:d}, cj: {:.4f}, jobs: {!s}, outlets: {!s}>"
-        return msg.format(self.time, self.money, self.juice, self.jobs, self.outlets)
+        msg = "GameState<time: {:.2f}, money: {:d}, cj: {:.4f}"
+        msg += ", ideas: {:d}, seeds: {:d}, history: {:s}"
+        msg += ", jobs: {!s}, outlets: {!s}>"
+        return msg.format(
+            self.time,
+            self.money,
+            self.juice,
+            self.ideas,
+            self.seeds,
+            str(self.history),
+            self.jobs,
+            self.outlets
+        )
         
     def __repr__(self):
-        msg = "GameState(time={!r}, money={!r}, juice={!r}, jobs={!r}, outlets: {!r})"
-        return msg.format(self.time, self.money, self.juice, self.jobs, self.outlets)
+        msg = "GameState(time={!r}, money={!r}, juice={!r}, ideas={!r}, seeds={!r}, history={!r}"
+        msg += ", jobs={!r}, outlets={!r})"
+        return msg.format(
+            self.time,
+            self.money,
+            self.juice,
+            self.ideas,
+            self.seeds,
+            self.history,
+            self.jobs,
+            self.outlets
+        )
         
-    def to_dict(self):
+    def copy(self) -> 'GameState':
+        """
+        Create a GameState that is an exact duplicate of this one. All properties are
+        deeply copied; modifying anything in the returned GameState will not modify
+        this one.
+        
+        :return: A GameState that is a copy of this one.
+        """
+        gs = GameState()
+        gs.time = self.time
+        gs.money = self.money
+        gs.juice = self.juice
+        gs.ideas = self.ideas
+        gs.seeds = self.seeds
+        gs.history = self.history
+        gs.jobs = [j.copy() for j in self.jobs]
+        gs.outlets = [o.copy() for o in self.outlets]
+        return gs
+        
+    def prestiged(self) -> 'GameState':
+        """
+        Create a new GameState that is the result of applying a prestige on this one.
+        Does not modify the GameState it was called on.
+        
+        A prestige grants the player additional flexibility by converting their 'seeds'
+        (which have been generated over the course of gameplay via purchases and clicks)
+        into 'ideas'. The current game time is saved to historical data and is then set
+        to 0. All money and CJ are set to 0 and jobs and outlets (but not purchased
+        boosts and automations) are reset.
+        
+        The 'initial activities' to reset to are determined by applying the following rules:
+        * All outlets are reset to 0 instances.
+        * All jobs except for the lowest-indexed job are reset to 0 instances. The lowest
+        indexed job is set to a count of 1 instance with that instance also set to active.
+        * All automations are turned off (and will require the player to turn them back on).
+        
+        :return: A GameState that is the same as this one but prestiged an additional
+        time.
+        """
+        # only operate on a copy
+        gs = self.copy()
+        
+        # copy current data to historical
+        gs.history.money += gs.money
+        gs.history.juice += gs.juice
+        gs.history.time += gs.time
+        gs.history.prestiges += 1
+        
+        # find the first job
+        starting_job = None
+            
+        # sprout seeds into ideas
+        gs.ideas += gs.seeds
+        
+        # reset all the things!
+        gs.money = 0
+        gs.juice = 0.0
+        for j in gs.jobs:
+            j.execution = None
+            j.active = 0
+            j.count = 0
+        if len(gs.jobs) > 0:
+            gs.jobs[0].active = 1
+            gs.jobs[0].count = 1
+        for o in gs.outlets:
+            o.execution = None
+            o.active = 0
+            o.count = 0
+        gs.time = 0.0
+        gs.seeds = 0
+        
+        return gs
+        
+    def to_dict(self) -> Dict[str, Any]:
         return {
             'money': self.money,
             'juice': self.juice,
             'jobs': [x.to_dict() for x in self.jobs],
             'outlets': [x.to_dict() for x in self.outlets],
-            'time': self.time
+            'time': self.time,
+            'ideas': self.ideas,
+            'seeds': self.seeds,
+            'history': self.history.to_dict()
         }
     
     @staticmethod
@@ -59,6 +201,9 @@ class GameState:
         gs.jobs = [OwnedActivities.from_dict(job) for job in d['jobs']]
         gs.outlets = [OwnedActivities.from_dict(outlet) for outlet in d['outlets']]
         gs.time = d['time']
+        gs.ideas = d['ideas']
+        gs.seeds = d['seeds']
+        gs.history = History.from_dict(d['history'])
         return gs
 
 
