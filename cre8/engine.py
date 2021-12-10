@@ -1,8 +1,23 @@
-from .activities import OwnedActivities, Activity
+from .activities import OwnedActivities, Activity, Execution
 from . import state, activities, layout
 from .state import GameState
 from typing import Tuple, Optional
 import sys
+
+
+
+def seed_func(gs: GameState, ex: Execution) -> float:
+    """
+    Generate additional seed based on the completion of an execution and current game
+    state.
+    """
+    
+    # TOOD: more for more money in bank
+    # TODO: more for more juice in bank
+    # TODO: more for higher juice from exec but balance by current 'value'
+    # TODO: more for higher money from exec but balance by current 'value'
+    # TODO: less for low-time items
+    pass
 
 
 class RulesViolationError(Exception):
