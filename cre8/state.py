@@ -32,6 +32,7 @@ class History:
             'juice': self.juice,
             'prestiges': self.prestiges
         }
+        return d
         
     def copy(self) -> 'History':
         """
