@@ -274,9 +274,7 @@ def show_store(state_file: str = 'st8cre8.p'):
 def status(state_file: str = 'st8cre8.p'):
     gs, _ = prepare_state(state_file)
     
-    msg = "Game Time: {:.2f}".format(gs.time)
-    msg += "\nMoney: ${:d}".format(gs.money)
-    msg += "\nCreative Juice: {:.4f}/{:.4f}".format(gs.free_juice, gs.juice)
+    msg = gs.status_line
     msg += "\n\nJobs:\n"
     
     msg += layout.bar() + '\n'
