@@ -63,7 +63,7 @@ class GameState:
         self.outlets = []
         self.time = 0.0
         self.ideas = 0  # prestiging gives you ideas on what to do
-        self.seeds = 0  # seeds sprout into ideas on prestige
+        self.seeds = 0.0  # seeds sprout into ideas on prestige
         self.history = History(time=0.0, money=0, juice=0, prestiges=0)
         
     @property
@@ -77,11 +77,11 @@ class GameState:
     @property
     def status_line(self) -> str:
         line = "${:d} {:.4f}/{:.4f}J  {:d}S->{:d}i  T:{:.2f}"
-        return line.format(self.money, self.free_juice, self.juice, self.seeds, self.ideas, self.time)
+        return line.format(self.money, self.free_juice, self.juice, int(self.seeds), self.ideas, self.time)
         
     def __str__(self):
         msg = "GameState<time: {:.2f}, money: {:d}, cj: {:.4f}"
-        msg += ", ideas: {:d}, seeds: {:d}, history: {:s}"
+        msg += ", ideas: {:d}, seeds: {:.2f}, history: {:s}"
         msg += ", jobs: {!s}, outlets: {!s}>"
         return msg.format(
             self.time,
@@ -160,7 +160,7 @@ class GameState:
         starting_job = None
             
         # sprout seeds into ideas
-        gs.ideas += gs.seeds
+        gs.ideas += int(gs.seeds)
         
         # reset all the things!
         gs.money = 0
