@@ -5,6 +5,8 @@ from typing import Tuple, Optional
 import sys
 import math
 
+# TODO: ensure that state_file is first arg in everything as it is the only consistent arg
+
 
 def seed_func(ex: Execution) -> float:
     """
@@ -94,8 +96,30 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     gs.juice += adv.juice
     gs.seeds += adv.seeds
     return adv
-    
-    
+
+
+def set_state(money: Optional[int] = None, juice: Optional[float] = None, state_file: str = 'st8cre8.p'):
+    """
+    Directly set a property on the user state. Useful for testing/debugging.
+
+    :param money: New amount for money.
+    :param juice: New amount for cj.
+    :param state_file: The location of the state file.
+    """
+    # TODO: need to find way to set as "non-updating" for debug cases (doing debug should not cause actual game
+    # functions to take place)
+    gs, _ = prepare_state(state_file)
+
+    if money is not None:
+        gs.money = money
+    if juice is not None:
+        gs.juice = juice
+
+    print(gs.status_line)
+
+    state.save(state_file, gs)
+
+
 def deactivate(target_type: str, target_idx: int, amount: int = 1, state_file: str = 'st8cre8.p'):
     """
     Turn one or more items to deactive state.

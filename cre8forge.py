@@ -44,9 +44,27 @@ def run_from_cli():
     deact_count_help = "The number of instances to deactivate"
     deact_parser.add_argument('-c', '--count', help=deact_count_help, type=int, default=1)
     deact_parser.set_defaults(func=exec_deactivate)
+
+    # debug stuff
+    debug_parser = subparsers.add_parser('debug', help="execute debugging and testing commands")
+    debug_subs = debug_parser.add_subparsers(required=True, dest="debug_command")
+    debug_money = debug_subs.add_parser('money', help="Set current money")
+    debug_money.add_argument('amount', help="Amount to set money to.", type=int)
+    debug_money.set_defaults(func=exec_debug_money)
+    debug_juice = debug_subs.add_parser('juice', help="Set current juice")
+    debug_juice.add_argument('amount', help="Amount to set juice to", type=float)
+    debug_juice.set_defaults(func=exec_debug_juice)
     
     args = parser.parse_args()
     args.func(args)
+
+
+def exec_debug_money(args):
+    engine.set_state(money=args.amount, state_file=args.state)
+
+
+def exec_debug_juice(args):
+    engine.set_state(juice=args.amount, state_file=args.state)
 
 
 def exec_status(args):
