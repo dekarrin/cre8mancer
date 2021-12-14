@@ -170,8 +170,8 @@ class GameState:
             j.active = 0
             j.count = 0
         if len(gs.jobs) > 0:
-            gs.jobs[0].active = 1
             gs.jobs[0].count = 1
+            gs.jobs[0].active = 1
         for o in gs.outlets:
             o.execution = None
             o.active = 0

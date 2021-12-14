@@ -114,9 +114,15 @@ def prestige(state_file: str = 'st8cre8.p'):
     if gs.seeds < 1:
         raise RulesViolationError("You can't prestige until you have at least 1 seed.")
         
+    amount = int(gs.seeds)
     gs = gs.prestiged()
     
-    print(gs.status_line)
+    s = 's' if amount != 1 else ''
+    idea_count = str(amount) if amount != 1 else 'an'
+    print("{:d} seed{:s} sprouted into {:s} idea{:s}!".format(amount, s, idea_count, s))
+    
+    s = 's' if gs.ideas != 1 else ''
+    print("You now have {:d} total idea{:s}... Imagine the possibilities.".format(gs.ideas, s))
     
     state.save(state_file, gs)
 
