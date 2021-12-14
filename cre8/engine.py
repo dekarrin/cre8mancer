@@ -103,12 +103,38 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     return adv
 
 
-def set_state(money: Optional[int] = None, juice: Optional[float] = None, state_file: str = 'st8cre8.p'):
+def prestige(state_file: str = 'st8cre8.p'):
+    """
+    Set everyfin over and convert seeds to ideas.
+    
+    :param state_file: The location of the state file.
+    """
+    gs, _ = prepare_state(state_file)
+    
+    if gs.seeds < 1:
+        raise RulesViolationError("You can't prestige until you have at least 1 seed.")
+        
+    gs = gs.prestiged()
+    
+    print(gs.status_line)
+    
+    state.save(state_file, gs)
+
+
+def set_state(
+        money: Optional[int] = None,
+        juice: Optional[float] = None,
+        seeds: Optional[float] = None,
+        ideas: Optional[int] = None,
+        state_file: str = 'st8cre8.p'
+    ):
     """
     Directly set a property on the user state. Useful for testing/debugging.
 
     :param money: New amount for money.
     :param juice: New amount for cj.
+    :param seeds: New amount for seeds.
+    :param ideas: New amount for ideas.
     :param state_file: The location of the state file.
     """
     # TODO: need to find way to set as "non-updating" for debug cases (doing debug should not cause actual game
@@ -119,6 +145,10 @@ def set_state(money: Optional[int] = None, juice: Optional[float] = None, state_
         gs.money = money
     if juice is not None:
         gs.juice = juice
+    if seeds is not None:
+        gs.seeds = seeds
+    if ideas is not None:
+        gs.ideas = ideas
 
     print(gs.status_line)
 

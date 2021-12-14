@@ -44,6 +44,11 @@ def run_from_cli():
     deact_count_help = "The number of instances to deactivate"
     deact_parser.add_argument('-c', '--count', help=deact_count_help, type=int, default=1)
     deact_parser.set_defaults(func=exec_deactivate)
+    
+    prest_help = "Reset progress (except for purchased boosts and automations)"
+    prest_help += " and sprout seeds into ideas"
+    prest_parser = subparsers.add_parser('prestige', help=prest_help)
+    prest_parser.set_defaults(func=exec_prestige)
 
     # debug stuff
     debug_parser = subparsers.add_parser('debug', help="execute debugging and testing commands")
@@ -54,9 +59,23 @@ def run_from_cli():
     debug_juice = debug_subs.add_parser('juice', help="Set current juice")
     debug_juice.add_argument('amount', help="Amount to set juice to", type=float)
     debug_juice.set_defaults(func=exec_debug_juice)
+    debug_seeds = debug_subs.add_parser('seeds', help="Set current seeds")
+    debug_seeds.add_argument('amount', help="Amount to set seeds to", type=float)
+    debug_seeds.set_defaults(func=exec_debug_seeds)
+    debug_ideas = debug_subs.add_parser('ideas', help="Set current ideas")
+    debug_ideas.add_argument('amount', help="Amount to set ideas to", type=int)
+    debug_ideas.set_defaults(func=exec_debug_ideas)
     
     args = parser.parse_args()
     args.func(args)
+    
+    
+def exec_debug_seeds(args):
+    engine.set_state(seeds=args.amount, state_file=args.state)
+    
+    
+def exec_debug_ideas(args):
+    engine.set_state(ideas=args.amount, state_file=args.state)
 
 
 def exec_debug_money(args):
@@ -65,6 +84,10 @@ def exec_debug_money(args):
 
 def exec_debug_juice(args):
     engine.set_state(juice=args.amount, state_file=args.state)
+    
+    
+def exec_prestige(args):
+    engine.prestige(args.state)
 
 
 def exec_status(args):
