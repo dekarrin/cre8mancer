@@ -4,6 +4,12 @@ from .state import GameState
 from typing import Tuple, Optional
 import sys
 import math
+import logging
+
+
+_log = logging.getLogger(__name__)
+_log.setLevel(logging.DEBUG)
+
 
 # TODO: ensure that state_file is first arg in everything as it is the only consistent arg
 
@@ -24,11 +30,15 @@ def seed_func(ex: Execution) -> float:
         return 1 - (math.e ** -((x/seed_xscale)**seed_smooth))
 
     amount = ((max(ex.end - ex.start, 1) / 3) ** 1.15)
+    _log.debug("Seed from amount: {:.6f}", amount)
     mon_factor = seed_xscale * weibull_stretched(ex.money)
+    _log.debug("Seed from money: {:.6f}", mon_factor)
     cj_factor = seed_xscale * weibull_stretched(ex.juice)
+    _log.debug("Seed from juice: {:.6f}", cj_factor)
     # TODO: balance by current 'value'
 
     total = amount + mon_factor + cj_factor
+    _log.debug("Total seed added: {:.6f}", total)
     return total
 
 

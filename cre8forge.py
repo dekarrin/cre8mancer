@@ -1,9 +1,14 @@
 from cre8 import engine
 from cre8.engine import RulesViolationError
 
+import sys
 import argparse
 import logging
 import logging.handlers
+
+
+_log = logging.getLogger('cre8forge')
+_log.setLevel(logging.DEBUG)
 
 
 def main():
@@ -14,7 +19,12 @@ def main():
     except KeyboardInterrupt:
         pass
     except RulesViolationError as e:
-        print(str(e))
+        _log.debug("User-requested action violates the rules of the game.")
+        _log.info(str(e))
+        sys.exit(1)
+    except Exception:
+        _log.exception("Problem during execution")
+        sys.exit(2)
 
 
 def run_from_cli():
