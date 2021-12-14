@@ -13,17 +13,22 @@ def seed_func(ex: Execution) -> float:
     Generate additional seed based on the completion of an execution and current game
     state.
     """
+    
+    # using weibull "stretched exponential" function
+    # f(x) = 1 - e^-(x/a)^b, (b > 2)
+    # see accepted answer on https://math.stackexchange.com/questions/3542734/alternatives-for-sigmoid-curve-starting-from-0-with-interpretable-parameters
+    seed_xscale = 10000 # used as parameter "a", which sets x-scale
+    seed_smooth = 3 # used as parameter "b", which sets steepness of sigmoid section
+    
+    def weibull_stretched(x):
+        return 1 - (math.e ** -((x/seed_xscale)**seed_smooth))
 
-    amount = 0.4 * ((max(ex.end - ex.start, 1) / 3) ** 1.15)
-    print(amount)
-    mon_factor = 0.1 * (math.log(ex.money) if ex.money > 1 else 1)
-    print(mon_factor)
-    cj_factor = 0.2 * (math.log(ex.juice * 10000) if ex.juice > 0.0001 else 1)
-    print(cj_factor)
+    amount = ((max(ex.end - ex.start, 1) / 3) ** 1.15)
+    mon_factor = seed_xscale * weibull_stretched(ex.money)
+    cj_factor = seed_xscale * weibull_stretched(ex.juice)
     # TODO: balance by current 'value'
 
-    total = amount * mon_factor * cj_factor
-    print("SEED: {:f}".format(total))
+    total = amount + mon_factor + cj_factor
     return total
 
 
