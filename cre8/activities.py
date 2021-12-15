@@ -260,10 +260,19 @@ class OwnedActivities:
     A set of Activities that also contains the number of that activity that a user owns as well as the number
     of that activity that are currently active. Can be directly queried for production numbers given a time delta.
     """
-    def __init__(self, activity: Activity, count: int, active: int, execution: Optional[Execution] = None):
+    def __init__(self,
+        activity: Activity,
+        count: int,
+        active: int,
+        autos: int,
+        automated: bool = False
+        execution: Optional[Execution] = None
+    ):
         self.activity = activity
         self._count = count
         self._active = active
+        self.automations = autos
+        self.automated = automated
         self.execution: Optional[Execution] = execution
         
     def copy(self) -> 'OwnedActivities':
@@ -273,9 +282,10 @@ class OwnedActivities:
         
         :return: An OwnedActivities instance that is a duplicate of this one.
         """
-        clone = OwnedActivities(self.activity, self.count, self.active)
+        clone = OwnedActivities(self.activity, self.count, self.active, self.automations)
         if self.execution is not None:
             clone.execution == self.execution.copy()
+        clone.automated = self.automated
         return clone
     
     def execute(self, game_time: float):
@@ -295,6 +305,12 @@ class OwnedActivities:
         msg += "cost: (${:d}, {:.4f}J)}, ".format(self.money_cost, self.juice_cost)
         msg += "price: ${:d}, ".format(self.price)
         msg += "exec_time: {:s} ".format(format_timer(self.activity.duration))
+        msg += "auto: "
+        if self.automating:
+            msg += "(On)"
+        else:
+            msg += "(Off)"
+        msg += " {:d}x ".format(self.automation_bonus)
         if self.execution is not None:
             msg += "(Running)"
         else:
@@ -303,8 +319,16 @@ class OwnedActivities:
         return msg
         
     def __repr__(self):
-        msg = "OwnedActivities(activity={!r}, count={!r}, active={!r}, execution={!r})"
-        return msg.format(self.activity, self.count, self.active, self.execution)
+        msg = "OwnedActivities(activity={!r}, count={!r}, "
+        msg += "active={!r}, automations={!r}, automated={!r}, execution={!r})"
+        return msg.format(
+            self.activity,
+            self.count,
+            self.active,
+            self.automations,
+            self.automated,
+            self.execution
+        )
          
     @property
     def name(self) -> str:
@@ -358,12 +382,18 @@ class OwnedActivities:
         if self.execution is not None:
             self.execution.money = sum(self.activity.money_rate(c) for c in range(self.active))
             self.execution.juice = sum(self.activity.juice_rate(c) for c in range(self.active))
+            
+    @property
+    def automation_bonus(self) -> int:
+        return self.automated ** 2
 
     def to_dict(self):
         d = {
             'activity': self.activity.id,
             'count': self.count,
-            'active': self.active
+            'active': self.active,
+            'automations': self.automations,
+            'automated': self.automated,
         }
         if self.execution is not None:
             d['execution'] = self.execution.to_dict()
@@ -372,7 +402,7 @@ class OwnedActivities:
     @staticmethod
     def from_dict(d):
         act = from_id(d['activity'])
-        oa = OwnedActivities(act, d['count'], d['active'])
+        oa = OwnedActivities(act, d['count'], d['active'], d['automations'], d['automated'])
         if 'execution' in d:
             oa.execution = Execution.from_dict(d['execution'])
         return oa
