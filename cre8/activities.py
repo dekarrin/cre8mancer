@@ -126,7 +126,8 @@ Jobs = [
         money_cost=0,
         juice_cost=0.0,
         money_rate=1,
-        juice_rate=0.0
+        juice_rate=0.0,
+        auto_price=lambda x: 1 if x == 0 else int(1.02 ** (50*x)),
     ),
     Activity(
         1, 'Data Entry', 10.0,
@@ -135,6 +136,7 @@ Jobs = [
         juice_cost=0.05,
         money_rate=2,
         juice_rate=0.0,
+        auto_price=5
     ),
     Activity(
         2, 'Create Spreadsheets', 100,
@@ -142,7 +144,8 @@ Jobs = [
         money_cost=0,
         juice_cost=0.17,
         money_rate=27,
-        juice_rate=0.0
+        juice_rate=0.0,
+        auto_price=200,
     )
 ]
 
@@ -154,7 +157,8 @@ Outlets = [
         money_cost=50,
         juice_cost=0.0,
         money_rate=0.0,
-        juice_rate=0.002
+        juice_rate=0.002,
+        auto_price=lambda x: 2 if x == 0 else int(1.8 ** x)
     ),
     Activity(
         1025, 'Write Fanfiction', 25,
@@ -162,7 +166,8 @@ Outlets = [
         money_cost=250,
         juice_cost=20.0,
         money_rate=0.0,
-        juice_rate=1.0
+        juice_rate=1.0,
+        auto_price=600,
     ),
     Activity(
         1026, 'Make Poetry', 200,
@@ -170,7 +175,8 @@ Outlets = [
         money_cost=1000,
         juice_cost=420.0,
         money_rate=0.0,
-        juice_rate=5.0
+        juice_rate=5.0,
+        auto_price=10000
     )
 ]
 
