@@ -196,7 +196,7 @@ class Execution:
     Represent a particular 'click' of an OwnedActivities instance.
     """
 
-    def __init__(self, start: float, end: float, money: int, juice: float):
+    def __init__(self, start: float, end: float, money: int, juice: float, auto_multiplier: int):
         """
         Begin a new execution.
         
@@ -204,15 +204,18 @@ class Execution:
         :param end: The game time that this execution ends at.
         :param money: The amount of money that will be awarded to the player upon completion of this Execution.
         :param juice: The amount of creative juice that will be awarded to the player upon completion of this Execution.
+        :param auto_multiplier: The multiplier of bonus earnings being applied due to having
+        multiple automations.
         """
         self.start = start
         self.end = end
         self.juice = juice
         self.money = money
+        self.auto_multiplier
         
     def __str__(self):
-        msg = "Execution<time: ({:f}, {:f}), produce: ${:d}/{:.4f}J>"
-        return msg.format(self.start, self.end, self.money, self.juice)
+        msg = "Execution<time: ({:f}, {:f}), produce: ${:d}/{:.4f}J (x{:d})>"
+        return msg.format(self.start, self.end, self.money, self.juice, self.auto_multiplier)
         
     def __repr__(self):
         msg = "Execution(start={!r}, end={!r}, money={!r}, juice={!r})"
@@ -224,8 +227,18 @@ class Execution:
         
         :return: An Execution that is a duplicate of this one.
         """
-        clone = Execution(start=self.start, end=self.end, juice=self.juice, money=self.money)
+        clone = Execution(
+            start=self.start,
+            end=self.end,
+            juice=self.juice,
+            money=self.money,
+            auto_multiplier=self.auto_multiplier
+        )
         return clone
+        
+    @property
+    def total_money(self) -> int:
+        return self.money * self.auto_multiplier
         
     def remaining(self, game_time) -> timedelta:
         if game_time >= self.end:
@@ -246,13 +259,14 @@ class Execution:
             'start': self.start,
             'end': self.end,
             'juice': self.juice,
-            'money': self.money
+            'money': self.money,
+            'auto_multiplier': self.auto_multiplier
         }
         return d
 
     @staticmethod
     def from_dict(d):
-        return Execution(d['start'], d['end'], d['money'], d['juice'])
+        return Execution(d['start'], d['end'], d['money'], d['juice'], d['auto_multiplier'])
 
 
 class OwnedActivities:
@@ -271,8 +285,8 @@ class OwnedActivities:
         self.activity = activity
         self._count = count
         self._active = active
-        self.automations = autos
-        self.automated = automated
+        self._automations = autos
+        self._automated = automated
         self.execution: Optional[Execution] = execution
         
     def copy(self) -> 'OwnedActivities':
@@ -295,7 +309,8 @@ class OwnedActivities:
             game_time,
             game_time + self.activity.duration.total_seconds(),
             sum(self.activity.money_rate(c) for c in range(self.active)),
-            sum(self.activity.juice_rate(c) for c in range(self.active))
+            sum(self.activity.juice_rate(c) for c in range(self.active)),
+            self.automation_bonus if self.automated && self.automations > 0 else 1
         )
         self.execution = ex
         
@@ -386,6 +401,32 @@ class OwnedActivities:
     @property
     def automation_bonus(self) -> int:
         return self.automated ** 2
+        
+    @property
+    def automated(self) -> bool:
+        return self._automated
+        
+    @automated.setter
+    def automated(self, value: bool):
+        self._automated = value
+        if self.execution is not None:
+            mult = 1
+            if self._automated && self.automations > 0:
+                mult = self.automation_bonus
+            self.execution.auto_multiplier = mult
+            
+    @property
+    def automations(self) -> int:
+        return self._automations
+        
+    @automations.setter
+    def automations(self, value: int):
+        self._automations = value
+        if self.execution is not None:
+            mult = 1
+            if self.automated && self._automations > 0:
+                mult = self.automation_bonus
+            self.execution.auto_multiplier = mult
 
     def to_dict(self):
         d = {
