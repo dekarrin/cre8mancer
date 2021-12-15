@@ -80,7 +80,7 @@ def prepare_state(state_file: str) -> Tuple[GameState, Optional[Advancement]]:
 
     if gs is None:
         gs = GameState()
-        gs.jobs.append(OwnedActivities(1, 1, activities.from_id(0)))
+        gs.jobs.append(OwnedActivities(activities.from_id(0), 1, 1))
         return gs, None
     else:
         adv = advance(gs, idle_seconds)
@@ -238,7 +238,7 @@ def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         if idx < 0:
             # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
             # consistent w full job list glub
-            target = OwnedActivities(0, 0, activities.Jobs[target_idx])
+            target = OwnedActivities(activities.Jobs[target_idx], 0, 0)
             gs.jobs.append(target)
         else:
             target = gs.jobs[idx]
@@ -247,7 +247,7 @@ def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
         if idx < 0:
             # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
             # consistent w full outlets list glub
-            target = OwnedActivities(0, 0, activities.Outlets[target_idx])
+            target = OwnedActivities(activities.Outlets[target_idx], 0, 0)
             gs.outlets.append(target)
         else:
             target = gs.jobs[idx]

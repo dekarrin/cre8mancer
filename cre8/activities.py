@@ -260,7 +260,7 @@ class OwnedActivities:
     A set of Activities that also contains the number of that activity that a user owns as well as the number
     of that activity that are currently active. Can be directly queried for production numbers given a time delta.
     """
-    def __init__(self, count: int, active: int, activity: Activity, execution: Optional[Execution] = None):
+    def __init__(self, activity: Activity, count: int, active: int, execution: Optional[Execution] = None):
         self.activity = activity
         self._count = count
         self._active = active
@@ -273,7 +273,7 @@ class OwnedActivities:
         
         :return: An OwnedActivities instance that is a duplicate of this one.
         """
-        clone = OwnedActivities(self.count, self.active, self.activity)
+        clone = OwnedActivities(self.activity, self.count, self.active)
         if self.execution is not None:
             clone.execution == self.execution.copy()
         return clone
@@ -303,8 +303,8 @@ class OwnedActivities:
         return msg
         
     def __repr__(self):
-        msg = "OwnedActivities(count={!r}, active={!r}, activity={!r}, execution={!r})"
-        return msg.format(self.count, self.active, self.activity, self.execution)
+        msg = "OwnedActivities(activity={!r}, count={!r}, active={!r}, execution={!r})"
+        return msg.format(self.activity, self.count, self.active, self.execution)
          
     @property
     def name(self) -> str:
@@ -372,7 +372,7 @@ class OwnedActivities:
     @staticmethod
     def from_dict(d):
         act = from_id(d['activity'])
-        oa = OwnedActivities(d['count'], d['active'], act)
+        oa = OwnedActivities(act, d['count'], d['active'])
         if 'execution' in d:
             oa.execution = Execution.from_dict(d['execution'])
         return oa
