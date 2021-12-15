@@ -167,6 +167,7 @@ class GameState:
         gs.juice = 0.0
         for j in gs.jobs:
             j.execution = None
+            j.automated = False
             j.active = 0
             j.count = 0
         if len(gs.jobs) > 0:
@@ -174,6 +175,7 @@ class GameState:
             gs.jobs[0].active = 1
         for o in gs.outlets:
             o.execution = None
+            o.automated = False
             o.active = 0
             o.count = 0
         gs.time = 0.0
