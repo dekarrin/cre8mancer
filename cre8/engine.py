@@ -97,27 +97,26 @@ def advance(gs: GameState, idle_seconds: float) -> Advancement:
     adv = Advancement(idle_seconds, 0, 0, 0.0)
     now = gs.time + idle_seconds
     for oa in gs.jobs + gs.outlets:
-        if oa.execution is not None:
-            if oa.execution.remaining(now).total_seconds() <= 0:
-                adv.money += oa.execution.money
-                adv.juice += oa.execution.juice
-                adv.seeds += seed_func(oa.execution)
+        while oa.execution is not None and oa.execution.remaining(now).total_seconds() <= 0:
+            cur_exec = oa.execution
+            
+            adv.money += cur_exec.money
+            adv.juice += cur_exec.juice
+            adv.seeds += seed_func(cur_exec)
+            
+            oa.execution = None
+            
+            # if automated, get set up to calculate next execution.
+            if oa.automated:
+                # make sure running the next execution doesn't violate constraints
                 
-                # TODO if automated, calculate next execution(s).
-                # for now, just stop the execution
-                if oa.automated:
-                    prev_ex = oa.execution
-                    while prev_ex.end <= gs.time + idle_seconds:
-                        oa.execution = None
-                        oa.execute(prev_ex.end)
-                        if oa.execution.remaining(now).total_seconds() <= 0:
-                            adv.money += oa.execution.money
-                            adv.juice += oa.execution.juice
-                            adv.seeds += seed_func(oa.execution)
-                        else:
-                            break
+                free_juice = gs.free_juice + adv.juice
+                free_money = gs.money + adv.money
+                if free_juice >= oa.juice_cost and free_money >= oa.money_cost:
+                    oa.execute(cur_exec.end)
+                    gs.money -= oa.price
                 else:
-                    oa.execution = None
+                    oa.automation = False
             
     gs.time += adv.idle_seconds
     gs.money += adv.money
@@ -142,10 +141,10 @@ def prestige(state_file: str = 'st8cre8.p'):
     
     s = 's' if amount != 1 else ''
     idea_count = str(amount) if amount != 1 else 'an'
-    print("{:d} seed{:s} sprouted into {:s} idea{:s}!".format(amount, s, idea_count, s))
+    print("{:d} seed{:s} sprouted into {:s} (i)dea{:s}!".format(amount, s, idea_count, s))
     
     s = 's' if gs.ideas != 1 else ''
-    print("You now have {:d} total idea{:s}... Imagine the possibilities.".format(gs.ideas, s))
+    print("You now have {:d} total (i)dea{:s}... Imagine the possibilities.".format(gs.ideas, s))
     
     state.save(state_file, gs)
 
@@ -184,10 +183,21 @@ def set_state(
     state.save(state_file, gs)
 
 
-def deactivate(target_type: str, target_idx: int, amount: int = 1, state_file: str = 'st8cre8.p'):
+def deactivate(
+        category: str,
+        target_type: str,
+        target_idx: int,
+        amount: int = 1,
+        state_file: str = 'st8cre8.p'
+    ):
     """
     Turn one or more items to deactive state.
-    """
+    """    
+    if category not in ('instance', 'automation'):
+        raise ValueError("category must be one of 'instance' or 'automation'")
+    if target_type not in ('job', 'outlet'):
+        raise ValueError("target_type must be one of 'job' or 'outlet'")
+    
     gs, _ = prepare_state(state_file)
     
     if amount < 1:
@@ -197,11 +207,23 @@ def deactivate(target_type: str, target_idx: int, amount: int = 1, state_file: s
     if target is None:
         msg = "You don't own any of {!r}; buy at least one first".format(act_def.name)
         raise RulesViolationError(msg)
-        
-    amount = min(target.active, amount)
-    if amount == 0:
-        raise RulesViolationError("{!r} is already at 0 instances.".format(target.name))
-    target.active -= amount
+    
+    if category == 'instance':
+        amount = min(target.active, amount)
+        if amount == 0:
+            raise RulesViolationError("{!r} is already at 0 instances.".format(target.name))
+        target.active -= amount
+    elif category == 'automation':
+        if amount != 1:
+            msg = "Automation deactivation is all-or-nothing; you can't deactivate more than one."
+            raise RulesViolationError(msg)        
+        if not target.automated:
+            msg = "Automation is already off for {!r}.".format(target.name)
+            raise RulesViolationError(msg)
+            
+        target.automated = False
+    else:
+        raise ValueError("should never happen")
     
     msg = layout.bar() + '\n'
     msg += layout.make_act_card(target, gs.time)
@@ -210,10 +232,21 @@ def deactivate(target_type: str, target_idx: int, amount: int = 1, state_file: s
     state.save(state_file, gs)
     
     
-def activate(target_type: str, target_idx: int, amount: int = 1, state_file: str = 'st8cre8.p'):
+def activate(
+        category: str,
+        target_type: str,
+        target_idx: int,
+        amount: int = 1,
+        state_file: str = 'st8cre8.p'
+    ):
     """
     Turn one or more items to active state.
     """
+    if category not in ('instance', 'automation'):
+        raise ValueError("category must be one of 'instance' or 'automation'")
+    if target_type not in ('job', 'outlet'):
+        raise ValueError("target_type must be one of 'job' or 'outlet'")
+        
     gs, _ = prepare_state(state_file)
     
     if amount < 1:
@@ -223,15 +256,44 @@ def activate(target_type: str, target_idx: int, amount: int = 1, state_file: str
     if target is None:
         msg = "You don't own any of {!r}; buy at least one first".format(act_def.name)
         raise RulesViolationError(msg)
-        
-    amount = min(target.count - target.active, amount)
-    if amount == 0:
-        raise RulesViolationError("{!r} is already at the maximum number of instances".format(target.name))
     
-    target.active += amount
-    if gs.free_juice < 0:
-        msg = "You don't have enough juice to do that."
-        raise RulesViolationError(msg)
+    if category == 'instance':
+        amount = min(target.count - target.active, amount)
+        if amount == 0:
+            msg = "{!r} is already at the maximum number of instances".format(target.name)
+            raise RulesViolationError(msg)
+        
+        target.active += amount
+        if gs.free_juice < 0:
+            msg = "You don't have enough juice to do that."
+            raise RulesViolationError(msg)
+    elif category == 'automation':
+        if amount != 1:
+            msg = "Automation activation is all-or-nothing; you can't activate more than one."
+            raise RulesViolationError(msg)        
+        if target.automated:
+            msg = "Automation is already on for {!r}.".format(target.name)
+            raise RulesViolationError(msg)
+            
+        if target.execution is not None:
+            # one is already running, so juice check is not needed
+            # just set automated to True so next advancement handles starting next executions
+            target.automated = True
+        else
+            if gs.free_juice < target.juice_cost:
+                msg = "You don't have enough juice for the first auto-execution.\n"
+                msg += "Try freeing up some juice or deactivating some instances first."
+                raise RulesViolationError(msg)
+            if gs.money < target.money_cost:
+                msg = "You don't have enough money for the first auto-execution.\n"
+                msg += "Try saving up some money or deactivating some instances first."
+                raise RulesViolationError(msg)
+                
+            target.automated = True
+            target.execute(gs.time)
+            gs.money -= target.price        
+    else:
+        raise ValueError("should never happen")
     
     msg = layout.bar() + '\n'
     msg += layout.make_act_card(target, gs.time)
@@ -240,41 +302,82 @@ def activate(target_type: str, target_idx: int, amount: int = 1, state_file: str
     state.save(state_file, gs)
 
 
-def buy(target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
+def buy(category: str, target_type: str, target_idx: int, state_file: str = 'st8cre8.p'):
     """
     Purchase somefin from the shop, glu8!
+    
+    :param category: The type of item being purchased. This can be either
+    "instance" or "automation". If it is "instance", an instance of the
+    targeted activity will be purchased using dollars. If it is "automation", an
+    automation for the targeted activity will be purchased using ideas.
+    :param target_type: Either "job" or "outlet" - the type of activity that the
+    target of the purchased item is.
+    :param target_idx: The index from the store in the target_type group that
+    points to the specific target of the purchase.
     """
+    if category not in ('instance', 'automation'):
+        raise ValueError("category must be one of 'instance' or 'automation'")
+    if target_type not in ('job', 'outlet'):
+        raise ValueError("target_type must be one of 'job' or 'outlet'")
+    
     gs, _ = prepare_state(state_file)
 
-    if target_type == 'job':
-        idx = activities.index_of_job(target_idx, gs.jobs)
-        if idx < 0:
-            # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
-            # consistent w full job list glub
-            target = OwnedActivities(activities.Jobs[target_idx], 0, 0, 0)
-            gs.jobs.append(target)
+    if category == 'instance':
+        if target_type == 'job':
+            idx = activities.index_of_job(target_idx, gs.jobs)
+            if idx < 0:
+                # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
+                # consistent w full job list glub
+                target = OwnedActivities(activities.Jobs[target_idx], 0, 0, 0)
+                gs.jobs.append(target)
+            else:
+                target = gs.jobs[idx]
+        elif target_type == 'outlet':
+            idx = activities.index_of_outlet(target_idx, gs.outlets)
+            if idx < 0:
+                # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
+                # consistent w full outlets list glub
+                target = OwnedActivities(activities.Outlets[target_idx], 0, 0, 0)
+                gs.outlets.append(target)
+            else:
+                target = gs.jobs[idx]
         else:
-            target = gs.jobs[idx]
-    elif target_type == 'outlet':
-        idx = activities.index_of_outlet(target_idx, gs.outlets)
-        if idx < 0:
-            # TODO: when buying a new one, make sure everyfin up to then is also added to make indexes
-            # consistent w full outlets list glub
-            target = OwnedActivities(activities.Outlets[target_idx], 0, 0, 0)
-            gs.outlets.append(target)
-        else:
-            target = gs.jobs[idx]
-    else:
-        raise ValueError("target_type must be one of 'job' or 'outlet'")
+            raise ValueError("should never happen")
 
-    if target.price <= gs.money:
+        if target.price > gs.money:
+            raise RulesViolationError("You don't have enough money for that")
+        
         gs.money -= target.price
         target.count += 1
         target.active += 1
         if gs.free_juice < 0:
             target.active -= 1
+            
+    elif category == 'automation':
+        target, act_def = find_target(gs, target_type, target_idx)
+        if target is None:
+            msg = "You don't own any of {!r}; buy at least one first".format(act_def.name)
+            raise RulesViolationError(msg)
+            
+        if target.auto_price > gs.ideas:
+            raise RulesViolationError("You don't have enough (i)deas for that")
+            
+        gs.ideas -= target.auto_price
+        target.automations += 1
+        
+        # if possible, turn it on immediately
+        if not target.automated:
+            if target.execution is not None:
+                # one is already running, so juice check is not needed
+                # just set automated to True so next advancement handles starting next executions
+                target.automated = True
+            elif gs.free_juice >= target.juice_cost and gs.money >= target.money_cost:
+                target.automated = True
+                target.execute(gs.time)
+                gs.money -= target.price
+            # otherwise, don't activate the execution
     else:
-        raise RulesViolationError("You don't have enough money for that")
+        raise ValueError("should never happen")
 
     state.save(state_file, gs)
     

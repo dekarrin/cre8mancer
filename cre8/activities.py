@@ -373,6 +373,10 @@ class OwnedActivities:
     @property
     def price(self) -> int:
         return self.activity.price(self.count)
+        
+    @property
+    def auto_price(self) -> int:
+        return self.activity.auto_price(self.automations)
     
     # TODO: with introduction of active, count no longer needs to be a @property
     @property  
