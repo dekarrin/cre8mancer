@@ -86,7 +86,7 @@ def run_from_cli():
     
     prest_help = "Go into deep meditation to reset progress (except for purchased boosts and automations)"
     prest_help += " and sprout seeds into ideas"
-    prest_parser = subparsers.add_parser('prestige', help=prest_help)
+    prest_parser = subparsers.add_parser('meditate', help=prest_help)
     prest_parser.set_defaults(func=exec_prestige)
 
 
