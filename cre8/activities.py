@@ -177,6 +177,16 @@ Outlets = [
         money_rate=0.0,
         juice_rate=5.0,
         auto_price=10000
+    ),
+    # TODO: More activities
+    Activity(
+        2048, 'Manifest Tulpa', timedelta(weeks=2),
+        price=lambda x: round((5*(10**9) - 1)+(5**x)),
+        money_cost=lambda x: x*(1*(10**6)),
+        juice_cost=lambda x: x*(1*(10**4)),
+        money_rate=0.0,
+        juice_rate=(1*(10**3)),
+        auto_price=lambda x: x*(1*(10**11))
     )
 ]
 
