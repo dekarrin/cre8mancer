@@ -8,6 +8,8 @@
 # state file
 *.p
 
+.venv/
+.virtualenv/
 venv/
 virtualenv/
 
