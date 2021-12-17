@@ -89,40 +89,64 @@ def run_from_cli():
     prest_parser = subparsers.add_parser('prestige', help=prest_help)
     prest_parser.set_defaults(func=exec_prestige)
 
+
     # debug stuff
     debug_parser = subparsers.add_parser('debug', help="execute debugging and testing commands")
     debug_subs = debug_parser.add_subparsers(required=True, dest="debug_command")
-    debug_money = debug_subs.add_parser('money', help="Set current money")
-    debug_money.add_argument('amount', help="Amount to set money to.", type=int)
+    
+    debug_money = debug_subs.add_parser('money', help="Set or get current money")
+    debug_money.add_argument('-s', '--set', help="Set money to the given amount", type=int, dest='amount')
     debug_money.set_defaults(func=exec_debug_money)
-    debug_juice = debug_subs.add_parser('juice', help="Set current juice")
-    debug_juice.add_argument('amount', help="Amount to set juice to", type=float)
+    
+    debug_juice = debug_subs.add_parser('juice', help="Set or get current juice")
+    debug_juice.add_argument(
+        '-s', '--set', help="Set juice to the given amount", type=float, dest='amount'
+    )
     debug_juice.set_defaults(func=exec_debug_juice)
-    debug_seeds = debug_subs.add_parser('seeds', help="Set current seeds")
-    debug_seeds.add_argument('amount', help="Amount to set seeds to", type=float)
+    
+    debug_seeds = debug_subs.add_parser('seeds', help="Set or get current seeds")
+    debug_seeds.add_argument('-s', '--set', help="Set seeds to the given value", type=float, dest='amount')
     debug_seeds.set_defaults(func=exec_debug_seeds)
-    debug_ideas = debug_subs.add_parser('ideas', help="Set current ideas")
-    debug_ideas.add_argument('amount', help="Amount to set ideas to", type=int)
+    
+    debug_ideas = debug_subs.add_parser('ideas', help="Set or get current ideas")
+    debug_ideas.add_argument('-s', '--set', help="Set ideas to the given value", type=int, dest='amount')
     debug_ideas.set_defaults(func=exec_debug_ideas)
+    
     
     args = parser.parse_args()
     args.func(args)
     
     
 def exec_debug_seeds(args):
-    engine.set_state(seeds=args.amount, state_file=args.state)
+    if args.amount is not None:
+        engine.set_state(seeds=args.amount, state_file=args.state)
+    else:
+        seeds = engine.get_state('seeds', state_file=args.state)
+        print("{:.6f}".format(seeds))
     
     
 def exec_debug_ideas(args):
-    engine.set_state(ideas=args.amount, state_file=args.state)
+    if args.amount is not None:
+        engine.set_state(ideas=args.amount, state_file=args.state)
+    else:
+        ideas = engine.get_state('ideas', state_file=args.state)
+        print("{:d}".format(ideas))
 
 
 def exec_debug_money(args):
-    engine.set_state(money=args.amount, state_file=args.state)
+    if args.amount is not None:
+        engine.set_state(money=args.amount, state_file=args.state)
+    else:
+        money = engine.get_state('money', state_file=args.state)
+        print("{:d}".format(money))
 
 
 def exec_debug_juice(args):
-    engine.set_state(juice=args.amount, state_file=args.state)
+    if args.amount is not None:
+        engine.set_state(juice=args.amount, state_file=args.state)
+    else:
+        juice = engine.get_state('juice', state_file=args.state)
+        print("{:.6f}".format(juice))
     
     
 def exec_prestige(args):

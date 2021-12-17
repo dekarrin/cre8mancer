@@ -29,16 +29,14 @@ def seed_func(ex: Execution) -> float:
     def weibull_stretched(x):
         return 1 - (math.e ** -((x/seed_xscale)**seed_smooth))
 
-    amount = ((max(ex.end - ex.start, 1) / 3) ** 1.15)
-    _log.debug("Seed from amount: {:.6f}".format(amount))
+    amount = ((max(ex.end - ex.start, 1) / 300) ** 1.15)
     mon_factor = seed_xscale * weibull_stretched(ex.money)
-    _log.debug("Seed from money: {:.6f}".format(mon_factor))
     cj_factor = seed_xscale * weibull_stretched(ex.juice)
-    _log.debug("Seed from juice: {:.6f}".format(cj_factor))
     # TODO: balance by current 'value'
 
     total = amount + mon_factor + cj_factor
-    _log.debug("Total seed added: {:.6f}".format(total))
+    msg = "Seed - amount, money, juice, total - {:.6f}, {:.6f}, {:.6f}, {:.6f}"
+    _log.debug(msg.format(amount, mon_factor, cj_factor, total))
     return total
 
 
@@ -148,6 +146,33 @@ def prestige(state_file: str = 'st8cre8.p'):
     
     state.save(state_file, gs)
 
+
+def get_state(attribute: str, state_file: str = 'st8cre8.p') -> Any:
+    """
+    Directly obtain an attribute from the user state. Does not apply any advancement. Useful for testing/debugging.
+    
+    :param attribute: The state attribute to obtain. Can be one of "money", "juice", "seeds", or "ideas".
+    :param state_file: The location of the state file.
+    """
+    if attribute not in ('money', 'juice', 'seeds', 'ideas'):
+        raise ValueError("attribute is not an allowed value for get_state: {!s}".format(attribute))
+    
+    gs, _ = state.load(state_file)
+    
+    if gs is None:
+        raise RulesViolationError("There is no state file at the given location.")
+    
+    if attribute == 'money':
+        return gs.money
+    elif attribute == 'juice':
+        return gs.juice
+    elif attribute == 'seeds':
+        return gs.seeds
+    elif attribute == 'ideas':
+        return gs.ideas
+    else:
+        raise ValueError("should never happen")
+        
 
 def set_state(
         money: Optional[int] = None,
