@@ -211,7 +211,7 @@ class Execution:
         self.end = end
         self.juice = juice
         self.money = money
-        self.auto_multiplier
+        self.auto_multiplier = auto_multiplier
         
     def __str__(self):
         msg = "Execution<time: ({:f}, {:f}), produce: ${:d}/{:.4f}J (x{:d})>"

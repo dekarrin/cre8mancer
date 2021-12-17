@@ -30,15 +30,15 @@ def seed_func(ex: Execution) -> float:
         return 1 - (math.e ** -((x/seed_xscale)**seed_smooth))
 
     amount = ((max(ex.end - ex.start, 1) / 3) ** 1.15)
-    _log.debug("Seed from amount: {:.6f}", amount)
+    _log.debug("Seed from amount: {:.6f}".format(amount))
     mon_factor = seed_xscale * weibull_stretched(ex.money)
-    _log.debug("Seed from money: {:.6f}", mon_factor)
+    _log.debug("Seed from money: {:.6f}".format(mon_factor))
     cj_factor = seed_xscale * weibull_stretched(ex.juice)
-    _log.debug("Seed from juice: {:.6f}", cj_factor)
+    _log.debug("Seed from juice: {:.6f}".format(cj_factor))
     # TODO: balance by current 'value'
 
     total = amount + mon_factor + cj_factor
-    _log.debug("Total seed added: {:.6f}", total)
+    _log.debug("Total seed added: {:.6f}".format(total))
     return total
 
 

@@ -29,7 +29,7 @@ def progress_bar(
     notches = width - (len(end_char) * 2) # account for the 'ends' of the prog bar.
     filled = math.floor(notches * progress)
     empty = notches - filled
-    text = end_char + (fill_char * filled_notches) + (empty_char * empty_notches) + end_char
+    text = end_char + (fill_char * filled) + (empty_char * empty) + end_char
     return text
 
 
