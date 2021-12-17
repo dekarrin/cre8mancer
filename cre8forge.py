@@ -57,7 +57,7 @@ def run_from_cli():
     buyauto_parser.add_argument('activity', help=buyauto_activity_help, type=int)
     buyauto_parser.set_defaults(func=exec_buy, category='automation')
     
-    auto_parser = suparsers.add_parser('automate', help="Turn on automation for a job or outlet")
+    auto_parser = subparsers.add_parser('automate', help="Turn on automation for a job or outlet")
     auto_type_help = "The kind of activity you want to activate automation for."
     auto_parser.add_argument('type', help=auto_type_help, choices=['job', 'outlet'])
     auto_activity_help = "The index of the activity to activate automation for, from the full list"

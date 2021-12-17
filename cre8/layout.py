@@ -77,7 +77,7 @@ def make_act_store_listing(act: Activity, count: int, auto_count: int, width=Def
     # right col will only subtract 1 for border bc one border is shared w left col glub
     # still need to subtract 2 for the padding tho
     rc_text_space = _RightColumnWidth - 1 - 2
-    rc_top_text = pad_right(rc_text_space, "AUTO x{:d}".format(auto_count ** 2))
+    rc_top_text = pad_right(rc_text_space, "AUTO x{:d}".format(2 ** auto_count))
     rc_bot_text = pad_right(rc_text_space, "${:d}".format(act.auto_price(auto_count)))
     
     
@@ -107,7 +107,7 @@ def make_act_card(oa: OwnedActivities, t: float, width=DefaultTextCardWidth) -> 
     # LEFT COLUMN
     
     # actual avail is width minus 2 for the borders and minus 2 for padding
-    lc_text_space = width - 2 - 2
+    lc_text_space = width - _RightColumnWidth - 2 - 2
 
     inactive = oa.count - oa.active
     # top line
@@ -147,7 +147,7 @@ def make_act_card(oa: OwnedActivities, t: float, width=DefaultTextCardWidth) -> 
         rc_bot_text = ' ' * rc_text_space
     else:
         rc_top_text = pad_left(rc_text_space, "AUTO")
-        rc_mid_text = pad_left(rc_text_space, "x{:d}".format((oa.automations - 1) ** 2))
+        rc_mid_text = pad_left(rc_text_space, "x{:d}".format(oa.automation_bonus))
         if oa.automated:
             rc_bot_text = pad_left(rc_text_space, "RUNNING")
         else:
@@ -158,7 +158,7 @@ def make_act_card(oa: OwnedActivities, t: float, width=DefaultTextCardWidth) -> 
     full_text = ''
     full_text += '| ' + lc_top_text + ' | ' + rc_top_text + ' |\n'
     full_text += '| ' + lc_mid_text + ' | ' + rc_mid_text + ' |\n'
-    full_text += '| ' + lc_bot_text + ' | ' + rc_bot_text
+    full_text += '| ' + lc_bot_text + ' | ' + rc_bot_text + ' |'
     return full_text
         
     

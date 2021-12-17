@@ -279,7 +279,7 @@ def activate(
             # one is already running, so juice check is not needed
             # just set automated to True so next advancement handles starting next executions
             target.automated = True
-        else
+        else:
             if gs.free_juice < target.juice_cost:
                 msg = "You don't have enough juice for the first auto-execution.\n"
                 msg += "Try freeing up some juice or deactivating some instances first."
@@ -441,10 +441,12 @@ def show_store(state_file: str = 'st8cre8.p'):
         cur_idx = activities.index_of_job(j, gs.jobs)
         if cur_idx < 0:
             cur_count = 0
+            auto_count = 0
         else:
             cur_count = gs.jobs[cur_idx].count
+            auto_count = gs.jobs[cur_idx].automations
     
-        msg += layout.make_act_store_listing(j, cur_count)
+        msg += layout.make_act_store_listing(j, cur_count, auto_count)
         msg += '\n' + layout.bar() + '\n'
         
     msg += '\nOutlets:\n'
@@ -455,10 +457,12 @@ def show_store(state_file: str = 'st8cre8.p'):
         cur_idx = activities.index_of_outlet(o, gs.outlets)
         if cur_idx < 0:
             cur_count = 0
+            auto_count = 0
         else:
             cur_count = gs.outlets[cur_idx].count
+            auto_count = gs.outlets[cur_idx].count
     
-        msg += layout.make_act_store_listing(o, cur_count)
+        msg += layout.make_act_store_listing(o, cur_count, auto_count)
         msg += '\n' + layout.bar() + '\n'
         
     print(msg)

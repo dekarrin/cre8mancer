@@ -279,7 +279,7 @@ class OwnedActivities:
         count: int,
         active: int,
         autos: int,
-        automated: bool = False
+        automated: bool = False,
         execution: Optional[Execution] = None
     ):
         self.activity = activity
@@ -310,7 +310,7 @@ class OwnedActivities:
             game_time + self.activity.duration.total_seconds(),
             sum(self.activity.money_rate(c) for c in range(self.active)),
             sum(self.activity.juice_rate(c) for c in range(self.active)),
-            self.automation_bonus if self.automated && self.automations > 0 else 1
+            self.automation_bonus
         )
         self.execution = ex
         
@@ -321,10 +321,13 @@ class OwnedActivities:
         msg += "price: ${:d}, ".format(self.price)
         msg += "exec_time: {:s} ".format(format_timer(self.activity.duration))
         msg += "auto: "
-        if self.automating:
-            msg += "(On)"
+        if self.automations >= 1:
+            if self.automated:
+                msg += "(On)"
+            else:
+                msg += "(Off)"
         else:
-            msg += "(Off)"
+            msg += "(None)"
         msg += " {:d}x ".format(self.automation_bonus)
         if self.execution is not None:
             msg += "(Running)"
@@ -404,7 +407,9 @@ class OwnedActivities:
             
     @property
     def automation_bonus(self) -> int:
-        return self.automated ** 2
+        if self.automations < 1:
+            return 1
+        return 2 ** (self.automations - 1)
         
     @property
     def automated(self) -> bool:
@@ -414,10 +419,7 @@ class OwnedActivities:
     def automated(self, value: bool):
         self._automated = value
         if self.execution is not None:
-            mult = 1
-            if self._automated && self.automations > 0:
-                mult = self.automation_bonus
-            self.execution.auto_multiplier = mult
+            self.execution.auto_multiplier = self.automation_bonus
             
     @property
     def automations(self) -> int:
@@ -427,10 +429,7 @@ class OwnedActivities:
     def automations(self, value: int):
         self._automations = value
         if self.execution is not None:
-            mult = 1
-            if self.automated && self._automations > 0:
-                mult = self.automation_bonus
-            self.execution.auto_multiplier = mult
+            self.execution.auto_multiplier = self.automation_bonus
 
     def to_dict(self):
         d = {
