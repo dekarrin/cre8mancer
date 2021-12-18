@@ -33,13 +33,16 @@ def read_act_options(variable: tk.StringVar) -> Tuple[str, str]:
             return 'outlet', idx
 
 
-def exec_click(    
+def do_click(evt):
+    
 
 def build_click_component(master):
     frm_component = tk.Frame(master=master)
     frm_component.pack(padx=2, pady=2)
     
     click_opt_var = make_act_options_menu(frm_component)
+    def do_click(evt):
+        
 
     entry_click_lbl = tk.Label(frm_component, text="Click!")
     entry_click_lbl.pack(side=tk.LEFT)

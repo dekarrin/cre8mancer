@@ -118,78 +118,80 @@ def run_from_cli():
     
     
     args = parser.parse_args()
-    args.func(args)
+    
+    eng = engine.Engine(args.state)
+    args.func(eng, args)
     
 
-def exec_gui(args):
-    run_gui()
+def exec_gui(eng: engine.Engine, args):
+    run_gui(eng)
 
     
-def exec_debug_seeds(args):
+def exec_debug_seeds(eng: engine.Engine, args):
     if args.amount is not None:
-        engine.set_state(seeds=args.amount, state_file=args.state)
+        print(eng.set_state(seeds=args.amount))
     else:
-        seeds = engine.get_state('seeds', state_file=args.state)
+        seeds = eng.get_state('seeds')
         print("{:.6f}".format(seeds))
     
     
-def exec_debug_ideas(args):
+def exec_debug_ideas(eng: engine.Engine, args):
     if args.amount is not None:
-        engine.set_state(ideas=args.amount, state_file=args.state)
+        print(eng.set_state(ideas=args.amount))
     else:
-        ideas = engine.get_state('ideas', state_file=args.state)
+        ideas = eng.get_state('ideas')
         print("{:d}".format(ideas))
 
 
-def exec_debug_money(args):
+def exec_debug_money(eng: engine.Engine, args):
     if args.amount is not None:
-        engine.set_state(money=args.amount, state_file=args.state)
+        print(eng.set_state(money=args.amount))
     else:
-        money = engine.get_state('money', state_file=args.state)
+        money = eng.get_state('money')
         print("{:d}".format(money))
 
 
-def exec_debug_juice(args):
+def exec_debug_juice(eng: engine.Engine, args):
     if args.amount is not None:
-        engine.set_state(juice=args.amount, state_file=args.state)
+        print(eng.set_state(juice=args.amount))
     else:
-        juice = engine.get_state('juice', state_file=args.state)
+        juice = eng.get_state('juice')
         print("{:.6f}".format(juice))
     
     
-def exec_prestige(args):
-    engine.prestige(args.state)
+def exec_prestige(eng: engine.Engine, args):
+    print(eng.prestige())
 
 
-def exec_status(args):
-    engine.status(args.state)
+def exec_status(eng: engine.Engine, args):
+    print(eng.status())
 
 
-def exec_click(args):
-    engine.click(args.type, args.activity, args.state)
+def exec_click(eng: engine.Engine, args):
+    print(eng.click(args.type, args.activity))
 
 
-def exec_store(args):
-    engine.show_store(args.state)
+def exec_store(eng: engine.Engine, args):
+    print(eng.show_store())
 
 
-def exec_buy(args):
-    engine.buy(args.category, args.type, args.activity, args.state)
+def exec_buy(eng: engine.Engine, args):
+    print(eng.buy(args.category, args.type, args.activity))
     
     
-def exec_auto(args):
+def exec_auto(eng: engine.Engine, args):
     if args.off:
-        exec_deactivate(args)
+        exec_deactivate(eng, args)
     else:
-        exec_activate(args)
+        exec_activate(eng, args)
     
     
-def exec_activate(args):
-    engine.activate(args.category, args.type, args.activity, args.count, args.state)
+def exec_activate(eng: engine.Engine, args):
+    eng.activate(args.category, args.type, args.activity, args.count)
     
     
-def exec_deactivate(args):
-    engine.deactivate(args.category, args.type, args.activity, args.count, args.state)
+def exec_deactivate(eng: engine.Engine, args):
+    eng.deactivate(args.category, args.type, args.activity, args.count)
 
 
 class _ExactLevelFilter(object):
