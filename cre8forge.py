@@ -165,6 +165,7 @@ def exec_prestige(eng: engine.Engine, args):
 
 def exec_status(eng: engine.Engine, args):
     print(eng.status())
+    eng.save()
 
 
 def exec_click(eng: engine.Engine, args):

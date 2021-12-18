@@ -58,7 +58,7 @@ class Engine:
         self.state_file = state_file
         self.game = GameState()
         
-        adv = self._load_or_create_state()
+        _ = self._load_or_create_state()
 
     def prestige(self) -> str:
         """
@@ -82,7 +82,7 @@ class Engine:
         s = 's' if gs.ideas != 1 else ''
         msg += "You now have {:d} total (i)dea{:s}... Imagine the possibilities.".format(gs.ideas, s)
         
-        state.save(self.state_file, self.game)
+        self.save()
         return msg
 
     def get_state(self, attribute: str) -> Any:
@@ -138,7 +138,7 @@ class Engine:
         if ideas is not None:
             gs.ideas = ideas
 
-        state.save(self.state_file, self.game)
+        self.save()
         return gs.status_line
 
     def deactivate(self, category: str, target_type: str, target_idx: int, amount: int = 1) -> str:
@@ -182,7 +182,7 @@ class Engine:
         msg += layout.make_act_card(target, gs.time)
         msg += '\n' + layout.bar() + '\n'
         
-        state.save(self.state_file, self.game)
+        self.save()
         return msg
         
     def activate(
@@ -253,7 +253,7 @@ class Engine:
         msg += layout.make_act_card(target, gs.time)
         msg += '\n' + layout.bar() + '\n'
         
-        state.save(self.state_file, self.game)
+        self.save()
         return msg
 
     def buy(self, category: str, target_type: str, target_idx: int) -> str:
@@ -334,7 +334,7 @@ class Engine:
         else:
             raise ValueError("should never happen")
 
-        state.save(self.state_file, self.game)
+        self.save()
         return msg
         
     def click(self, target_type: str, target_idx: int) -> str:
@@ -379,7 +379,7 @@ class Engine:
         msg += layout.make_act_card(target, gs.time)
         msg += '\n' + layout.bar() + '\n'
         
-        state.save(self.state_file, self.game)
+        self.save()
         return msg
 
     def show_store(self) -> str:
@@ -421,7 +421,7 @@ class Engine:
             msg += layout.make_act_store_listing(o, cur_count, auto_count)
             msg += '\n' + layout.bar() + '\n'
             
-        state.save(self.state_file, self.game)
+        self.save()
         return msg
 
     def status(self) -> str:
@@ -442,10 +442,11 @@ class Engine:
             msg += layout.make_act_card(out, gs.time)
             msg += '\n' + layout.bar() + '\n'
         
-        state.save(self.state_file, self.game)
         return msg
         
-        
+    def save(self):
+        state.save(self.state_file, self.game)
+    
     def _load_or_create_state(self) -> Optional[Advancement]:
         """Get a ready-to-use GameState. If loaded from disk, advancement is done so that the
         returned game state is updated with everything that needed to have been done since
