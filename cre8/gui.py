@@ -1,10 +1,12 @@
 from .activities import Jobs, Outlets
-from .engine import Engine
+from .engine import Engine, RulesViolationError
 import tkinter as tk
 
 from typing import Tuple
 
-ActionOptionsList = ['-- Select Activity --', '', '-- Jobs --'] + [j.name for j in Jobs] + [o.name for o in Outlets]
+ActionOptionsList = list()
+ActionOptionsList += ['-- Select Activity --', '', '-- Jobs --']
+ActionOptionsList += [j.name for j in Jobs] + ['-- Outlets --'] + [o.name for o in Outlets]
 
 
 def make_act_options_menu(master) -> tk.StringVar:
@@ -15,6 +17,7 @@ def make_act_options_menu(master) -> tk.StringVar:
     
     opts_menu = tk.OptionMenu(master, variable, *ActionOptionsList)
     opts_menu.pack(side=tk.LEFT)
+    opts_menu.config(width=20)
     return variable
 
 def read_act_options(variable: tk.StringVar) -> Tuple[str, int]:
@@ -24,12 +27,12 @@ def read_act_options(variable: tk.StringVar) -> Tuple[str, int]:
     """
     val = variable.get()
     
-    idx = 0
+    idx = -1
     for j in Jobs:
         idx += 1
         if j.name.lower() == val.lower():
             return 'job', idx
-    idx = 0
+    idx = -1
     for o in Outlets:
         idx += 1
         if o.name.lower() == val.lower():
@@ -43,17 +46,22 @@ def build_click_component(g: Engine, output_func, status_func, master):
     frm_component.pack(padx=2, pady=2)
     
     click_opt_var = make_act_options_menu(frm_component)
-    def do_click(evt):
+    def do_click():
         target_type, target_idx = read_act_options(click_opt_var)
         if target_type is None:
-            # user did not select a valid option
             output_func("Select a valid option first")
+            return
         
-        msg = g.click(target_type, target_idx)
-        output_func("")
-        status_func(msg)
+        try:
+            msg = g.click(target_type, target_idx)
+        except RulesViolationError as ex:
+            output_func(str(ex))
+            return
+            
+        output_func(msg)
+        #status_func(msg)
 
-    entry_click_lbl = tk.Button(frm_component, text="Click!")
+    entry_click_lbl = tk.Button(frm_component, text="Click!", command=do_click)
     entry_click_lbl.pack(side=tk.LEFT)
     
 
@@ -100,4 +108,5 @@ def run_gui(g: Engine):
     root.update()
     root.minsize(root.winfo_width(), root.winfo_height())
 
+#    root.after(0, 
     root.mainloop()
