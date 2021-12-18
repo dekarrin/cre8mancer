@@ -1,5 +1,6 @@
 from cre8 import engine
 from cre8.engine import RulesViolationError
+from cre8.gui import run_gui
 
 import sys
 import argparse
@@ -31,6 +32,9 @@ def run_from_cli():
     parser = argparse.ArgumentParser(description="Create vast new worlds by idling")
     parser.add_argument('-s', '--state', default='st8cre8.p', help="Give location of state file")
     subparsers = parser.add_subparsers(required=True, dest="command")
+    
+    gui_parser = subparsers.add_parser('gui', help="Start the game GUI")
+    gui_parser.set_defaults(func=exec_gui)
     
     status_parser = subparsers.add_parser('status', help="Show current status of the game")
     status_parser.set_defaults(func=exec_status)
@@ -116,6 +120,10 @@ def run_from_cli():
     args = parser.parse_args()
     args.func(args)
     
+
+def exec_gui(args):
+    run_gui()
+
     
 def exec_debug_seeds(args):
     if args.amount is not None:
