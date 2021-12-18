@@ -83,6 +83,7 @@ class History:
 
 class GameState:
     def __init__(self):
+        self.last_advancement = datetime.now(timezone.utc)
         self.money = 0
         self.juice = 0.0
         self.jobs = []

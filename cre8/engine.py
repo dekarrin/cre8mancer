@@ -1,6 +1,7 @@
 from .activities import OwnedActivities, Activity, Execution
 from . import state, activities, layout
 from .state import GameState
+from datetime import datetime, timezone
 from typing import Tuple, Optional, Any
 import sys
 import math
@@ -59,6 +60,20 @@ class Engine:
         self.game = GameState()
         
         _ = self._load_or_create_state()
+        
+    def update(self):
+        """
+        Update the engine state but do not save automatically.
+        """
+        
+        now_time = datetime.now(timezone.utc)
+        if self.game.last_advancement > now_time:
+            errmsg = "Game state was last advanced in the future, the system clock may"
+            errmsg += " have been tampered with."
+            raise ValueError(errmsg)
+        
+        seconds_since_adv = (now_time - self.game.last_advancement).total_seconds()
+        self._advance(seconds_since_adv)
 
     def prestige(self) -> str:
         """
@@ -457,11 +472,10 @@ class Engine:
         
         Will print to stdout if needs confirmation from user to override.
         """
-        gs = None
         idle_seconds = 0
 
         try:
-            gs, idle_seconds = state.load(self.state_file)
+            self.game, idle_seconds = state.load(self.state_file)
         except state.SerializedStateError as e:
             print(str(e), file=sys.stderr)
             overwrite = input("Run anyways and overwrite the existing file (Y/N)? ")
@@ -470,13 +484,13 @@ class Engine:
             if overwrite == 'N':
                 raise
 
-        if gs is None:
-            gs = GameState()
-            gs.jobs.append(OwnedActivities(activities.from_id(0), 1, 1, 0))
-            return gs, None
+        if self.game is None:
+            self.game = GameState()
+            self.game.jobs.append(OwnedActivities(activities.from_id(0), 1, 1, 0))
+            return None
         else:
             adv = self._advance(idle_seconds)
-            return gs, adv
+            return adv
 
     def _advance(self, idle_seconds: float) -> Advancement:
         """
@@ -513,6 +527,7 @@ class Engine:
         self.game.money += adv.money
         self.game.juice += adv.juice
         self.game.seeds += adv.seeds
+        self.game.last_advancement = datetime.now(timezone.utc)
         return adv
     
     def _find_target(self, target_type: str, target_idx: int) -> Tuple[Optional[OwnedActivities], Activity]:
