@@ -135,9 +135,9 @@ Jobs = [
     Activity(
         1, 'Data Entry', 10.0,
         price=100,
-        money_cost=5,
+        money_cost=2,
         juice_cost=0.05,
-        money_rate=2,
+        money_rate=11,
         juice_rate=0.0,
         auto_price=5
     ),
@@ -183,7 +183,7 @@ Outlets = [
     ),
     # TODO: More activities
     Activity(
-        Stage1GoalActivityId, 'Manifest Tulpa', timedelta(weeks=2),
+        Stage1GoalActivityId, 'Generate Construct', timedelta(weeks=2),
         price=lambda x: round((5*(10**9) - 1)+(5**x)),
         money_cost=lambda x: x*(1*(10**6)),
         juice_cost=lambda x: x*(1*(10**4)),

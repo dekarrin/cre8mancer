@@ -322,6 +322,7 @@ class Engine:
             target.active += 1
             if gs.free_juice < 0:
                 target.active -= 1
+            msg += "Bought {!r}".format(target.name)
                 
         elif category == 'automation':
             target, act_def = self._find_target(target_type, target_idx)
@@ -346,6 +347,8 @@ class Engine:
                     target.execute(gs.time)
                     gs.money -= target.price
                 # otherwise, don't activate the execution
+            
+            msg += "Bought automation for {!r}".format(target.name)
         else:
             raise ValueError("should never happen")
 
@@ -377,18 +380,18 @@ class Engine:
             
         if target.money_cost > gs.money:
             raise RulesViolationError("You don't have enough money for that.")
-            
-        # okay, we can start an execution
-        target.execute(gs.time)
-        gs.money -= target.money_cost
         
         # but make sure we didnt just violate amount of free juice
-        if gs.free_juice < 0:
+        if gs.free_juice < target.juice_cost:
             msg = "You don't have enough juice for that."
             if target.count > 1:
                 msg += " Try deactivating some instances first."
             raise RulesViolationError(msg)
             
+        # okay, we can start an execution
+        target.execute(gs.time)
+        gs.money -= target.money_cost
+        
         msg += gs.status_line + '\n'
         msg += '\n' + layout.bar() + '\n'
         msg += layout.make_act_card(target, gs.time)

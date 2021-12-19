@@ -14,7 +14,7 @@ class ActivitiesOptionsMenu(tk.OptionMenu):
         self._var = tk.StringVar()
         self._var.set(self._options_list[0])
         
-        super().__init__(master, self._var, self._options_list)
+        super().__init__(master, self._var, *self._options_list)
         self.config(width=20)
         
     def value_as_target(self) -> Tuple[str, int]:
@@ -49,6 +49,7 @@ class ActivitiesOptionsMenu(tk.OptionMenu):
     
 class Gui:
     def __init__(self, g: Engine, output_lines: int = 7):
+        self.update_main_content = True
         self.g = g
         self.root = tk.Tk()
         self.root.title("Cr8or Forge v0.0a")
@@ -126,6 +127,7 @@ class Gui:
         
         def do_click():
             target_type, target_idx = opts_menu.value_as_target()
+            print("{!s} {!s}".format(target_type, target_idx))
             if target_type is None:
                 self.write_output("Select a valid option first")
                 return
@@ -133,7 +135,7 @@ class Gui:
             try:
                 msg = self.g.click(target_type, target_idx)
             except RulesViolationError as ex:
-                self.write_outpet(str(ex))
+                self.write_output(str(ex))
                 return
             
             self.write_output(msg)
@@ -152,6 +154,7 @@ class Gui:
         
         def do_buy():
             target_type, target_idx = opts_menu.value_as_target()
+            print("{!s} {!s}".format(target_type, target_idx))
             if target_type is None:
                 self.write_output("Select a valid option first")
                 return
@@ -173,8 +176,12 @@ class Gui:
         self.g.update()
         if self.mode == 'status':
             self.write_main_content(self.g.status())
-            self.root.after(500, self._update)
+            self.update_main_content = True  # this must be here in case a swap to store mode occurs
         elif self.mode == 'store':
-            self.write_main_content(self.g.show_store())
+            if self.update_main_content:
+                self.write_main_content(self.g.show_store())
+                self.update_main_content = False
         else:
             raise ValueError("Should never happen")
+        
+        self.root.after(500, self._update)
