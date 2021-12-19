@@ -310,7 +310,7 @@ class Engine:
                     target = OwnedActivities(activities.Outlets[target_idx], 0, 0, 0)
                     gs.outlets.append(target)
                 else:
-                    target = gs.jobs[idx]
+                    target = gs.outlets[idx]
             else:
                 raise ValueError("should never happen")
 
