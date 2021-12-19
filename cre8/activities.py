@@ -136,7 +136,7 @@ Jobs = [
         1, 'Data Entry', 10.0,
         price=100,
         money_cost=2,
-        juice_cost=0.05,
+        juice_cost=0.01,
         money_rate=11,
         juice_rate=0.0,
         auto_price=5
@@ -157,7 +157,7 @@ Outlets = [
     Activity(
         1024, 'Binge Netflix Show', 1,
         price=200,
-        money_cost=50,
+        money_cost=30,
         juice_cost=0.0,
         money_rate=0.0,
         juice_rate=0.002,

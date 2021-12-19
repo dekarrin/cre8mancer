@@ -52,7 +52,7 @@ class Gui:
         self.update_main_content = True
         self.g = g
         self.root = tk.Tk()
-        self.root.title("Cr8or Forge v0.0a")
+        self.root.title("Cre8or Forge v0.0a")
         
         self.mode_button_var = tk.StringVar()
         self.mode_button_var.set("Store")
@@ -127,7 +127,6 @@ class Gui:
         
         def do_click():
             target_type, target_idx = opts_menu.value_as_target()
-            print("{!s} {!s}".format(target_type, target_idx))
             if target_type is None:
                 self.write_output("Select a valid option first")
                 return
@@ -154,7 +153,6 @@ class Gui:
         
         def do_buy():
             target_type, target_idx = opts_menu.value_as_target()
-            print("{!s} {!s}".format(target_type, target_idx))
             if target_type is None:
                 self.write_output("Select a valid option first")
                 return

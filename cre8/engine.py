@@ -1,6 +1,7 @@
 from .activities import OwnedActivities, Activity, Execution
 from . import state, activities, layout
 from .state import GameState
+from .layout import format_timer
 from datetime import datetime, timezone
 from typing import Tuple, Optional, Any
 import sys
@@ -393,9 +394,11 @@ class Engine:
         gs.money -= target.money_cost
         
         msg += gs.status_line + '\n'
-        msg += '\n' + layout.bar() + '\n'
-        msg += layout.make_act_card(target, gs.time)
-        msg += '\n' + layout.bar() + '\n'
+        
+        msg_line = "Okay! {!r} started, you'll get ${:d} and {:.4f}J in {:s}."
+        msg += msg_line.format(
+            target.name, target.money_production, target.juice_production, format_timer(target.execution.remaining(gs.time))
+        )
         
         self.save()
         return msg
