@@ -47,22 +47,6 @@ class ActivitiesOptionsMenu(tk.OptionMenu):
         self._options_list += [o.name for o in Outlets]
 
     
-    
-
-    
-mode = "status"
-modeBtnVar: tk.StringVar
-updating = True
-
-def set_mode(new_mode: str):
-    global mode, modeBtnVar, updating
-    
-    if new_mode == 'status':
-        mode = 'status'
-        modeBtnVar.set("Store")
-        if not updating:
-            updating = True
-    
 class Gui:
     def __init__(self, g: Engine, output_lines: int = 7):
         self.g = g
@@ -79,7 +63,7 @@ class Gui:
         self.root.rowconfigure(1, minsize=100, weight=0)
         
         # setup main content frame and store it for later outputting
-        frm_main = tk.Frame(master=root, relief=tk.SUNKEN, borderwidth=3)
+        frm_main = tk.Frame(master=self.root, relief=tk.SUNKEN, borderwidth=3)
         frm_main.grid(row=0, column=0, sticky="nsew")
         self.main_content = tk.Text(master=frm_main)
         mc_scrollbar = ttk.Scrollbar(master=frm_main, command=self.main_content.yview)
@@ -88,15 +72,15 @@ class Gui:
         self.main_content.pack(side=tk.RIGHT, fill="x")
         
         # setup entry frame
-        frm_entry = tk.Frame(master=root)
+        frm_entry = tk.Frame(master=self.root)
         frm_entry.grid(row=0, column=1, sticky="nsew")
         self._build_click_component(frm_entry)
         self._build_buy_component(frm_entry)
-        mode_btn = tk.Button(master, textvariable=modeBtnVar, command=self.swap_mode)
+        mode_btn = tk.Button(frm_entry, textvariable=self.mode_button_var, command=self.swap_mode)
         mode_btn.pack(side=tk.TOP)
         
-    # setup up output frame and store it for later outputing
-        frm_output = tk.Frame(master=root)
+        # setup up output frame and store it for later outputing
+        frm_output = tk.Frame(master=self.root)
         frm_output.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.output = tk.Text(master=frm_output, height=output_lines, width=103)
         self.output.config(state=tk.DISABLED)
@@ -138,6 +122,8 @@ class Gui:
         frm_component.pack(side=tk.TOP, padx=2, pady=2)
         
         opts_menu = ActivitiesOptionsMenu(frm_component)
+        opts_menu.pack(side=tk.LEFT)
+        
         def do_click():
             target_type, target_idx = opts_menu.value_as_target()
             if target_type is None:

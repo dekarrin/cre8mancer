@@ -1,6 +1,6 @@
 from cre8 import engine
 from cre8.engine import RulesViolationError
-from cre8.gui import run_gui
+from cre8.gui import Gui
 
 import sys
 import argparse
@@ -124,8 +124,8 @@ def run_from_cli():
     
 
 def exec_gui(eng: engine.Engine, args):
-    run_gui(eng)
-
+    window = Gui(eng)
+    window.run()
     
 def exec_debug_seeds(eng: engine.Engine, args):
     if args.amount is not None:
