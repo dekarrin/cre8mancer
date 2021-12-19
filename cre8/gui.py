@@ -104,10 +104,11 @@ class Gui:
 
 		# do a single update to get window size then set it as the minimum
 		# so user cant resize smaller than the elements
-		root.update()
-		root.minsize(root.winfo_width(), root.winfo_height())
+		self.root.update()
+		self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
 		
 	def run(self):
+		self.root.after(0, self._update)
 		self.root.mainloop()
     
     def swap_mode(self):
@@ -182,20 +183,12 @@ class Gui:
 		entry_click_lbl = tk.Button(frm_component, text="Buy", command=do_buy)
 		entry_click_lbl.pack(side=tk.LEFT)
 		
-		
-def run_gui(g: Engine):
-
-    def update_status():
-        global mode
-        
-        g.update()
-        if mode == 'status':
-            write_status(g.status())
-            root.after(500, update_status)
-        elif mode == 'store':
-            write_status(g.show_store())
+	def _update(self):
+        self.g.update()
+        if self.mode == 'status':
+            self.write_main_content(self.g.status())
+            self.root.after(500, self._update)
+        elif self.mode == 'store':
+            self.write_main_content(self.g.show_store())
         else:
             raise ValueError("Should never happen")
-        
-    root.after(0, update_status)
-    root.mainloop()
