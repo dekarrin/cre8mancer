@@ -16,7 +16,7 @@ class FrameClock:
         """Create a new PeriodTimer. It will not start counting until start() or
         tick() is called.
         
-        period can be either a timedelta type or a float represnting a number of seconds.
+        period can be either a timedelta type or a float representing a number of seconds.
         """
         if isinstance(period, int) or isinstance(period, float):
             period = timedelta(seconds=period)

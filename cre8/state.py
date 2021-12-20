@@ -2,7 +2,7 @@ import pickle
 from datetime import datetime, timezone
 from typing import Tuple, Optional, Dict, Any
 
-from .activities import OwnedActivities, Stage1GoalActivityId
+from .activities import OwnedActivities
 
 
 CurrentVersion = 1
@@ -41,7 +41,8 @@ class History:
         :return: A copy of this History.
         """
         return History(self.time, self.money, self.juice, self.prestiges)
-        
+
+    # noinspection PyMethodMayBeStatic
     def stage(self) -> int:
         """
         Get the stage of play that the game is currently in.
@@ -62,10 +63,11 @@ class History:
         planet for stage 2 is conquered and is completed once the entire galaxy
         falls under your control.
         
-        As of right now, only stage 1 has any semblence of implementation.
+        As of right now, only stage 1 has any semblance of implementation.
         """
         # TODO: actually scan the outlets for completions after completion tracking
         # added to them
+
         return 1
         
     def __str__(self) -> str:
@@ -182,9 +184,6 @@ class GameState:
         gs.history.juice += gs.juice
         gs.history.time += gs.time
         gs.history.prestiges += 1
-        
-        # find the first job
-        starting_job = None
             
         # sprout seeds into ideas
         gs.ideas += int(gs.seeds)

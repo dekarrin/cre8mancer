@@ -1,6 +1,4 @@
 import math
-from typing import Optional
-from datetime import timedelta
 from .format import format_timer, pad_middle, pad_right, pad_left
 from .activities import Activity, OwnedActivities
 
@@ -9,12 +7,12 @@ _RightColumnWidth = 14
 
 
 def progress_bar(
-        width: int,
-        progress: float,
-        end_char: str = '|',
-        fill_char: str = '-',
-        empty_char: str = ' '
-    ) -> str:
+    width: int,
+    progress: float,
+    end_char: str = '|',
+    fill_char: str = '-',
+    empty_char: str = ' '
+) -> str:
     """
     Draw a progress bar that shows the given progress. Will only be full at exactly 100% progress.
     
@@ -26,7 +24,7 @@ def progress_bar(
     :param fill_char: Character to use for filled progress notches.
     :param empty_char: Character to use for unfilled progress notches.
     """
-    notches = width - (len(end_char) * 2) # account for the 'ends' of the prog bar.
+    notches = width - (len(end_char) * 2)  # account for the 'ends' of the prog bar.
     filled = math.floor(notches * progress)
     empty = notches - filled
     text = end_char + (fill_char * filled) + (empty_char * empty) + end_char
@@ -39,11 +37,12 @@ def bar(width=DefaultTextCardWidth) -> str:
 
 def make_act_store_listing(act: Activity, count: int, auto_count: int, width=DefaultTextCardWidth) -> str:
     """
-    Create a card for the store that shows the price, consumtion, and production
+    Create a card for the store that shows the price, consumption, and production
     of the next purchased instance of the Activity.
     
     :param act: The Activity to make the store card for.
     :param count: The current number of owned instances of that activity.
+    :param auto_count: Amount of automations that are currently purchased.
     :param width: The width of the card to produce.
     """
     # +--------------------------------------------------------------+
@@ -71,7 +70,6 @@ def make_act_store_listing(act: Activity, count: int, auto_count: int, width=Def
     lc_bot_left = format_timer(act.duration)
     lc_bot_text = pad_middle(lc_text_space, lc_bot_left, lc_bot_right)
     
-    
     # on to the right column
     
     # right col will only subtract 1 for border bc one border is shared w left col glub
@@ -79,7 +77,6 @@ def make_act_store_listing(act: Activity, count: int, auto_count: int, width=Def
     rc_text_space = _RightColumnWidth - 1 - 2
     rc_top_text = pad_right(rc_text_space, "AUTO x{:d}".format(2 ** auto_count))
     rc_bot_text = pad_right(rc_text_space, "{:d}i".format(act.auto_price(auto_count)))
-    
     
     # now put 'em all together!!!!!!!!
     full_text = ''
@@ -134,7 +131,6 @@ def make_act_card(oa: OwnedActivities, t: float, width=DefaultTextCardWidth) -> 
     lc_bot_right = format_timer(remaining_duration)
     lc_bot_text = pad_middle(lc_text_space, lc_bot_left, lc_bot_right)
     
-    
     # RIGHT COLUMN
     
     # right col will only subtract 1 for border bc one border is shared w left col glub
@@ -152,8 +148,7 @@ def make_act_card(oa: OwnedActivities, t: float, width=DefaultTextCardWidth) -> 
             rc_bot_text = pad_left(rc_text_space, "RUNNING")
         else:
             rc_bot_text = pad_left(rc_text_space, "(off)")
-    
-    
+
     # now put 'em all together!!!!!!!!
     full_text = ''
     full_text += '| ' + lc_top_text + ' | ' + rc_top_text + ' |\n'

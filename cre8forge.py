@@ -14,7 +14,8 @@ _log.setLevel(logging.DEBUG)
 
 def main():
     setup_logging()
-    
+
+    # noinspection PyBroadException
     try:
         run_from_cli()
     except KeyboardInterrupt:
@@ -93,7 +94,6 @@ def run_from_cli():
     prest_parser = subparsers.add_parser('meditate', help=prest_help)
     prest_parser.set_defaults(func=exec_prestige)
 
-
     # debug stuff
     debug_parser = subparsers.add_parser('debug', help="execute debugging and testing commands")
     debug_subs = debug_parser.add_subparsers(required=True, dest="debug_command")
@@ -115,18 +115,19 @@ def run_from_cli():
     debug_ideas = debug_subs.add_parser('ideas', help="Set or get current ideas")
     debug_ideas.add_argument('-s', '--set', help="Set ideas to the given value", type=int, dest='amount')
     debug_ideas.set_defaults(func=exec_debug_ideas)
-    
-    
+
     args = parser.parse_args()
     
     eng = engine.Engine(args.state)
     args.func(eng, args)
-    
 
+
+# noinspection PyUnusedLocal
 def exec_gui(eng: engine.Engine, args):
     window = Gui(eng)
     window.run()
-    
+
+
 def exec_debug_seeds(eng: engine.Engine, args):
     if args.amount is not None:
         print(eng.set_state(seeds=args.amount))
@@ -158,11 +159,13 @@ def exec_debug_juice(eng: engine.Engine, args):
         juice = eng.get_state('juice')
         print("{:.6f}".format(juice))
     
-    
+
+# noinspection PyUnusedLocal
 def exec_prestige(eng: engine.Engine, args):
     print(eng.prestige())
 
 
+# noinspection PyUnusedLocal
 def exec_status(eng: engine.Engine, args):
     print(eng.status())
     eng.save()
@@ -172,6 +175,7 @@ def exec_click(eng: engine.Engine, args):
     print(eng.click(args.type, args.activity))
 
 
+# noinspection PyUnusedLocal
 def exec_store(eng: engine.Engine, args):
     print(eng.show_store())
 
@@ -195,7 +199,7 @@ def exec_deactivate(eng: engine.Engine, args):
     eng.deactivate(args.category, args.type, args.activity, args.count)
 
 
-class _ExactLevelFilter(object):
+class _ExactLevelFilter(logging.Filter):
     """
     Only allows log records through that are particular levels.
     """
@@ -207,6 +211,8 @@ class _ExactLevelFilter(object):
         :param levels: The levels that should pass through the filter; all others are filtered out. Each item is either
         one of the predefined level names or an integer level.
         """
+        super().__init__()
+
         self._levels = set()
         for lev in levels:
             is_int = False
@@ -242,7 +248,7 @@ class _ExactLevelFilter(object):
         """
         Gets the minimum level that is allowed through the filter.
         :rtype: ``int``
-        :return: The minimum leel
+        :return: The minimum level
         """
         return min(self._levels)
 

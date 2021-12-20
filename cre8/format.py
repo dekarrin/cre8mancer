@@ -25,6 +25,7 @@ def pad_left(width: int, text: str, pad_char: str = ' ') -> str:
     
     :param width: The desired length. If length of text already meets this, no padding is added.
     :param text: The text to insert padding before.
+    :param pad_char: The character to insert to meet desired width.
     :return: The left-padded text.
     """
     space_needed = max(width - len(text), 0)
@@ -37,6 +38,7 @@ def pad_right(width: int, text: str, pad_char: str = ' ') -> str:
     
     :param width: The desired length. If length of text already meets this, no padding is added.
     :param text: The text to insert padding after.
+    :param pad_char: The character to insert to meet desired width.
     :return: The right-padded text.
     """
     space_needed = max(width - len(text), 0)
@@ -52,6 +54,7 @@ def pad_middle(width: int, left: str, right: str, pad_char: str = ' ') -> str:
     this, only one space of padding is inserted.
     :param left: The text on the left.
     :param right: The text on the right.
+    :param pad_char: The character to insert to meet desired width.
     :return: The middle-padded text.
     """
     text_len = len(left) + len(right)

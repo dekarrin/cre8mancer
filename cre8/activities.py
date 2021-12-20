@@ -32,7 +32,7 @@ class Activity:
         store. This can be either a single number for a uniform price or a
         function that accepts the current number of owned instances and returns
         the price of purchasing the next one.
-        :param money_cost: The amoutn of money needed to start an execution of a
+        :param money_cost: The amount of money needed to start an execution of a
         single instance of this Activity. This can be either a single number for
         a uniform cost or a function that accepts the current number of owned
         instances and returns the amount of additional money needed to power the
@@ -159,7 +159,7 @@ Outlets = [
         price=200,
         money_cost=30,
         juice_cost=0.0,
-        money_rate=0.0,
+        money_rate=0,
         juice_rate=0.002,
         auto_price=lambda x: 2 if x == 0 else int(1.8 ** x)
     ),
@@ -168,7 +168,7 @@ Outlets = [
         price=10000,
         money_cost=250,
         juice_cost=20.0,
-        money_rate=0.0,
+        money_rate=0,
         juice_rate=1.0,
         auto_price=600,
     ),
@@ -177,7 +177,7 @@ Outlets = [
         price=100000,
         money_cost=1000,
         juice_cost=420.0,
-        money_rate=0.0,
+        money_rate=0,
         juice_rate=5.0,
         auto_price=10000
     ),
@@ -187,7 +187,7 @@ Outlets = [
         price=lambda x: round((5*(10**9) - 1)+(5**x)),
         money_cost=lambda x: x*(1*(10**6)),
         juice_cost=lambda x: x*(1*(10**4)),
-        money_rate=0.0,
+        money_rate=0,
         juice_rate=(1*(10**3)),
         auto_price=lambda x: x*(1*(10**11))
     )
@@ -287,7 +287,8 @@ class OwnedActivities:
     A set of Activities that also contains the number of that activity that a user owns as well as the number
     of that activity that are currently active. Can be directly queried for production numbers given a time delta.
     """
-    def __init__(self,
+    def __init__(
+        self,
         activity: Activity,
         count: int,
         active: int,
@@ -311,13 +312,27 @@ class OwnedActivities:
         """
         clone = OwnedActivities(self.activity, self.count, self.active, self.automations)
         if self.execution is not None:
-            clone.execution == self.execution.copy()
+            clone.execution = self.execution.copy()
         clone.automated = self.automated
         return clone
     
-    def execute(self, game_time: float):
+    def execute(self, game_time: float) -> Execution:
+        """
+        Begin running an execution that is marked as starting at the given game
+        time. Raises ValueError if an execution is already running (strictly
+        speaking, raises one if self.execution is not None at the time of the
+        call to execute(); the running execution is not actually checked to see
+        if it is still running at game_time as that would require knowledge beyond
+        the scope of this class.
+
+        The Execution is saved to internal state and returned to the caller in
+        case it needs to be examined.
+
+        :param game_time: The time that the execution should be considered started at.
+        :return: The started Execution.
+        """
         if self.execution is not None:
-            raise TypeError("Can't start an execution when one is already running!")
+            raise ValueError("Can't start an execution when one is already running!")
         ex = Execution(
             game_time,
             game_time + self.activity.duration.total_seconds(),
@@ -326,6 +341,7 @@ class OwnedActivities:
             self.automation_bonus
         )
         self.execution = ex
+        return ex
         
     def __str__(self):
         msg = "OwnedActivities<{:d}/{:d}x {:s}, ".format(self.active, self.count, self.name)
@@ -489,7 +505,8 @@ def index_of_job(store_item: Union[int, Activity], jobs: Sequence[OwnedActivitie
     
     
 def index_of_outlet(store_item: Union[int, Activity], outlets: Sequence[OwnedActivities]) -> int:
-    """Get the index of an outlet within a given Sequence that matches the
+    """
+    Get the index of an outlet within a given Sequence that matches the
     Outlet definition given by the store_item.
     
     :param store_item: Either the index in Outlets of the outlet to be found or the Activity

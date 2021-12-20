@@ -21,9 +21,10 @@ def seed_func(ex: Execution) -> float:
     
     # using weibull "stretched exponential" function
     # f(x) = 1 - e^-(x/a)^b, (b > 2)
-    # see accepted answer on https://math.stackexchange.com/questions/3542734/alternatives-for-sigmoid-curve-starting-from-0-with-interpretable-parameters
-    seed_xscale = 10000 # used as parameter "a", which sets x-scale
-    seed_smooth = 3 # used as parameter "b", which sets steepness of sigmoid section
+    # see accepted answer:
+    # https://math.stackexchange.com/questions/3542734/alternatives-for-sigmoid-curve-starting-from-0-with-interpretable-parameters
+    seed_xscale = 10000  # used as parameter "a", which sets x-scale
+    seed_smooth = 3  # used as parameter "b", which sets steepness of sigmoid section
     
     def weibull_stretched(x):
         return 1 - (math.e ** -((x/seed_xscale)**seed_smooth))
@@ -40,7 +41,7 @@ def seed_func(ex: Execution) -> float:
     
 
 class RulesViolationError(Exception):
-    """Raised when a caller attempts to do something that is technically programatically
+    """Raised when a caller attempts to do something that is technically programmatically
     valid but disallowed by the game rules."""
     def __init__(self, msg):
         super().__init__(msg)
@@ -127,12 +128,12 @@ class Engine:
             raise ValueError("should never happen")
         
     def set_state(
-            self,
-            money: Optional[int] = None,
-            juice: Optional[float] = None,
-            seeds: Optional[float] = None,
-            ideas: Optional[int] = None
-        ) -> str:
+        self,
+        money: Optional[int] = None,
+        juice: Optional[float] = None,
+        seeds: Optional[float] = None,
+        ideas: Optional[int] = None
+    ) -> str:
         """
         Directly set a property on the user state. Useful for testing/debugging.
 
@@ -202,12 +203,12 @@ class Engine:
         return msg
         
     def activate(
-            self,
-            category: str,
-            target_type: str,
-            target_idx: int,
-            amount: int = 1,
-        ) -> str:
+        self,
+        category: str,
+        target_type: str,
+        target_idx: int,
+        amount: int = 1,
+    ) -> str:
         """
         Turn one or more items to active state.
         """
@@ -390,15 +391,14 @@ class Engine:
             raise RulesViolationError(msg)
             
         # okay, we can start an execution
-        target.execute(gs.time)
+        ex = target.execute(gs.time)
         gs.money -= target.money_cost
         
         msg += gs.status_line + '\n'
-        
+
+        formatted_time = format_timer(ex.remaining(gs.time))
         msg_line = "Okay! {!r} started, you'll get ${:d} and {:.4f}J in {:s}."
-        msg += msg_line.format(
-            target.name, target.money_production, target.juice_production, format_timer(target.execution.remaining(gs.time))
-        )
+        msg += msg_line.format(target.name, target.money_production, target.juice_production, formatted_time)
         
         self.save()
         return msg

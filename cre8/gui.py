@@ -3,7 +3,7 @@ from .engine import Engine, RulesViolationError
 import tkinter as tk
 from tkinter import ttk
 
-from typing import Tuple
+from typing import Tuple, Optional
 
 
 class ActivitiesOptionsMenu(tk.OptionMenu):
@@ -17,7 +17,7 @@ class ActivitiesOptionsMenu(tk.OptionMenu):
         super().__init__(master, self._var, *self._options_list)
         self.config(width=20)
         
-    def value_as_target(self) -> Tuple[str, int]:
+    def value_as_target(self) -> Tuple[Optional[str], int]:
         """
         Read action options that supplies answer to variable and return
         type and index
@@ -80,7 +80,7 @@ class Gui:
         mode_btn = tk.Button(frm_entry, textvariable=self.mode_button_var, command=self.swap_mode)
         mode_btn.pack(side=tk.TOP)
         
-        # setup up output frame and store it for later outputing
+        # setup up output frame and store it for later outputting
         frm_output = tk.Frame(master=self.root)
         frm_output.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.output = tk.Text(master=frm_output, height=output_lines, width=103)
