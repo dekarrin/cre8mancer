@@ -6,6 +6,56 @@ from tkinter import ttk
 from typing import Tuple, Optional
 
 
+class Counter(tk.Frame):
+    """
+    Counter component that can track its own value. Has increment and decrement buttons, or user can directly
+    edit the value. Arranged in a horizontal structure such as "[-] [FIELD] [+]".
+
+    To get the field that accepts input, use the 'field' attribute. In general it is better to use the
+    get() and set() methods on this component though.
+    """
+    def __init__(self, master, value=0):
+        super().__init__(master=master)
+
+        self._var = tk.IntVar()
+        self._var.set(value)
+
+        dec_button = tk.Button(self, text="-", command=self.decrement)
+        dec_button.pack(fill=tk.NONE, side=tk.LEFT)
+
+        self.field = tk.Entry(self, textvariable=self._var)
+        self.field.pack(fill=tk.X, side=tk.LEFT)
+
+        inc_button = tk.Button(self, text="+", command=self.increment)
+        inc_button.pack(fill=tk.NONE, side=tk.LEFT)
+
+    def set(self, value: int):
+        """
+        Set a new value for the counter.
+
+        :param value: The new value.
+        """
+        self._var.set(value)
+
+    def get(self) -> int:
+        """
+        Get the current value of the counter.
+        """
+        return self._var.get()
+
+    def decrement(self):
+        """
+        Decrease the current value by 1.
+        """
+        self.set(self.get() - 1)
+
+    def increment(self):
+        """
+        Increase the current value by 1.
+        """
+        self.set(self.get() + 1)
+
+
 class ActivitiesOptionsMenu(tk.OptionMenu):
     def __init__(self, master):
         self._options_list = list()
@@ -61,6 +111,7 @@ class Gui:
         # setup root window config
         self.root.rowconfigure(0, minsize=300, weight=1)
         self.root.columnconfigure(0, minsize=400, weight=1)
+        self.root.columnconfigure(1, minsize=200, weight=0)
         self.root.rowconfigure(1, minsize=100, weight=0)
         
         # setup main content frame and store it for later outputting
@@ -72,13 +123,42 @@ class Gui:
         self.main_content['yscrollcommand'] = mc_scrollbar.set
         self.main_content.pack(side=tk.RIGHT, fill="x")
         
-        # setup entry frame
-        frm_entry = tk.Frame(master=self.root)
-        frm_entry.grid(row=0, column=1, sticky="nsew")
-        self._build_click_component(frm_entry)
-        self._build_buy_component(frm_entry)
-        mode_btn = tk.Button(frm_entry, textvariable=self.mode_button_var, command=self.swap_mode)
-        mode_btn.pack(side=tk.TOP)
+        # setup entry frames
+        self.entry_frames_notebook = ttk.Notebook(self.root)
+        self.entry_frames_notebook.grid(row=0, column=1, sticky="nsew")
+
+        main_entry_frame = tk.Frame(master=self.entry_frames_notebook)
+        main_entry_frame.pack(fill=tk.BOTH, expand=True)
+        self._build_click_component(main_entry_frame)
+        self._build_buy_component(main_entry_frame)
+        frm_mode_buttons = tk.Frame(master=main_entry_frame)
+        frm_mode_buttons.pack(side=tk.TOP)
+        mode_btn = tk.Button(frm_mode_buttons, textvariable=self.mode_button_var, command=self.swap_mode)
+        mode_btn.pack(side=tk.LEFT)
+
+        # setup debug entry frame but dont yet add it
+        debug_entry_frame = tk.Frame(master=self.entry_frames_notebook)
+        debug_entry_frame.pack(fill=tk.BOTH, expand=True)
+        debug_entry_frame.columnconfigure(0, minsize=50, weight=0)
+        debug_entry_frame.columnconfigure(1, weight=1)
+        lbl_debug_money = tk.Label(debug_entry_frame, text="Money:")
+        lbl_debug_money.grid(row=0, column=0)
+        self.debug_money = Counter(master=debug_entry_frame)
+        self.debug_money.grid(row=0, column=1)
+        lbl_debug_juice = tk.Label(debug_entry_frame, text="Juice:")
+        self.debug_juice = Counter(master=debug_entry_frame)
+        lbl_debug_seeds = tk.Label(debug_entry_frame, text="Seeds:")
+        self.debug_seeds = Counter(master=debug_entry_frame)
+        lbl_debug_ideas = tk.Label(debug_entry_frame, text="(i)deas:")
+        self.debug_ideas = Counter(master=debug_entry_frame)
+
+        btn_back_to_main = tk.Label(debug_entry_frame, text="Back to Game")
+        btn_back_to_main.pack(side=tk.TOP)
+
+        self.entry_frames_notebook.add(main_entry_frame, text="Game")
+        self.entry_frames_notebook.add(debug_entry_frame, text="Debug")
+        # Ensure the following line always comes immediately after debug tab added to entry_frames_notebook
+        self.debug_entry_notebook_index = self.entry_frames_notebook.index(tk.END) - 1
         
         # setup up output frame and store it for later outputting
         frm_output = tk.Frame(master=self.root)
@@ -117,10 +197,15 @@ class Gui:
         self.main_content.delete("0.0", tk.END)
         self.main_content.insert("0.0", text)
         self.main_content.config(state=tk.DISABLED)
+
+    @property
+    def in_debug_mode(self) -> bool:
+        idx = self.entry_frames_notebook.index(tk.CURRENT)
+        return idx == self.debug_entry_notebook_index
         
     def _build_click_component(self, master):
         frm_component = tk.Frame(master=master)
-        frm_component.pack(side=tk.TOP, padx=2, pady=2)
+        frm_component.pack(side=tk.TOP)
         
         opts_menu = ActivitiesOptionsMenu(frm_component)
         opts_menu.pack(side=tk.LEFT)
@@ -146,7 +231,7 @@ class Gui:
 
     def _build_buy_component(self, master):
         frm_component = tk.Frame(master=master)
-        frm_component.pack(side=tk.TOP, padx=2, pady=2)
+        frm_component.pack(side=tk.TOP)
         
         opts_menu = ActivitiesOptionsMenu(frm_component)
         opts_menu.pack(side=tk.LEFT)
@@ -172,14 +257,18 @@ class Gui:
         
     def _update(self):
         self.g.update()
-        if self.mode == 'status':
-            self.write_main_content(self.g.status())
-            self.update_main_content = True  # this must be here in case a swap to store mode occurs
-        elif self.mode == 'store':
-            if self.update_main_content:
-                self.write_main_content(self.g.show_store())
-                self.update_main_content = False
+        if self.in_debug_mode:
+            self.write_main_content("In debug mode. Switch back to the game to resume display")
+            self.update_main_content = True
         else:
-            raise ValueError("Should never happen")
+            if self.mode == 'status':
+                self.write_main_content(self.g.status())
+                self.update_main_content = True  # this must be here in case a swap to store mode occurs
+            elif self.mode == 'store':
+                if self.update_main_content:
+                    self.write_main_content(self.g.show_store())
+                    self.update_main_content = False
+            else:
+                raise ValueError("Should never happen")
         
         self.root.after(500, self._update)
