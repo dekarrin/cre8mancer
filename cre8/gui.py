@@ -117,9 +117,12 @@ class DoubleCounter(Counter):
 
         :param value: The new value.
         """
+        precision_power = int(math.log10(self.precision))
+        
         # first, if it is zero, we'll get domain errors. we can treat it as a special case.
         if value == 0.0:
-            str_val = '.0'
+            str_val = '.'
+            decimal_pos = 0
         else:
             # first find number of zeroes between decimal and num, we need to preserve it
             # in formatting
@@ -134,13 +137,24 @@ class DoubleCounter(Counter):
             # put placeholders in front
             str_val = ('0' * placeholder_count) + str(scaled)
             
-            # now display it with decimal in correct position
-            precision_power = int(math.log10(self.precision))
+            decimal_pos = len(str_val) + precision_power
+            # now put decimal in correct position
             str_val = str_val[:precision_power] + '.' + str_val[precision_power:]
+            
+            # add right_placeholders
             
         # check if a zero needs to be added to the left
         if str_val[0] == '.':
             str_val = '0' + str_val
+            decimal_pos += 1
+            
+        # find decimal and check how many digits are to right of it, if not enough
+        # we will add more
+        right_digits = (len(str_val) - decimal_pos) - 1
+        precision_digits = abs(precision_power)
+        zeros_needed = precision_digits - right_digits
+        str_val += '0' * zeros_needed
+        
         
         try:
             float(str_val)
