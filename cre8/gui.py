@@ -523,6 +523,8 @@ class Gui:
         else:
             self.g.update()
             
+            print(self.output.winfo_height())
+            
             # set debug mode stats so it is correct when user swaps to it
             self.debug_money.set(self.g.get_state('money'))
             self.debug_juice.set(self.g.get_state('juice'))
@@ -530,7 +532,7 @@ class Gui:
             self.debug_ideas.set(self.g.get_state('ideas'))
         
             if self.in_play_mode:
-                self.write_main_content(self.g.status())
+                self.write_main_content(self.g.status() + ('FAKE LINE \n' * 100))
                 self.update_main_content = True  # this must be here in case a swap to store mode occurs
             elif self.in_store_mode:
                 if self.update_main_content:
@@ -539,7 +541,7 @@ class Gui:
             else:
                 raise ValueError("Should never happen")
         
-        self.root.after(100, self._update)
+        self.root.after(500, self._update)
 
     # noinspection PyMethodMayBeStatic
     def _build_main_content_frame(self, master) -> Tuple[tk.Widget, tk.Text]:
