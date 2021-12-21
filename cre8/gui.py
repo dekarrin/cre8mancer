@@ -2,26 +2,28 @@ from .activities import Jobs, Outlets
 from .engine import Engine, RulesViolationError
 import tkinter as tk
 from tkinter import ttk
+import math
 
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 
 
 class Counter(tk.Frame):
     """
     Counter component that can track its own value. Has increment and decrement buttons, or user can directly
     edit the value. Arranged in a horizontal structure such as "[-] [FIELD] [+]".
+    
+    This component is for int values. For float values, use DoubleCounter.
 
     To get the field that accepts input, use the 'field' attribute. In general it is better to use the
     get() and set() methods on this component though.
     """
-    def __init__(self, master, value=None, inc_amount=1):
+    def __init__(self, master, value=0, inc_amount=1):
         super().__init__(master=master)
         
         self.increment_amount = inc_amount
 
-        self._var = self._create_variable()
-        if value is not None:
-            self._var.set(value)
+        self._var = tk.StringVar()
+        self._last_valid = value
 
         dec_button = tk.Button(self, text="-", command=self.decrement)
         dec_button.pack(fill=tk.NONE, side=tk.LEFT)
@@ -32,8 +34,15 @@ class Counter(tk.Frame):
         inc_button = tk.Button(self, text="+", command=self.increment)
         inc_button.pack(fill=tk.NONE, side=tk.LEFT)
         
-    def _create_variable(self) -> Union[tk.IntVar, tk.StringVar, tk.DoubleVar]:
-        return tk.StringVar()
+        if value is not None:
+            self.set(value)
+            
+    def reset(self):
+        """
+        Reset the counter to the last valid value it contained, discarding the current
+        contents.
+        """
+        self._var.set(self._last_valid)
 
     def set(self, value: int):
         """
@@ -41,41 +50,119 @@ class Counter(tk.Frame):
 
         :param value: The new value.
         """
-        self._var.set(value)
+        str_val = str(value)
+        
+        try:
+            int(str_val)
+            self._last_valid = value
+        except ValueError:
+            # just dont store it as the last valid value
+            pass
+        
+        self._var.set(str_val)
 
-    def get(self) -> int:
+    def get(self) -> Optional[int]:
         """
-        Get the current value of the counter.
+        Get the current value of the counter. This will be an int
+        if it currently contains a valid numerical value, or None
+        if there is not a valid numerical value.
         """
-        return self._var.get()
+        str_val = self._var.get()
+        try:
+            val = int(str_val)
+            return val
+        except ValueError:
+            return None
 
     def decrement(self):
         """
-        Decrease the current value by 1.
+        Decrease the current value by 1. If it is not currently a
+        valid value, it is set to the last valid value it was first.
         """
+        if self.get() is None:
+            self.reset()
+        
         self.set(self.get() - self.increment_amount)
 
     def increment(self):
         """
         Increase the current value by 1.
         """
-        self.set(self.get() + self.increment_amount)
+        old_val = self.get()
         
-
-class IntCounter(Counter):
-    def __init__(self, master, value: int = 0, inc_amount: int = 1):
-        super().__init__(master, value, inc_amount)
+        if old_val is None:
+            self.reset()
+            old_val = self.get()
         
-    def _create_variable(self) -> tk.IntVar:
-        return tk.IntVar()
+        new_val = old_val + self.increment_amount
+        self.set(new_val)
         
         
 class DoubleCounter(Counter):
-    def __init__(self, master, value: int = 0.0, inc_amount: float = 1.0):
+    def __init__(self, master, value: float = 0.0, inc_amount: float = 1.0, precision=0.1):
+        precision_power = math.log10(precision)
+        if not precision_power.is_integer() or precision_power > 0:
+            raise ValueError("precision must be given in negative powers of 10, such as 0.1, 0.001, or 0.00001")
+        if precision_power == 0:
+            raise ValueError("precision of 1 is equivalent to Counter; use that instead")
+        self.precision = precision
+        
+        # precision will get used in set() which is called by super.ctor
+        # so make sure to call ctor after precision is setup
         super().__init__(master, value, inc_amount)
         
-    def _create_variable(self):
-        return tk.DoubleVar()
+    def set(self, value: float):
+        """
+        Set a new value for the counter.
+
+        :param value: The new value.
+        """
+        # first, if it is zero, we'll get domain errors. we can treat it as a special case.
+        if value == 0.0:
+            str_val = '.0'
+        else:
+            # first find number of zeroes between decimal and num, we need to preserve it
+            # in formatting
+            value_scale = int(math.floor(math.log10(value))) + 1
+            if value_scale < 0:
+                placeholder_count = (value_scale * -1)
+            else:
+                placeholder_count = 0
+            
+            # quantize to precision
+            scaled = int(value * (1/self.precision))
+            # put placeholders in front
+            str_val = ('0' * placeholder_count) + str(scaled)
+            
+            # now display it with decimal in correct position
+            precision_power = int(math.log10(self.precision))
+            str_val = str_val[:precision_power] + '.' + str_val[precision_power:]
+            
+        # check if a zero needs to be added to the left
+        if str_val[0] == '.':
+            str_val = '0' + str_val
+        
+        try:
+            float(str_val)
+            self._last_valid = value
+        except ValueError:
+            # just dont store it as the last valid value
+            pass
+        
+        self._var.set(str_val)
+
+    def get(self) -> Optional[float]:
+        """
+        Get the current value of the counter. This will be a float
+        if it currently contains a valid numerical value, or None
+        if there is not a valid numerical value in it.
+        """
+        str_val = self._var.get()
+        try:
+            val = float(str_val)
+            return val
+        except ValueError:
+            return None
 
 
 class ActivitiesOptionsMenu(tk.OptionMenu):
@@ -121,10 +208,10 @@ class ActivitiesOptionsMenu(tk.OptionMenu):
     
 class Gui:
     def __init__(self, g: Engine, output_lines: int = 7):
-        self.debug_money: IntCounter
+        self.debug_money: Counter
         self.debug_juice: DoubleCounter
         self.debug_seeds: DoubleCounter
-        self.debug_ideas: IntCounter
+        self.debug_ideas: Counter
         
         self.debug_entry_notebook_index: int
         
@@ -204,7 +291,9 @@ class Gui:
         else:
             # set debug mode stats so it is correct when user swaps to it
             self.debug_money.set(self.g.get_state('money'))
-            self.
+            self.debug_juice.set(self.g.get_state('juice'))
+            self.debug_seeds.set(self.g.get_state('seeds'))
+            self.debug_ideas.set(self.g.get_state('ideas'))
         
             if self.mode == 'status':
                 self.write_main_content(self.g.status())
@@ -330,29 +419,29 @@ class Gui:
         
         lbl_debug_money = tk.Label(debug_entry_frame, text="Money:")
         lbl_debug_money.grid(row=0, column=0)
-        self.debug_money = IntCounter(master=debug_entry_frame)
+        self.debug_money = Counter(master=debug_entry_frame)
         self.debug_money.grid(row=0, column=1)
         
         lbl_debug_juice = tk.Label(debug_entry_frame, text="Juice:")
         lbl_debug_juice.grid(row=1, column=0)
-        self.debug_juice = DoubleCounter(debug_entry_frame, inc_amount=0.01)
+        self.debug_juice = DoubleCounter(debug_entry_frame, inc_amount=0.01, precision=0.0001)
         self.debug_juice.grid(row=1, column=1)
         
         lbl_debug_seeds = tk.Label(debug_entry_frame, text="Seeds:")
         lbl_debug_seeds.grid(row=2, column=0)
-        self.debug_seeds = DoubleCounter(debug_entry_frame, inc_amount=0.01)
+        self.debug_seeds = DoubleCounter(debug_entry_frame, inc_amount=0.01, precision=0.000001)
         self.debug_seeds.grid(row=2, column=1)
         
         lbl_debug_ideas = tk.Label(debug_entry_frame, text="(i)deas:")
         lbl_debug_ideas.grid(row=3, column=0)
-        self.debug_ideas = IntCounter(debug_entry_frame)
+        self.debug_ideas = Counter(debug_entry_frame)
         self.debug_ideas.grid(row=3, column=1)
         
         btn_apply = tk.Button(debug_entry_frame, text="Apply", command=self.apply_debug)
         btn_apply.grid(row=5, column=0)
         return debug_entry_frame
         
-    def _build_output_frame(self, master, output_lines) -> Tuple[tk.Widget, tk.Text]
+    def _build_output_frame(self, master, output_lines) -> Tuple[tk.Widget, tk.Text]:
         """
         Return the fully-configured output frame with geometry manager
         already set. Additionally, return the Text field that holds the contents
