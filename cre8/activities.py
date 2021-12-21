@@ -155,7 +155,7 @@ Jobs = [
 
 Outlets = [
     Activity(
-        1024, 'Binge Netflix Show', 1,
+        1024, 'Binge Netflix Show', 3,
         price=200,
         money_cost=30,
         juice_cost=0.0,

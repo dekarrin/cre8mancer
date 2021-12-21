@@ -105,7 +105,7 @@ class GameState:
     
     @property
     def status_line(self) -> str:
-        line = "${:d} {:.4f}/{:.4f}J  {:d}S->{:d}i  T:{:.2f}"
+        line = "${:d} {:.4f}/{:.4f}J  {:d}S->{:d}(i)  T:{:.2f}"
         return line.format(self.money, self.free_juice, self.juice, int(self.seeds), self.ideas, self.time)
         
     def __str__(self):

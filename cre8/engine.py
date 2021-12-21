@@ -186,7 +186,10 @@ class Engine:
         elif category == 'automation':
             if amount != 1:
                 msg = "Automation deactivation is all-or-nothing; you can't deactivate more than one."
-                raise RulesViolationError(msg)        
+                raise RulesViolationError(msg)
+            if target.automations < 1:
+                msg = "You haven't bought any automations for {!r} yet; buy some first.".format(target.name)
+                raise RulesViolationError(msg)
             if not target.automated:
                 msg = "Automation is already off for {!r}.".format(target.name)
                 raise RulesViolationError(msg)
@@ -241,7 +244,10 @@ class Engine:
         elif category == 'automation':
             if amount != 1:
                 msg = "Automation activation is all-or-nothing; you can't activate more than one."
-                raise RulesViolationError(msg)        
+                raise RulesViolationError(msg)
+            if target.automations < 1:
+                msg = "You haven't bought any automations for {!r} yet; buy some first.".format(target.name)
+                raise RulesViolationError(msg)
             if target.automated:
                 msg = "Automation is already on for {!r}.".format(target.name)
                 raise RulesViolationError(msg)
@@ -262,7 +268,7 @@ class Engine:
                     
                 target.automated = True
                 target.execute(gs.time)
-                gs.money -= target.price        
+                gs.money -= target.money_cost        
         else:
             raise ValueError("should never happen")
         
@@ -324,7 +330,7 @@ class Engine:
             target.active += 1
             if gs.free_juice < 0:
                 target.active -= 1
-            msg += "Bought {!r}".format(target.name)
+            msg += "Bought {!r}; you now have {:d} of them.".format(target.name, target.count)
                 
         elif category == 'automation':
             target, act_def = self._find_target(target_type, target_idx)
@@ -414,6 +420,18 @@ class Engine:
         if target is None:
             return 0
         return target.active
+
+    def get_automated(self, target_type: str, target_idx: int) -> bool:
+        """
+        Return whether the given target is currently automated.
+        """
+        if target_type not in ('job', 'outlet'):
+            raise ValueError("target_type must be one of 'job' or 'outlet'")
+
+        target, _ = self._find_target(target_type, target_idx)
+        if target is None:
+            return False
+        return target.automated
 
     def show_store(self) -> str:
         gs = self.game

@@ -212,6 +212,108 @@ class ActivitiesOptionsMenu(tk.OptionMenu):
         self._options_list += [j.name for j in Jobs]
         self._options_list.append('-- Outlets --')
         self._options_list += [o.name for o in Outlets]
+        
+        
+class AutomationComponent(tk.Frame):
+    """
+    Component that lets you enable and disable automation, as well as buy more.
+    """
+    def __init__(
+        self,
+        master,
+        buy_func: Callable[[str, int], Any],
+        enable_func: Callable[[str, int], Any],
+        disable_func: Callable[[str, int], Any],
+        automated_func: Callable[[str, int], bool],
+        text: str,
+        **kwargs
+    ):
+        """
+        Create a new AutomationComponent.
+
+        :param master: The master tk.Widget that will be the parent of the component.
+        :param buy_func: A callable that accepts a string activity type and activity index
+        and purchases the next level of automation for the target specified by them.
+        :param enable_func: A callable that accepts a string activity type and activity index
+        and enables automation for the target specified by them.
+        :param disable_func: A callable that accepts a string activity type and activity index
+        and disables automation for the target specified by them.
+        :param automated_func: A callable that accepts a string activity type and activity index
+        and returns whether automation is on for the target specified by them.
+        :param text: What to put as the label for the text.
+        """
+        super().__init__(master=master, relief=tk.GROOVE, borderwidth=2, **kwargs)
+        
+        self._buy_callback = buy_func
+        self._enable_auto_callback = enable_func
+        self._disable_auto_callback = disable_func
+        self._is_automated_callback = automated_func
+        
+        self._label_component = tk.Label(self, text=text)
+        self._label_component.pack(side=tk.TOP)
+
+        self._options_component = ActivitiesOptionsMenu(self)
+        self._options_component.pack(side=tk.TOP)
+        
+        self._inputs_frame = tk.Frame(self)
+        self._inputs_frame.pack(side=tk.TOP)
+        
+        self._auto_text = tk.StringVar()
+        self._auto_text.set("Automate")
+
+        self._auto_button = tk.Button(master=self._inputs_frame, textvariable=self._auto_text, command=self._auto_pressed)
+        self._auto_button.config(state=tk.DISABLED)
+        self._auto_button.pack(side=tk.LEFT)
+
+        self._buy_button = tk.Button(master=self._inputs_frame, text="Buy Next", command=self._buy_pressed)
+        self._buy_button.config(state=tk.DISABLED)
+        self._buy_button.pack(side=tk.LEFT)
+
+        self._options_component.bind_change(self._update_option)
+        
+    def _buy_pressed(self, *args):
+        target_type, target_idx = self._options_component.value_as_target()
+        if target_type is None:
+            # should never happen
+            raise ValueError("can't buy automation without valid selection")
+            
+        self._buy_callback(target_type, target_idx)
+        
+    def _auto_pressed(self, *args):
+        target_type, target_idx = self._options_component.value_as_target()
+        if target_type is None:
+            # should never happen
+            raise ValueError("can't automate without valid selection")
+        
+        if self._is_automated_callback(target_type, target_idx):
+            self._disable_auto_callback(target_type, target_idx)
+        else:
+            self._enable_auto_callback(target_type, target_idx)
+            
+        # now set current button text based on whether automation worked
+        if self._is_automated_callback(target_type, target_idx):
+            self._auto_text.set("Stop automating")
+        else:
+            self._auto_text.set("Automate")
+
+    def _update_option(self, *args):
+        target_type, target_idx = self._options_component.value_as_target()
+        if target_type is None:
+            self._auto_text.set("Automate")
+            self._auto_button.config(state=tk.DISABLED)
+            self._buy_button.config(state=tk.DISABLED)
+        else:
+            automated = self._is_automated_callback(target_type, target_idx)
+            if automated:
+                self._auto_text.set("Stop automating")
+            else:
+                self._auto_text.set("Automate")
+                
+            self._auto_button.config(state=tk.NORMAL)
+            self._buy_button.config(state=tk.NORMAL)
+
+        
+        
 
 
 class ActivityValueComponent(tk.Frame):
@@ -241,7 +343,7 @@ class ActivityValueComponent(tk.Frame):
         input.
         :param text: What to put as the label for the text.
         """
-        super().__init__(master=master, relief=tk.GROOVE, borderwidth=2)
+        super().__init__(master=master, relief=tk.GROOVE, borderwidth=2, **kwargs)
 
         self._getter_callback = get_value_func
         self._setter_callback = set_value_func
@@ -320,17 +422,17 @@ class Gui:
         self.debug_seeds: DoubleCounter
         self.debug_ideas: Counter
         
-        self.debug_entry_notebook_index: int
+        # Assumes tabs added in this order: 'Play', 'Store', 'Debug'
+        
+        self.play_entry_notebook_index = 0
+        self.store_entry_notebook_index = 1
+        self.debug_entry_notebook_index = 2
         
         self.update_main_content = True
         self.g = g
         self.root = tk.Tk()
         self.root.title("Cre8or Forge v0.0a")
         self.root.report_callback_exception = self.on_error
-        
-        self.mode_button_var = tk.StringVar()
-        self.mode_button_var.set("Store")
-        self.mode = 'status'
         
         # setup root window config
         self.root.rowconfigure(0, minsize=300, weight=1)
@@ -341,8 +443,6 @@ class Gui:
         _, self.main_content = self._build_main_content_frame(self.root)
         
         self.entry_frames_notebook = self._build_entry_frames(self.root)
-        # Assumes 'Debug' is the last tab added:
-        self.debug_entry_notebook_index = self.entry_frames_notebook.index(tk.END) - 1
         
         # setup up output frame and store it for later outputting
         _, self.output = self._build_output_frame(self.root, output_lines)
@@ -363,16 +463,6 @@ class Gui:
     def run(self):
         self.root.after(0, self._update)
         self.root.mainloop()
-    
-    def swap_mode(self):
-        if self.mode == 'status':
-            self.mode = "store"
-            self.mode_button_var.set("Status")
-        elif self.mode == 'store':
-            self.mode = "status"
-            self.mode_button_var.set("Store")
-        else:
-            raise ValueError("Should never happen")
         
     def write_output(self, text: str):
         self.output.config(state=tk.NORMAL)
@@ -415,6 +505,16 @@ class Gui:
     def in_debug_mode(self) -> bool:
         idx = self.entry_frames_notebook.index(tk.CURRENT)
         return idx == self.debug_entry_notebook_index
+    
+    @property
+    def in_store_mode(self) -> bool:
+        idx = self.entry_frames_notebook.index(tk.CURRENT)
+        return idx == self.store_entry_notebook_index
+    
+    @property
+    def in_play_mode(self) -> bool:
+        idx = self.entry_frames_notebook.index(tk.CURRENT)
+        return idx == self.play_entry_notebook_index
         
     def _update(self):
         if self.in_debug_mode:
@@ -429,17 +529,17 @@ class Gui:
             self.debug_seeds.set(self.g.get_state('seeds'))
             self.debug_ideas.set(self.g.get_state('ideas'))
         
-            if self.mode == 'status':
+            if self.in_play_mode:
                 self.write_main_content(self.g.status())
                 self.update_main_content = True  # this must be here in case a swap to store mode occurs
-            elif self.mode == 'store':
+            elif self.in_store_mode:
                 if self.update_main_content:
                     self.write_main_content(self.g.show_store())
                     self.update_main_content = False
             else:
                 raise ValueError("Should never happen")
         
-        self.root.after(500, self._update)
+        self.root.after(100, self._update)
 
     # noinspection PyMethodMayBeStatic
     def _build_main_content_frame(self, master) -> Tuple[tk.Widget, tk.Text]:
@@ -452,9 +552,9 @@ class Gui:
         frm_main.grid(row=0, column=0, sticky="nsew")
         mc_field = tk.Text(master=frm_main)
         mc_scrollbar = ttk.Scrollbar(master=frm_main, command=mc_field.yview)
-        mc_scrollbar.pack(side=tk.RIGHT, fill="y")
+        mc_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         mc_field['yscrollcommand'] = mc_scrollbar.set
-        mc_field.pack(side=tk.RIGHT, fill="x")
+        mc_field.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1)
         
         return frm_main, mc_field
         
@@ -462,9 +562,11 @@ class Gui:
         entry_frames = ttk.Notebook(master)
         entry_frames.grid(row=0, column=1, sticky="nsew")
         main_entry_frame = self._build_main_entry_frame(entry_frames)
+        store_entry_frame = self._build_store_entry_frame(entry_frames)
         debug_entry_frame = self._build_debug_entry_frame(entry_frames)
 
-        entry_frames.add(main_entry_frame, text="Game")
+        entry_frames.add(main_entry_frame, text="Play")
+        entry_frames.add(store_entry_frame, text="Store")
         # ensure debug is always the last entry added
         entry_frames.add(debug_entry_frame, text="Debug")
         return entry_frames
@@ -476,12 +578,30 @@ class Gui:
         main_entry_frame = tk.Frame(master=master)
         main_entry_frame.pack(fill=tk.BOTH, expand=True)
         self._build_click_component(main_entry_frame)
-        self._build_buy_component(main_entry_frame)
         self._build_instances_component(main_entry_frame)
-        frm_mode_buttons = tk.Frame(master=main_entry_frame)
-        frm_mode_buttons.pack(side=tk.TOP)
-        mode_btn = tk.Button(frm_mode_buttons, textvariable=self.mode_button_var, command=self.swap_mode)
-        mode_btn.pack(side=tk.LEFT)
+        self._build_automation_component(main_entry_frame)
+        
+        frm_bot_buttons = tk.Frame(master=main_entry_frame)
+        frm_bot_buttons.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        def meditate():
+            msg = "Are you sure you want to meditate on your artistic ventures?\n\n"
+            msg += "This will sprout Seeds into (i)deas, but it will also RESET ALL PROGRESS except for boosts, automations, and ideas."
+            
+            if not messagebox.askyesno("Confirm Prestige", msg):
+                return
+            
+            try:
+                msg = self.g.prestige()
+            except RulesViolationError as e:
+                self.write_output(str(e))
+                return
+                
+            self.write_output(msg)
+        
+        med_btn = tk.Button(master=frm_bot_buttons, text="Medidate", command=meditate)
+        med_btn.pack(side=tk.RIGHT)
+        
         return main_entry_frame
         
     def _build_click_component(self, master) -> tk.Frame:
@@ -489,7 +609,7 @@ class Gui:
         Return the fully-configured and packed click component frame.
         """
         frm_component = tk.Frame(master=master)
-        frm_component.pack(side=tk.TOP)
+        frm_component.pack(side=tk.TOP, fill=tk.X)
         
         opts_menu = ActivitiesOptionsMenu(frm_component)
         opts_menu.pack(side=tk.LEFT)
@@ -507,11 +627,9 @@ class Gui:
                 return
             
             self.write_output(msg)
-            self.g.update()
-            self.write_main_content(self.g.status())
 
         entry_click_lbl = tk.Button(frm_component, text="Click!", command=do_click)
-        entry_click_lbl.pack(side=tk.LEFT)
+        entry_click_lbl.pack(side=tk.RIGHT)
         return frm_component
 
     def _build_buy_component(self, master) -> tk.Frame:
@@ -519,7 +637,7 @@ class Gui:
         Return the fully-configured and packed buy component frame.
         """
         frm_component = tk.Frame(master=master)
-        frm_component.pack(side=tk.TOP)
+        frm_component.pack(side=tk.TOP, fill=tk.X)
         
         opts_menu = ActivitiesOptionsMenu(frm_component)
         opts_menu.pack(side=tk.LEFT)
@@ -537,16 +655,14 @@ class Gui:
                 return
             
             self.write_output(msg)
-            self.g.update()
-            self.write_main_content(self.g.status())
 
         entry_click_lbl = tk.Button(frm_component, text="Buy", command=do_buy)
-        entry_click_lbl.pack(side=tk.LEFT)
+        entry_click_lbl.pack(side=tk.RIGHT)
         return frm_component
 
     def _build_instances_component(self, master) -> tk.Frame:
         """
-        Return the fully-configured and packed buy component frame.
+        Return the fully-configured and packed activate/deactivate component frame.
         """
         def set_instances(target_type, target_idx, value):
             if value < 0:
@@ -563,10 +679,77 @@ class Gui:
                     self.g.activate('instance', target_type, target_idx, amount=diff)
             except RulesViolationError as e:
                 self.write_output(str(e))
+                
+            total_active = self.g.get_active_count(target_type, target_idx)
+            act_name = 'NOTSET'
+            if target_type == 'job':
+                act_name = Jobs[target_idx].name
+            elif target_type == 'outlet':
+                act_name = Outlets[target_idx].name
+                
+            s = 's'
+            to_be = 'are'
+            if total_active == 1:
+                s = ''
+                to_be = 'is'
+            
+            self.write_output("{:d} instance{:s} of {:s} {:s} now active.".format(total_active, s, act_name, to_be))
 
         comp = ActivityValueComponent(master, self.g.get_active_count, set_instances, "Active Instances")
-        comp.pack(side=tk.TOP)
+        comp.pack(side=tk.TOP, fill=tk.X, padx=1, pady=1)
         return comp
+    
+    def _build_automation_component(self, master) -> tk.Frame:
+        """
+        Return the fully-configured and packed automation component frame.
+        """
+        
+        def do_buy_auto(target_type, target_idx):
+            try:
+                msg = self.g.buy('automation', target_type, target_idx)
+            except RulesViolationError as ex:
+                self.write_output(str(ex))
+                return
+            
+            self.write_output(msg)
+            
+        def do_activate_auto(target_type, target_idx):
+            try:
+                msg = self.g.activate('automation', target_type, target_idx)
+            except RulesViolationError as ex:
+                self.write_output(str(ex))
+                return
+            
+            self.write_output(msg)
+            
+        def do_deactivate_auto(target_type, target_idx):
+            try:
+                msg = self.g.deactivate('automation', target_type, target_idx)
+            except RulesViolationError as ex:
+                self.write_output(str(ex))
+                return
+            
+            self.write_output(msg)
+        
+        comp = AutomationComponent(
+            master,
+            buy_func=do_buy_auto,
+            enable_func=do_activate_auto,
+            disable_func=do_deactivate_auto,
+            automated_func=self.g.get_automated,
+            text="Automations"
+        )
+        comp.pack(side=tk.TOP, fill=tk.X, padx=1, pady=1)
+        return comp
+        
+    def _build_store_entry_frame(self, master) -> tk.Frame:
+        """
+        Return the fully-configured and packed main entry frame.
+        """
+        store_entry_frame = tk.Frame(master=master)
+        store_entry_frame.pack(fill=tk.BOTH, expand=True)
+        self._build_buy_component(store_entry_frame)
+        return store_entry_frame
         
     def _build_debug_entry_frame(self, master) -> tk.Frame:
         """
@@ -612,5 +795,5 @@ class Gui:
         frm.grid(row=1, column=0, columnspan=2, sticky="nsew")
         output = tk.Text(master=frm, height=output_lines, width=103)
         output.config(state=tk.DISABLED)
-        output.pack()
+        output.pack(fill=tk.X)
         return frm, output
