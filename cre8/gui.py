@@ -1,38 +1,15 @@
+import traceback
+
 from .activities import Jobs, Outlets
 from .engine import Engine, RulesViolationError
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import math
 
-from typing import Tuple, Optional, Union, Callable
+from typing import Tuple, Optional, Union, Callable, Any
 
-
-class ActivityValueComponent(tk.Frame):
-    """
-    Component that allows you to select an item and then set an int-valued property on it. The property is not set
-    until an Apply button is pressed. The Apply button is dim until an item is selected and the value
-    is not the current value.
-    """
-    def __init__(
-        self,
-        master,
-        set_value_func: Callable[[str, int, int], Any],
-        get_value_func: Callable[[str, int], int],
-        text: str
-    ):
-        """
-        Create a new ActivityValueComponent.
-        
-        :param master: The master tk.Widget that will be the parent of the component.
-        :param set_value_func: A callable that accepts a string activity type and activity index
-        as well as the value to set on that target specified by those two.
-        :param get_value_func: A callable that accepts a string activity type and activity index
-        and returns the current value that the target specified by those two has.
-        :param text: What to put as the label for the text.
-        """
-        super().__init__(master=master)
-        
-        
+Numeric = Union[int, float, str]
 
 
 class Counter(tk.Frame):
@@ -45,25 +22,45 @@ class Counter(tk.Frame):
     To get the field that accepts input, use the 'field' attribute. In general it is better to use the
     get() and set() methods on this component though.
     """
-    def __init__(self, master, value=0, inc_amount=1):
+    def __init__(self, master, value: Numeric = 0, inc_amount: Numeric = 1):
         super().__init__(master=master)
         
         self.increment_amount = inc_amount
 
         self._var = tk.StringVar()
-        self._last_valid = value
+        self._last_valid = str(value)
 
-        dec_button = tk.Button(self, text="-", command=self.decrement)
-        dec_button.pack(fill=tk.NONE, side=tk.LEFT)
+        self._dec_button = tk.Button(self, text="-", command=self.decrement)
+        self._dec_button.pack(fill=tk.NONE, side=tk.LEFT)
 
         self.field = tk.Entry(self, textvariable=self._var)
         self.field.pack(fill=tk.X, side=tk.LEFT)
 
-        inc_button = tk.Button(self, text="+", command=self.increment)
-        inc_button.pack(fill=tk.NONE, side=tk.LEFT)
+        self._inc_button = tk.Button(self, text="+", command=self.increment)
+        self._inc_button.pack(fill=tk.NONE, side=tk.LEFT)
         
         if value is not None:
             self.set(value)
+
+    def bind_change(self, callback):
+        self._var.trace('w', callback)
+
+    def disable(self):
+        """
+        Set state of all buttons to disabled. Does not allow text to be updated after this, so be sure
+        to update text before calling disable.
+        """
+        self.field.config(state=tk.DISABLED)
+        self._inc_button.config(state=tk.DISABLED)
+        self._dec_button.config(state=tk.DISABLED)
+
+    def enable(self):
+        """
+        Set state of all buttons to enabled.
+        """
+        self.field.config(state=tk.NORMAL)
+        self._inc_button.config(state=tk.NORMAL)
+        self._dec_button.config(state=tk.NORMAL)
             
     def reset(self):
         """
@@ -72,7 +69,7 @@ class Counter(tk.Frame):
         """
         self._var.set(self._last_valid)
 
-    def set(self, value: int):
+    def set(self, value: Numeric):
         """
         Set a new value for the counter.
 
@@ -82,7 +79,7 @@ class Counter(tk.Frame):
         
         try:
             int(str_val)
-            self._last_valid = value
+            self._last_valid = str(value)
         except ValueError:
             # just dont store it as the last valid value
             pass
@@ -127,7 +124,7 @@ class Counter(tk.Frame):
         
         
 class DoubleCounter(Counter):
-    def __init__(self, master, value: float = 0.0, inc_amount: float = 1.0, precision=0.1):
+    def __init__(self, master, value: Numeric = 0.0, inc_amount: Numeric = 1.0, precision: float = 0.1):
         precision_power = math.log10(precision)
         if not precision_power.is_integer() or precision_power > 0:
             raise ValueError("precision must be given in negative powers of 10, such as 0.1, 0.001, or 0.00001")
@@ -139,58 +136,24 @@ class DoubleCounter(Counter):
         # so make sure to call ctor after precision is setup
         super().__init__(master, value, inc_amount)
         
-    def set(self, value: float):
+    def set(self, value: Numeric):
         """
         Set a new value for the counter.
 
         :param value: The new value.
         """
-        precision_power = int(math.log10(self.precision))
-        
-        # first, if it is zero, we'll get domain errors. we can treat it as a special case.
-        if value == 0.0:
-            str_val = '.'
-            decimal_pos = 0
-        else:
-            # first find number of zeroes between decimal and num, we need to preserve it
-            # in formatting
-            value_scale = int(math.floor(math.log10(value))) + 1
-            if value_scale < 0:
-                placeholder_count = (value_scale * -1)
-            else:
-                placeholder_count = 0
-            
-            # quantize to precision
-            scaled = int(value * (1/self.precision))
-            # put placeholders in front
-            str_val = ('0' * placeholder_count) + str(scaled)
-            
-            decimal_pos = len(str_val) + precision_power
-            # now put decimal in correct position
-            str_val = str_val[:precision_power] + '.' + str_val[precision_power:]
-            
-            # add right_placeholders
-            
-        # check if a zero needs to be added to the left
-        if str_val[0] == '.':
-            str_val = '0' + str_val
-            decimal_pos += 1
-            
-        # find decimal and check how many digits are to right of it, if not enough
-        # we will add more
-        right_digits = (len(str_val) - decimal_pos) - 1
-        precision_digits = abs(precision_power)
-        zeros_needed = precision_digits - right_digits
-        str_val += '0' * zeros_needed
-        
-        
+        str_val = str(value)
+
+        format_precision = abs(int(math.log10(self.precision)))
+
         try:
-            float(str_val)
-            self._last_valid = value
+            typed_val = float(value)
+            str_val = '{1:.{0}f}'.format(format_precision, typed_val)
+            self._last_valid = str_val
         except ValueError:
             # just dont store it as the last valid value
             pass
-        
+
         self._var.set(str_val)
 
     def get(self) -> Optional[float]:
@@ -217,6 +180,9 @@ class ActivitiesOptionsMenu(tk.OptionMenu):
         
         super().__init__(master, self._var, *self._options_list)
         self.config(width=20)
+
+    def bind_change(self, callback):
+        self._var.trace('w', callback)
         
     def value_as_target(self) -> Tuple[Optional[str], int]:
         """
@@ -246,6 +212,101 @@ class ActivitiesOptionsMenu(tk.OptionMenu):
         self._options_list += [j.name for j in Jobs]
         self._options_list.append('-- Outlets --')
         self._options_list += [o.name for o in Outlets]
+
+
+class ActivityValueComponent(tk.Frame):
+    """
+    Component that allows you to select an item and then set an int-valued property on it. The property is not set
+    until an Apply button is pressed. The Apply button is dim until an item is selected and the value
+    is not the current value.
+    """
+
+    def __init__(
+            self,
+            master,
+            set_value_func: Callable[[str, int, int], Any],
+            get_value_func: Callable[[str, int], int],
+            text: str
+    ):
+        """
+        Create a new ActivityValueComponent.
+
+        :param master: The master tk.Widget that will be the parent of the component.
+        :param set_value_func: A callable that accepts a string activity type and activity index
+        as well as the value to set on that target specified by those two.
+        :param get_value_func: A callable that accepts a string activity type and activity index
+        and returns the current value that the target specified by those two has.
+        :param text: What to put as the label for the text.
+        """
+        super().__init__(master=master, relief=tk.GROOVE)
+
+        self._getter_callback = get_value_func
+        self._setter_callback = set_value_func
+
+        self._label = tk.Label(self, text=text)
+        self._label.pack(side=tk.TOP)
+
+        self._inputs_frame = tk.Frame(self)
+        self._inputs_frame.pack(side=tk.TOP)
+
+        self._options = ActivitiesOptionsMenu(self._inputs_frame)
+        self._options.pack(side=tk.LEFT)
+
+        self._counter = Counter(master=self._inputs_frame, value="")
+        self._counter.disable()
+        self._counter.pack(side=tk.LEFT, fill=tk.X)
+
+        self._button = tk.Button(master=self._inputs_frame, text="Apply")
+        self._button.config(state=tk.DISABLED)
+        self._button.pack(side=tk.LEFT)
+
+        self._options.bind_change(self._update_option)
+        self._counter.bind_change(self._update_counter)
+
+    def apply(self):
+        """
+        Apply the current value in the counter to the selected activity.
+
+        Raises an exception if a valid activity is not selected.
+        """
+        target_type, target_idx = self._options.value_as_target()
+        if target_type is None:
+            raise ValueError("Need to select a valid activity target before applying")
+
+        set_val = self._counter.get()
+        if set_val is None:
+            raise ValueError("Need to specify a valid value before calling applying")
+
+        self._setter_callback(target_type, target_idx, set_val)
+
+    def _update_option(self, evt):
+        target_type, target_idx = self._options.value_as_target()
+        if target_type is None:
+            self._counter.set("")
+            self._counter.disable()
+            self._button.config(state=tk.DISABLED)
+        else:
+            cur_val = self._getter_callback(target_type, target_idx)
+            self._counter.enable()
+            self._counter.set(cur_val)
+            self._button.config(state=tk.DISABLED)
+
+    def _update_counter(self, evt):
+        target_type, target_idx = self._options.value_as_target()
+        if target_type is None:
+            # should never happen, but just return in this case
+            return
+
+        set_val = self._counter.get()
+        if set_val is None:
+            self._button.config(state=tk.DISABLED)
+            return
+
+        cur_val = self._getter_callback(target_type, target_idx)
+        if cur_val != set_val:
+            self._button.config(state=tk.NORMAL)
+        else:
+            self._button.config(state=tk.DISABLED)
 
     
 class Gui:
@@ -285,6 +346,15 @@ class Gui:
         # so user cant resize smaller than the elements
         self.root.update()
         self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
+        self.root.report_callback_exception = self.on_error
+
+    def on_error(self, exc_type, exc_value, exc_traceback):
+        if exc_type == KeyboardInterrupt:
+            self.root.destroy()
+            return
+
+        msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        messagebox.showwarning('Unhandled Exception', msg)
         
     def run(self):
         self.root.after(0, self._update)
@@ -314,9 +384,25 @@ class Gui:
         
     def apply_debug(self):
         money = self.debug_money.get()
+        if money is None:
+            self.write_output("Money is not set to a valid value")
+            return
+
         juice = self.debug_juice.get()
+        if juice is None:
+            self.write_output("Juice is not set to a valid value")
+            return
+
         seeds = self.debug_seeds.get()
+        if seeds is None:
+            self.write_output("Seeds is not set to a valid value")
+            return
+
         ideas = self.debug_ideas.get()
+        if ideas is None:
+            self.write_output("(i)deas is not set to a valid value")
+            return
+
         self.g.set_state(money=money, juice=juice, seeds=seeds, ideas=ideas)
         self.write_output("Applied debug settings to the current game")
         self.entry_frames_notebook.select(0)
@@ -350,7 +436,8 @@ class Gui:
                 raise ValueError("Should never happen")
         
         self.root.after(500, self._update)
-        
+
+    # noinspection PyMethodMayBeStatic
     def _build_main_content_frame(self, master) -> Tuple[tk.Widget, tk.Text]:
         """
         Return the fully-configured main content frame with geometry manager
@@ -367,7 +454,7 @@ class Gui:
         
         return frm_main, mc_field
         
-    def _build_entry_frames(self, master) -> tk.Widget:
+    def _build_entry_frames(self, master) -> ttk.Notebook:
         entry_frames = ttk.Notebook(master)
         entry_frames.grid(row=0, column=1, sticky="nsew")
         main_entry_frame = self._build_main_entry_frame(entry_frames)
@@ -484,14 +571,15 @@ class Gui:
         btn_apply = tk.Button(debug_entry_frame, text="Apply", command=self.apply_debug)
         btn_apply.grid(row=5, column=0)
         return debug_entry_frame
-        
+
+    # noinspection PyMethodMayBeStatic
     def _build_output_frame(self, master, output_lines) -> Tuple[tk.Widget, tk.Text]:
         """
         Return the fully-configured output frame with geometry manager
         already set. Additionally, return the Text field that holds the contents
         of text within the output frame.
         """
-        frm = tk.Frame(master=self.root)
+        frm = tk.Frame(master=master)
         frm.grid(row=1, column=0, columnspan=2, sticky="nsew")
         output = tk.Text(master=frm, height=output_lines, width=103)
         output.config(state=tk.DISABLED)
