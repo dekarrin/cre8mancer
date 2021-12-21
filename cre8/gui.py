@@ -465,16 +465,19 @@ class Gui:
         self.root.mainloop()
         
     def write_output(self, text: str):
+        
         self.output.config(state=tk.NORMAL)
         self.output.delete("0.0", tk.END)
         self.output.insert("0.0", text)
         self.output.config(state=tk.DISABLED)
         
     def write_main_content(self, text: str):
+        scroll_top, _ = self.main_content.yview()
         self.main_content.config(state=tk.NORMAL)
         self.main_content.delete("0.0", tk.END)
         self.main_content.insert("0.0", text)
         self.main_content.config(state=tk.DISABLED)
+        self.main_content.yview_moveto(scroll_top)
         
     def apply_debug(self):
         money = self.debug_money.get()
@@ -523,8 +526,6 @@ class Gui:
         else:
             self.g.update()
             
-            print(self.output.winfo_height())
-            
             # set debug mode stats so it is correct when user swaps to it
             self.debug_money.set(self.g.get_state('money'))
             self.debug_juice.set(self.g.get_state('juice'))
@@ -532,7 +533,7 @@ class Gui:
             self.debug_ideas.set(self.g.get_state('ideas'))
         
             if self.in_play_mode:
-                self.write_main_content(self.g.status() + ('FAKE LINE \n' * 100))
+                self.write_main_content(self.g.status())
                 self.update_main_content = True  # this must be here in case a swap to store mode occurs
             elif self.in_store_mode:
                 if self.update_main_content:
