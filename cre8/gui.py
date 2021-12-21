@@ -457,8 +457,9 @@ class Gui:
             self.root.destroy()
             return
 
-        msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-        messagebox.showwarning('Unhandled Exception', msg)
+        msg = 'Oh no it crashed glub! Please tell deka! 38O\n\n\n'
+        msg += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        messagebox.showwarning('Error! Glub!', msg)
         
     def run(self):
         self.root.after(0, self._update)
@@ -542,7 +543,7 @@ class Gui:
             else:
                 raise ValueError("Should never happen")
         
-        self.root.after(500, self._update)
+        self.root.after(100, self._update)
 
     # noinspection PyMethodMayBeStatic
     def _build_main_content_frame(self, master) -> Tuple[tk.Widget, tk.Text]:

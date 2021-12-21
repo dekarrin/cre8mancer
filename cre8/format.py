@@ -1,6 +1,36 @@
 import math
 from datetime import timedelta
 
+# power of 10, abbreiviation, full
+NumberNames = [
+    (6, 'M', 'million'),
+    (9, 'B', 'billion'),
+    (12, 'T', 'trillion'),
+    (15, 'q', 'quadrillion'),
+    (18, 'Q', 'quintillion'),
+    (21, 's', 'sextillion'),
+    (24, 'S', 'septillion'),
+    (27, 'o', 'octillion'),
+    (30, 'N', 'nonillion'),
+    (33, 'd', 'decillion')
+]
+
+def money(amt: int, full=False) -> str:
+    # TODO: O(1) time func, O(n) is fine for this small number of n but
+    # this is DEFINITELY doable in O(1).
+    
+    
+    if amt < (10**NumberNames[0][0]):
+        return "${:d}".format(amt)
+        
+    for n in NumberNames:
+        power, suffix, full_name = n
+        after = suffix if not full else ' ' + full_name
+        
+        # if its the last one then can only do that
+        if power == NumberNames[-1][0] or amt < (10**(power + 3)):
+            return '${:.3f}{:s}'.format(amt/(10**power), after)
+
 
 def format_timer(remaining_duration: timedelta):
     remaining_secs = remaining_duration.total_seconds()

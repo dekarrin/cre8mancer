@@ -1,5 +1,6 @@
 import math
 from .format import format_timer, pad_middle, pad_right, pad_left
+from . import format
 from .activities import Activity, OwnedActivities
 
 DefaultTextCardWidth = 65
@@ -57,14 +58,16 @@ def make_act_store_listing(act: Activity, count: int, auto_count: int, width=Def
     # left column first (lc)
     # need to do calculation out of order bc + and - should left-align, so
     # calculate the size of both and add right padding to the shorter
-    lc_top_right = "- ${:d}/C ({:.2f}J)".format(act.money_cost(count), act.juice_cost(count))
-    lc_bot_right = "+ ${:d}/C ({:.4f}J)".format(act.money_rate(count), act.juice_rate(count))
+    mcost_fmt = format.money(act.money_cost(count))
+    mrate_fmt = format.money(act.money_rate(count))
+    lc_top_right = "- {:s}/C ({:.2f}J)".format(mcost_fmt, act.juice_cost(count))
+    lc_bot_right = "+ {:s}/C ({:.4f}J)".format(mrate_fmt, act.juice_rate(count))
     if len(lc_top_right) > len(lc_bot_right):
         lc_bot_right += (' ' * (len(lc_top_right) - len(lc_bot_right)))
     else:
         lc_top_right += (' ' * (len(lc_bot_right) - len(lc_top_right)))
     
-    lc_top_left = "${:d} {:s}".format(act.price(count), act.name)
+    lc_top_left = "{:s} {:s}".format(format.money(act.price(count)), act.name)
     lc_top_text = pad_middle(lc_text_space, lc_top_left, lc_top_right)
     
     lc_bot_left = format_timer(act.duration)
@@ -109,12 +112,12 @@ def make_act_card(oa: OwnedActivities, t: float, width=DefaultTextCardWidth) -> 
     inactive = oa.count - oa.active
     # top line
     lc_top_left = oa.name
-    lc_top_right = "(${:d}) x{:d}:{:d}".format(oa.price, oa.active, inactive)
+    lc_top_right = "({:s}) x{:d}:{:d}".format(format.money(oa.price), oa.active, inactive)
     lc_top_text = pad_middle(lc_text_space, lc_top_left, lc_top_right)
     
     # mid line
-    lc_mid_left = "${:d} ({:.2f}J)".format(oa.money_cost, oa.juice_cost)
-    lc_mid_right = "${:d}/C {:.4f}J/C".format(oa.money_production, oa.juice_production)
+    lc_mid_left = "{:s} ({:.2f}J)".format(format.money(oa.money_cost), oa.juice_cost)
+    lc_mid_right = "{:s}/C {:.4f}J/C".format(format.money(oa.money_production), oa.juice_production)
     lc_mid_text = pad_middle(lc_text_space, lc_mid_left, lc_mid_right)
     
     # bot line

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import Tuple, Optional, Dict, Any
 
 from .activities import OwnedActivities
+from . import format
 
 
 CurrentVersion = 1
@@ -105,8 +106,8 @@ class GameState:
     
     @property
     def status_line(self) -> str:
-        line = "${:d} {:.4f}/{:.4f}J  {:d}S->{:d}(i)  T:{:.2f}"
-        return line.format(self.money, self.free_juice, self.juice, int(self.seeds), self.ideas, self.time)
+        line = "{:s} {:.4f}/{:.4f}J  {:d}S->{:d}(i)  T:{:.2f}"
+        return line.format(format.money(self.money, full=True), self.free_juice, self.juice, int(self.seeds), self.ideas, self.time)
         
     def __str__(self):
         msg = "GameState<time: {:.2f}, money: {:d}, cj: {:.4f}"
