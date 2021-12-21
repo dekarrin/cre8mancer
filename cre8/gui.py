@@ -4,7 +4,35 @@ import tkinter as tk
 from tkinter import ttk
 import math
 
-from typing import Tuple, Optional, Union
+from typing import Tuple, Optional, Union, Callable
+
+
+class ActivityValueComponent(tk.Frame):
+    """
+    Component that allows you to select an item and then set an int-valued property on it. The property is not set
+    until an Apply button is pressed. The Apply button is dim until an item is selected and the value
+    is not the current value.
+    """
+    def __init__(
+        self,
+        master,
+        set_value_func: Callable[[str, int, int], Any],
+        get_value_func: Callable[[str, int], int],
+        text: str
+    ):
+        """
+        Create a new ActivityValueComponent.
+        
+        :param master: The master tk.Widget that will be the parent of the component.
+        :param set_value_func: A callable that accepts a string activity type and activity index
+        as well as the value to set on that target specified by those two.
+        :param get_value_func: A callable that accepts a string activity type and activity index
+        and returns the current value that the target specified by those two has.
+        :param text: What to put as the label for the text.
+        """
+        super().__init__(master=master)
+        
+        
 
 
 class Counter(tk.Frame):
@@ -290,6 +318,7 @@ class Gui:
         seeds = self.debug_seeds.get()
         ideas = self.debug_ideas.get()
         self.g.set_state(money=money, juice=juice, seeds=seeds, ideas=ideas)
+        self.write_output("Applied debug settings to the current game")
         self.entry_frames_notebook.select(0)
 
     @property
@@ -298,11 +327,12 @@ class Gui:
         return idx == self.debug_entry_notebook_index
         
     def _update(self):
-        self.g.update()
         if self.in_debug_mode:
             self.write_main_content("In debug mode. Switch back to the game to resume display")
             self.update_main_content = True
         else:
+            self.g.update()
+            
             # set debug mode stats so it is correct when user swaps to it
             self.debug_money.set(self.g.get_state('money'))
             self.debug_juice.set(self.g.get_state('juice'))
