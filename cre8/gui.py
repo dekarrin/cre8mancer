@@ -207,7 +207,7 @@ class ActivitiesOptionsMenu(tk.OptionMenu):
     def _init_options(self):
         self._options_list = list()
         self._options_list.append('-- Select Activity --')
-        self._options_list.append('')
+        self._options_list.append(' ')
         self._options_list.append('-- Jobs --')
         self._options_list += [j.name for j in Jobs]
         self._options_list.append('-- Outlets --')
@@ -224,44 +224,48 @@ class ActivityValueComponent(tk.Frame):
     def __init__(
             self,
             master,
-            set_value_func: Callable[[str, int, int], Any],
             get_value_func: Callable[[str, int], int],
-            text: str
+            set_value_func: Callable[[str, int, int], Any],
+            text: str,
+            **kwargs
     ):
         """
         Create a new ActivityValueComponent.
 
         :param master: The master tk.Widget that will be the parent of the component.
-        :param set_value_func: A callable that accepts a string activity type and activity index
-        as well as the value to set on that target specified by those two.
         :param get_value_func: A callable that accepts a string activity type and activity index
         and returns the current value that the target specified by those two has.
+        :param set_value_func: A callable that accepts a string activity type and activity index
+        as well as the value to set on that target specified by those two. This will always be passed
+        a type-correct valid value; it will not be called if the user has entered invalid (non-int)
+        input.
         :param text: What to put as the label for the text.
         """
-        super().__init__(master=master, relief=tk.GROOVE)
+        super().__init__(master=master, relief=tk.GROOVE, borderwidth=2)
 
         self._getter_callback = get_value_func
         self._setter_callback = set_value_func
 
-        self._label = tk.Label(self, text=text)
-        self._label.pack(side=tk.TOP)
+        self._label_component = tk.Label(self, text=text)
+        self._label_component.pack(side=tk.TOP)
+
+        self._options_component = ActivitiesOptionsMenu(self)
+        self._options_component.pack(side=tk.TOP)
 
         self._inputs_frame = tk.Frame(self)
         self._inputs_frame.pack(side=tk.TOP)
 
-        self._options = ActivitiesOptionsMenu(self._inputs_frame)
-        self._options.pack(side=tk.LEFT)
+        self._counter_component = Counter(master=self._inputs_frame, value="")
+        self._counter_component.field.config(width=8)
+        self._counter_component.disable()
+        self._counter_component.pack(side=tk.LEFT)
 
-        self._counter = Counter(master=self._inputs_frame, value="")
-        self._counter.disable()
-        self._counter.pack(side=tk.LEFT, fill=tk.X)
+        self._button_component = tk.Button(master=self._inputs_frame, text="Apply", command=self.apply)
+        self._button_component.config(state=tk.DISABLED)
+        self._button_component.pack(side=tk.LEFT)
 
-        self._button = tk.Button(master=self._inputs_frame, text="Apply")
-        self._button.config(state=tk.DISABLED)
-        self._button.pack(side=tk.LEFT)
-
-        self._options.bind_change(self._update_option)
-        self._counter.bind_change(self._update_counter)
+        self._options_component.bind_change(self._update_option)
+        self._counter_component.bind_change(self._update_counter)
 
     def apply(self):
         """
@@ -269,44 +273,44 @@ class ActivityValueComponent(tk.Frame):
 
         Raises an exception if a valid activity is not selected.
         """
-        target_type, target_idx = self._options.value_as_target()
+        target_type, target_idx = self._options_component.value_as_target()
         if target_type is None:
             raise ValueError("Need to select a valid activity target before applying")
 
-        set_val = self._counter.get()
+        set_val = self._counter_component.get()
         if set_val is None:
             raise ValueError("Need to specify a valid value before calling applying")
 
         self._setter_callback(target_type, target_idx, set_val)
 
-    def _update_option(self, evt):
-        target_type, target_idx = self._options.value_as_target()
+    def _update_option(self, *args):
+        target_type, target_idx = self._options_component.value_as_target()
         if target_type is None:
-            self._counter.set("")
-            self._counter.disable()
-            self._button.config(state=tk.DISABLED)
+            self._counter_component.set("")
+            self._counter_component.disable()
+            self._button_component.config(state=tk.DISABLED)
         else:
             cur_val = self._getter_callback(target_type, target_idx)
-            self._counter.enable()
-            self._counter.set(cur_val)
-            self._button.config(state=tk.DISABLED)
+            self._counter_component.enable()
+            self._counter_component.set(cur_val)
+            self._button_component.config(state=tk.DISABLED)
 
-    def _update_counter(self, evt):
-        target_type, target_idx = self._options.value_as_target()
+    def _update_counter(self, *args):
+        target_type, target_idx = self._options_component.value_as_target()
         if target_type is None:
             # should never happen, but just return in this case
             return
 
-        set_val = self._counter.get()
+        set_val = self._counter_component.get()
         if set_val is None:
-            self._button.config(state=tk.DISABLED)
+            self._button_component.config(state=tk.DISABLED)
             return
 
         cur_val = self._getter_callback(target_type, target_idx)
         if cur_val != set_val:
-            self._button.config(state=tk.NORMAL)
+            self._button_component.config(state=tk.NORMAL)
         else:
-            self._button.config(state=tk.DISABLED)
+            self._button_component.config(state=tk.DISABLED)
 
     
 class Gui:
@@ -322,6 +326,7 @@ class Gui:
         self.g = g
         self.root = tk.Tk()
         self.root.title("Cre8or Forge v0.0a")
+        self.root.report_callback_exception = self.on_error
         
         self.mode_button_var = tk.StringVar()
         self.mode_button_var.set("Store")
@@ -346,7 +351,6 @@ class Gui:
         # so user cant resize smaller than the elements
         self.root.update()
         self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
-        self.root.report_callback_exception = self.on_error
 
     def on_error(self, exc_type, exc_value, exc_traceback):
         if exc_type == KeyboardInterrupt:
@@ -473,6 +477,7 @@ class Gui:
         main_entry_frame.pack(fill=tk.BOTH, expand=True)
         self._build_click_component(main_entry_frame)
         self._build_buy_component(main_entry_frame)
+        self._build_instances_component(main_entry_frame)
         frm_mode_buttons = tk.Frame(master=main_entry_frame)
         frm_mode_buttons.pack(side=tk.TOP)
         mode_btn = tk.Button(frm_mode_buttons, textvariable=self.mode_button_var, command=self.swap_mode)
@@ -538,6 +543,30 @@ class Gui:
         entry_click_lbl = tk.Button(frm_component, text="Buy", command=do_buy)
         entry_click_lbl.pack(side=tk.LEFT)
         return frm_component
+
+    def _build_instances_component(self, master) -> tk.Frame:
+        """
+        Return the fully-configured and packed buy component frame.
+        """
+        def set_instances(target_type, target_idx, value):
+            if value < 0:
+                self.write_output("You can't set the number of active instances to less than 0!")
+                return
+
+            cur_val = self.g.get_active_count(target_type, target_idx)
+            diff = value - cur_val
+
+            try:
+                if diff < 0:
+                    self.g.deactivate('instance', target_type, target_idx, amount=abs(diff))
+                else:
+                    self.g.activate('instance', target_type, target_idx, amount=diff)
+            except RulesViolationError as e:
+                self.write_output(str(e))
+
+        comp = ActivityValueComponent(master, self.g.get_active_count, set_instances, "Active Instances")
+        comp.pack(side=tk.TOP)
+        return comp
         
     def _build_debug_entry_frame(self, master) -> tk.Frame:
         """

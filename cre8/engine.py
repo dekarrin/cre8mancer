@@ -403,6 +403,18 @@ class Engine:
         self.save()
         return msg
 
+    def get_active_count(self, target_type: str, target_idx: int) -> int:
+        """
+        Return the number of active instances of the targeted activity.
+        """
+        if target_type not in ('job', 'outlet'):
+            raise ValueError("target_type must be one of 'job' or 'outlet'")
+
+        target, _ = self._find_target(target_type, target_idx)
+        if target is None:
+            return 0
+        return target.active
+
     def show_store(self) -> str:
         gs = self.game
         msg = ""
