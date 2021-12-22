@@ -1,3 +1,4 @@
+import logging
 import traceback
 
 from .activities import Jobs, Outlets
@@ -10,6 +11,9 @@ import math
 from typing import Tuple, Optional, Union, Callable, Any
 
 Numeric = Union[int, float, str]
+
+
+_log = logging.getLogger(__name__)
 
 
 class Counter(tk.Frame):
@@ -645,6 +649,8 @@ class Gui:
             self.root.destroy()
             return
 
+        _log.debug("The GUI generated an uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
         msg = 'Oh no it crashed glub! Please tell deka! 38O\n\n\n'
         msg += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
         messagebox.showwarning('Error! Glub!', msg)
@@ -711,6 +717,7 @@ class Gui:
         """
         Launch the tutorial window.
         """
+
         tut = FlowWindow(self.root)
         tut.title("Tutorial")
         tut.add_step(output="1 - This is the first step", content="ERASE THIS")

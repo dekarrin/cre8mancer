@@ -1,6 +1,7 @@
 from cre8 import engine
 from cre8.engine import RulesViolationError
 from cre8.gui import Gui
+from cre8.logutil import TRACE
 
 import sys
 import argparse
@@ -8,7 +9,10 @@ import logging
 import logging.handlers
 
 
-_log = logging.getLogger('cre8forge')
+if __name__ == "__main__":
+    _log = logging.getLogger('cre8')
+else:
+    _log = logging.getLogger(__name__)
 _log.setLevel(logging.DEBUG)
 
 
@@ -32,6 +36,7 @@ def main():
 def run_from_cli():
     parser = argparse.ArgumentParser(description="Create vast new worlds by idling")
     parser.add_argument('-s', '--state', default='st8cre8.p', help="Give location of state file")
+    parser.add_argument('-t', '--log-trace', action='store_true', help="Include trace-level logs in logfile")
     subparsers = parser.add_subparsers(required=True, dest="command")
     
     gui_parser = subparsers.add_parser('gui', help="Start the game GUI")
@@ -117,6 +122,9 @@ def run_from_cli():
     debug_ideas.set_defaults(func=exec_debug_ideas)
 
     args = parser.parse_args()
+
+    if args.log_trace:
+        _log.setLevel(TRACE)
     
     eng = engine.Engine(args.state)
     args.func(eng, args)
@@ -269,7 +277,7 @@ class _ExactLevelFilter(logging.Filter):
 
 def setup_logging():
     file_handler = logging.handlers.RotatingFileHandler('debug.log', maxBytes=25*1024*1024, backupCount=5)
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(TRACE)
     file_handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s: %(message)s"))
     logging.getLogger().addHandler(file_handler)
 

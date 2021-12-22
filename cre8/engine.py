@@ -1,5 +1,6 @@
 from .activities import OwnedActivities, Activity, Execution
 from . import state, activities, layout
+from .logutil import TRACE
 from .state import GameState
 from .layout import format_timer
 from datetime import datetime, timezone
@@ -10,7 +11,6 @@ import logging
 
 
 _log = logging.getLogger(__name__)
-_log.setLevel(logging.DEBUG)
 
 
 def seed_func(ex: Execution) -> float:
@@ -36,7 +36,7 @@ def seed_func(ex: Execution) -> float:
 
     total = amount + mon_factor + cj_factor
     msg = "Seed - amount, money, juice, total - {:.6f}, {:.6f}, {:.6f}, {:.6f}"
-    _log.debug(msg.format(amount, mon_factor, cj_factor, total))
+    _log.log(TRACE, msg.format(amount, mon_factor, cj_factor, total))
     return total
     
 
@@ -44,6 +44,7 @@ class RulesViolationError(Exception):
     """Raised when a caller attempts to do something that is technically programmatically
     valid but disallowed by the game rules."""
     def __init__(self, msg):
+        _log.debug("RulesViolationError created - {!r}".format(msg))
         super().__init__(msg)
 
 
@@ -57,11 +58,12 @@ class Advancement:
 
 
 class Engine:
-    def __init__(self, state_file: str = 'st8cre8.p'):
+    def __init__(self, state_file: Optional[str] = 'st8cre8.p'):
         self.state_file = state_file
         self.game = GameState()
         
         _ = self._load_or_create_state()
+        _log.debug("t={:.4f} - Engine initialized".format(self.game.time))
         
     def update(self):
         """
@@ -85,6 +87,8 @@ class Engine:
         """
         gs = self.game
         msg = ""
+
+        _log.debug("t={:.4f} - Action 'prestige'".format(self.game.time))
         
         if gs.seeds < 1:
             raise RulesViolationError("You can't prestige until you have at least 1 seed.")
@@ -109,6 +113,8 @@ class Engine:
         :param attribute: The state attribute to obtain. Can be one of "money", "juice", "seeds", or "ideas".
         """
         gs = self.game
+
+        _log.log(TRACE, "t={:.4f} - Action 'get_state' for {!r}".format(self.game.time, attribute))
         
         if attribute not in ('money', 'juice', 'seeds', 'ideas'):
             raise ValueError("attribute is not an allowed value for get_state: {!s}".format(attribute))
@@ -146,6 +152,9 @@ class Engine:
         # functions to take place)
         gs = self.game
 
+        logged_values = "values (money={!r}, juice={!r}, seeds={!r}, ideas={!r})".format(money, juice, seeds, ideas)
+        _log.debug("t={:.4f} - Action 'set_state'; ".format(self.game.time) + logged_values)
+
         if money is not None:
             gs.money = money
         if juice is not None:
@@ -164,6 +173,9 @@ class Engine:
         """    
         gs = self.game
         msg = ""
+
+        logged_values = "x{!r} for {!r} in {!r}[{!r}]".format(amount, category, target_type, target_idx)
+        _log.debug("t={:.4f} - Action 'deactivate'; ".format(self.game.time) + logged_values)
         
         if category not in ('instance', 'automation'):
             raise ValueError("category must be one of 'instance' or 'automation'")
@@ -217,6 +229,9 @@ class Engine:
         """
         gs = self.game
         msg = ""
+
+        logged_values = "x{!r} for {!r} in {!r}[{!r}]".format(amount, category, target_type, target_idx)
+        _log.debug("t={:.4f} - Action 'activate'; ".format(self.game.time) + logged_values)
         
         if category not in ('instance', 'automation'):
             raise ValueError("category must be one of 'instance' or 'automation'")
@@ -294,6 +309,9 @@ class Engine:
         """
         gs = self.game
         msg = ""
+
+        logged_values = "{!r} in {!r}[{!r}]".format(category, target_type, target_idx)
+        _log.debug("t={:.4f} - Action 'buy'; ".format(self.game.time) + logged_values)
         
         if category not in ('instance', 'automation'):
             raise ValueError("category must be one of 'instance' or 'automation'")
@@ -371,6 +389,9 @@ class Engine:
         gs = self.game
         msg = ""
 
+        logged_values = "{!r}[{!r}]".format(target_type, target_idx)
+        _log.debug("t={:.4f} - Action 'click'; ".format(self.game.time) + logged_values)
+
         target, act_def = self._find_target(target_type, target_idx)
         if target is None:
             msg = "You don't own any of {!r}; buy at least one first".format(act_def.name)
@@ -436,6 +457,8 @@ class Engine:
     def show_store(self) -> str:
         gs = self.game
         msg = ""
+
+        _log.debug("t={:.4f} - Action 'store'".format(self.game.time))
         
         msg += gs.status_line + '\n\n'
         msg += "Store:\n"
@@ -478,6 +501,8 @@ class Engine:
     def status(self) -> str:
         gs = self.game
         msg = ""
+
+        _log.log(TRACE, "t={:.4f} - Action 'status'".format(self.game.time))
         
         msg += gs.status_line
         msg += "\n\nJobs:\n"
@@ -496,7 +521,8 @@ class Engine:
         return msg
         
     def save(self):
-        state.save(self.state_file, self.game)
+        if self.state_file is not None:
+            state.save(self.state_file, self.game)
     
     def _load_or_create_state(self) -> Optional[Advancement]:
         """Get a ready-to-use GameState. If loaded from disk, advancement is done so that the
