@@ -312,9 +312,6 @@ class AutomationComponent(tk.Frame):
             self._auto_button.config(state=tk.NORMAL)
             self._buy_button.config(state=tk.NORMAL)
 
-        
-        
-
 
 class ActivityValueComponent(tk.Frame):
     """
@@ -414,7 +411,198 @@ class ActivityValueComponent(tk.Frame):
         else:
             self._button_component.config(state=tk.DISABLED)
 
+
+class FlowWindow(tk.Toplevel):
+    """
+    A top-level window with prev and next buttons that shows a flow of information.
+    The steps are advanced through when the user clicks the next button, and goes
+    back when the user clicks the prev button.
     
+    This window looks like the main window of cre8or forge, with a main content
+    pane and an output pane. The entry area contains only the next and prev
+    buttons.
+    
+    Once it is created, add all desired steps, then call start() to begin the flow.
+    """
+    def __init__(self, master, intro_text="Press 'Next' to get started"):
+        super().__init__(master)
+        
+        self._steps = list()
+        self._next_button: tk.Button
+        self._prev_button: tk.Button
+        
+        # set to -1 so we can call next() at end of __init__ which will immediately move it to 0.
+        self._step_index = -1
+        self.add_step(output=intro_text)
+        
+        self.rowconfigure(0, minsize=300, weight=1)
+        self.columnconfigure(0, minsize=400, weight=1)
+        self.columnconfigure(1, minsize=200, weight=0)
+        self.rowconfigure(1, minsize=100, weight=0)
+        
+        content_frame, self.main_content = self._create_main_content_frame(self)
+        entry_frame, self._prev_button, self._next_button = self._create_entry_frame(self)
+        output_frame, self.output = self._create_output_frame(self, 7)
+        
+        content_frame.grid(row=0, column=0, sticky="nsew")
+        entry_frame.grid(row=0, column=1, sticky="nsew")
+        output_frame.grid(row=1, column=0, columnspan=2, sticky="nsew")
+
+        self.update()
+        self.minsize(self.winfo_width(), self.winfo_height())
+        
+    def add_step(self, output: Optional[str] = None, content: Optional[str] = None):
+        """
+        Add a step to the flow. Steps will be displayed to the user in the
+        order that they are added.
+        
+        :param output: What to show in the output pane. Set to None to leave the
+        output pane unmodified from any previous text. Set to an empty string to
+        erase the output pane of any previous text.
+        :param content: What to show in the main content pane. Set to None to
+        leave the main content pane unmodified from any previous text. Set to an
+        empty string to erase the content pane of any previous text.
+        """
+        step = {
+            'output': '',
+            'content': ''
+        }
+        
+        # instead of leaving as None when specified, give it same text
+        # as prev step. This will make hitting prev way easier since
+        # the entire step chain doesnt need to get replayed just to find
+        # out what is empty and what isnt on prev step.
+        prev_step = None
+        if len(self._steps) > 0:
+            prev_step = self._steps[-1]
+        
+        if output is None:
+            if prev_step is not None:
+                step['output'] = prev_step['output']
+        else:
+            step['output'] = str(output)
+        
+        if content is None:
+            if prev_step is not None:
+                step['content'] = prev_step['content']
+        else:
+            step['content'] = str(content)
+            
+        self._steps.append(step)
+        
+    def start(self):
+        """
+        Start flow from the beginning.
+        """
+        self._step_index = -1
+        self.next()
+        
+    def next(self):
+        """
+        Show the next step.
+        """
+        self._step_index += 1
+        self._run_current_step()
+        
+    def prev(self):
+        """
+        Show the previous step.
+        """
+        self._step_index -= 1
+        self._run_current_step()
+        
+    def write_output(self, text: str):
+        self.output.config(state=tk.NORMAL)
+        self.output.delete("0.0", tk.END)
+        self.output.insert("0.0", text)
+        self.output.config(state=tk.DISABLED)
+        
+    def write_main_content(self, text: str):
+        scroll_top, _ = self.main_content.yview()
+        self.main_content.config(state=tk.NORMAL)
+        self.main_content.delete("0.0", tk.END)
+        self.main_content.insert("0.0", text)
+        self.main_content.config(state=tk.DISABLED)
+        self.main_content.yview_moveto(scroll_top)
+        
+    def _run_current_step(self):
+        """
+        Perform the instructions in the current flow step and set the prev and
+        next buttons as enabled or disabled based on the current step index.
+        """
+        if self._step_index >= len(self._steps):
+            self._step_index = len(self._steps) - 1
+        if self._step_index < 0:
+            self._step_index = 0
+            
+        step = self._steps[self._step_index]
+        
+        self.write_output(step['output'])
+        self.write_main_content(step['content'])
+            
+        if self._step_index > 0:
+            self._prev_button.config(state=tk.NORMAL)
+        else:
+            self._prev_button.config(state=tk.DISABLED)
+            
+        if self._step_index + 1 < len(self._steps):
+            self._next_button.config(state=tk.NORMAL)
+        else:
+            self._next_button.config(state=tk.DISABLED)
+        
+    def _create_main_content_frame(self, master) -> Tuple[tk.Widget, tk.Text]:
+        """
+        Return the main content frame with all children configured. Additionally,
+        return the Text field that holds the contents of text within the main
+        content frame.
+        
+        The returned frame will not have had its geometry manager set.
+        """
+        frm_main = tk.Frame(master=master, relief=tk.SUNKEN, borderwidth=3)
+        mc_field = tk.Text(master=frm_main)
+        mc_scrollbar = ttk.Scrollbar(master=frm_main, command=mc_field.yview)
+        mc_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        mc_field['yscrollcommand'] = mc_scrollbar.set
+        mc_field.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1)
+        
+        return frm_main, mc_field
+        
+    def _create_entry_frame(self, master) -> Tuple[tk.Frame, tk.Button, tk.Button]:
+        """
+        Return the entry frame with all children configured. Additionally,
+        return the previous and next buttons that were created so their state
+        can be updated later.
+        
+        The returned frame will not have had its geometry manager set.
+        """
+        entry_frame = tk.Frame(master=master)
+        
+        frm_bot_buttons = tk.Frame(master=entry_frame)
+        frm_bot_buttons.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        next_btn = tk.Button(master=frm_bot_buttons, text="Next ->", command=self.next)
+        next_btn.pack(side=tk.RIGHT)
+        
+        prev_btn = tk.Button(master=frm_bot_buttons, text="<- Prev", command=self.prev)
+        prev_btn.pack(side=tk.LEFT)
+        
+        return entry_frame, prev_btn, next_btn
+        
+    def _create_output_frame(self, master, output_lines) -> Tuple[tk.Widget, tk.Text]:
+        """
+        Return the output frame with all children configured. Additionally,
+        return the Text field that holds the contents of text within the
+        output frame.
+        
+        The returned frame will not have had its geometry manager set.
+        """
+        frm = tk.Frame(master=master)
+        output = tk.Text(master=frm, height=output_lines, width=103)
+        output.config(state=tk.DISABLED)
+        output.pack(fill=tk.X)
+        return frm, output
+
+
 class Gui:
     def __init__(self, g: Engine, output_lines: int = 7):
         self.debug_money: Counter
@@ -466,7 +654,6 @@ class Gui:
         self.root.mainloop()
         
     def write_output(self, text: str):
-        
         self.output.config(state=tk.NORMAL)
         self.output.delete("0.0", tk.END)
         self.output.insert("0.0", text)
@@ -519,6 +706,25 @@ class Gui:
     def in_play_mode(self) -> bool:
         idx = self.entry_frames_notebook.index(tk.CURRENT)
         return idx == self.play_entry_notebook_index
+        
+    def tutorial(self):
+        """
+        Launch the tutorial window.
+        """
+        tut = FlowWindow(self.root)
+        tut.title("Tutorial")
+        tut.add_step(output="1 - This is the first step", content="ERASE THIS")
+        tut.add_step(output="2 - This step leaves content pane alone")
+        tut.add_step(output="3 - Now this step erases the main content", content="")
+        tut.add_step(content="4 - Update the content without updating the others")
+        tut.add_step(content="5 - Wipe content")
+        tut.start()
+        
+        # make it modal
+        tut.focus_set()
+        tut.grab_set()
+        tut.transient(self.root)
+        tut.wait_window(tut)
         
     def _update(self):
         if self.in_debug_mode:
@@ -605,6 +811,8 @@ class Gui:
         
         med_btn = tk.Button(master=frm_bot_buttons, text="Medidate", command=meditate)
         med_btn.pack(side=tk.RIGHT)
+        tut_btn = tk.Button(master=frm_bot_buttons, text="Tutorial", command=self.tutorial)
+        tut_btn.pack(side=tk.LEFT)
         
         return main_entry_frame
         
