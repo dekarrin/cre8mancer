@@ -534,17 +534,20 @@ class Engine:
         
         Will print to stdout if needs confirmation from user to override.
         """
+        self.game = None
+        
         idle_seconds = 0
 
-        try:
-            self.game, idle_seconds = state.load(self.state_file)
-        except state.SerializedStateError as e:
-            print(str(e), file=sys.stderr)
-            overwrite = input("Run anyways and overwrite the existing file (Y/N)? ")
-            while overwrite.upper() != 'Y' and overwrite.upper() != 'N':
-                overwrite = input("Please enter Y or N: ")
-            if overwrite == 'N':
-                raise
+        if self.state_file is not None:
+            try:
+                self.game, idle_seconds = state.load(self.state_file)
+            except state.SerializedStateError as e:
+                print(str(e), file=sys.stderr)
+                overwrite = input("Run anyways and overwrite the existing file (Y/N)? ")
+                while overwrite.upper() != 'Y' and overwrite.upper() != 'N':
+                    overwrite = input("Please enter Y or N: ")
+                if overwrite == 'N':
+                    raise
 
         if self.game is None:
             self.game = GameState()

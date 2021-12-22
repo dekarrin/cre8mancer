@@ -454,6 +454,7 @@ class FlowWindow(tk.Toplevel):
 
         self.update()
         self.minsize(self.winfo_width(), self.winfo_height())
+        self.maxsize(self.winfo_width(), self.winfo_height())
         
     def add_step(self, output: Optional[str] = None, content: Optional[str] = None):
         """
@@ -718,13 +719,19 @@ class Gui:
         Launch the tutorial window.
         """
 
-        tut = FlowWindow(self.root)
+        mock_game = Engine(state_file=None)
+        
+        initial_msg = "Welcome to cre8orForge!!!!!!!!\n"
+        initial_msg += "Use the Next and Prev buttons to navig8 this tutorial"
+        tut = FlowWindow(self.root, intro_text=initial_msg)
         tut.title("Tutorial")
-        tut.add_step(output="1 - This is the first step", content="ERASE THIS")
-        tut.add_step(output="2 - This step leaves content pane alone")
-        tut.add_step(output="3 - Now this step erases the main content", content="")
-        tut.add_step(content="4 - Update the content without updating the others")
-        tut.add_step(content="5 - Wipe content")
+        
+          
+        
+        
+        
+        
+        
         tut.start()
         
         # make it modal
