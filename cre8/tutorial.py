@@ -1,5 +1,8 @@
 from typing import Callable, Any, Optional
 
+from .activities import OwnedActivities
+from . import layout
+
 
 class StepBuilder:
     def __init__(self, default_output: Optional[str] = None, default_content: Optional[str] = None):
@@ -27,7 +30,7 @@ class StepBuilder:
         self.content = self.default_content
         
 
-def generate(add_step: Callable[[str, str, str], Any], status_line):
+def generate(add_step: Callable[[str, str, str], Any], status_line, example_job: OwnedActivities):
     sb = StepBuilder()
     def add():
         add_step(sb.output, sb.content, sb.section)
@@ -68,7 +71,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb.outln("- Oh my gog, calm down, I was getting to that! Now, check this...")
     add()
     
-    sb.section = "1.1 Money"
+    sb.section = "1.1. Money"
     sb.mainln('\/')
     sb.outln("- This first num8er here, that's how much money you got.")
     sb.outln("- it says 0 glub")
@@ -81,7 +84,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb.outln("- Yeah, having that show up IN this tutorial would have 8een a little too complic8ed.")
     add()
     
-    sb.section = "1.2 Creative Juice"
+    sb.section = "1.2. Creative Juice"
     sb.mainln("   \___________/")
     sb.outln("- okay! i got the next one! so, this here is how much juice you have.")
     sb.outln("- Hahahahahahahaha, juice, huh? Sounds lewd.")
@@ -99,7 +102,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb.outln("- Easy, I got this. Check it.")
     add()
     
-    sb.section = "1.3 Seeds & (i)deas"
+    sb.section = "1.3. Seeds & (i)deas"
     sb.mainln("                   \_____/")
     sb.outln("- So this one is pretty complic8ed, 8ut don't worry, you got *me* telling you a8out it ::::) Just the kind of friend that I am.")
     sb.outln("- shes SUCH a good friend that she brags about it instead of actually explaining 383")
@@ -168,7 +171,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb.outln("- You should! Hey, wanna take the last part of the status line? To make up for that crap 8efore.")
     add()
     
-    sb.section = "1.4 Game Time"
+    sb.section = "1.4. Game Time"
     sb.mainln("                             \____/")
     sb.outln("- sure! it's p easy, the last one is just game time! it's the number of seconds since the game was started.")
     sb.outln("- Perfect! See, I told you you were a little 8adass :::;)")
@@ -179,5 +182,17 @@ def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb.outln("- ooh, what's next?")
     sb.outln("- How a8out the activity card?")
     sb.outln("- Yeah, let's do it!")
+    add()
+    
+    # +------------------------------------------------+--------------+
+    # | Eat Bagels                    ($20) x242193:IN |    (No auto) |
+    # | $100 (0J)                     $100/C, 0.03CJ/C |        x{:d} |
+    # | |                                 | 999h60m55s |      RUNNING |
+    # +------------------------------------------------+--------------+
+    act_card = layout.make_act_card(example_job, 0.0)
+    sb.default_content = act_card
+    sb.content = act_card
+    sb.section = "2. Activities"
+    sb.outln("- this is the activity card, glub. you see these on the main screen")
     add()
     
