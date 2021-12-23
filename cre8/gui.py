@@ -173,6 +173,63 @@ class DoubleCounter(Counter):
             return val
         except ValueError:
             return None
+            
+            
+class QueryableOptionMenu(tk.OptionMenu):
+    def __init__(self, master, *options):
+        """
+        Create new QueryableOptionMenu with the given options. Each option must be unique.
+        """
+        # Make sure user passed in unique options only
+        seen_opts = set()
+        for opt in options:
+            if opt in seen_opts:
+                raise ValueError("Duplicate option {!r}; every option must be unique".format(opt))
+            seen_opts.add(opt)
+        
+        self._options_list = options
+        self._var = tk.StringVar()
+        self._var.set(self._options_list[0])
+        super().__init__(master, self._var, *self._options_list)
+        
+    def bind_change(self, callback):
+        self._var.trace('w', callback)
+        
+    def get(self) -> str:
+        """
+        Get the current value of the option menu.
+        """
+        return self._var.get()
+        
+    def get_index(self) -> int:
+        """
+        Get the current index that is selected.
+        """
+        cur_val = self.get()
+        for idx, val in enumerate(self._options_list):
+            if val == cur_val:
+                return idx
+        raise ValueError("currently selected value is not in the initial options")
+        
+    def set(self, new_value: str) -> str:
+        """
+        Set the current value of the option menu. It should be one of the options
+        originally passed in.
+        """
+        if new_value not in self._options_list:
+            raise ValueError("{!r} is not in this option menu".format(new_value))
+            
+        self._var.set(new_value)
+        
+    def set_index(self, new_idx: int) -> str:
+        """
+        Set the current value of the option menu to the given index.
+        
+        :param new_idx: Treated like slice index, so negative values specify indexes
+        relative to the right end.
+        """
+        val = self._options_list[new_idx]
+        self.set(val)
 
 
 class ActivitiesOptionsMenu(tk.OptionMenu):
@@ -424,21 +481,25 @@ class FlowWindow(tk.Toplevel):
     back when the user clicks the prev button.
     
     This window looks like the main window of cre8or forge, with a main content
-    pane and an output pane. The entry area contains only the next and prev
-    buttons.
+    pane and an output pane. The entry area containsthe next and prev
+    buttons as well as a section selector.
     
     Once it is created, add all desired steps, then call start() to begin the flow.
     """
-    def __init__(self, master, intro_text="Press 'Next' to get started"):
+    def __init__(self, master, intro_text="Press 'Next' to get started", intro_section="Start"):
         super().__init__(master)
         
         self._steps = list()
         self._next_button: tk.Button
         self._prev_button: tk.Button
         
-        # set to -1 so we can call next() at end of __init__ which will immediately move it to 0.
-        self._step_index = -1
-        self.add_step(output=intro_text)
+        self._ignore_selector_change = False
+        self._section_selector_frame: tk.Frame
+        self._section_selector: Optional[QueryableOptionMenu] = None
+        self._sections = list()
+        
+        self._step_index = 0
+        self.add_step(output=intro_text, section=intro_section)
         
         self.rowconfigure(0, minsize=300, weight=1)
         self.columnconfigure(0, minsize=400, weight=1)
@@ -446,7 +507,7 @@ class FlowWindow(tk.Toplevel):
         self.rowconfigure(1, minsize=100, weight=0)
         
         content_frame, self.main_content = self._create_main_content_frame(self)
-        entry_frame, self._prev_button, self._next_button = self._create_entry_frame(self)
+        entry_frame = self._create_entry_frame(self)
         output_frame, self.output = self._create_output_frame(self, 7)
         
         content_frame.grid(row=0, column=0, sticky="nsew")
@@ -457,7 +518,7 @@ class FlowWindow(tk.Toplevel):
         self.minsize(self.winfo_width(), self.winfo_height())
         self.maxsize(self.winfo_width(), self.winfo_height())
         
-    def add_step(self, output: Optional[str] = None, content: Optional[str] = None):
+    def add_step(self, output: Optional[str] = None, content: Optional[str] = None, section: Optional[str] = None):
         """
         Add a step to the flow. Steps will be displayed to the user in the
         order that they are added.
@@ -468,10 +529,23 @@ class FlowWindow(tk.Toplevel):
         :param content: What to show in the main content pane. Set to None to
         leave the main content pane unmodified from any previous text. Set to an
         empty string to erase the content pane of any previous text.
+        :param section: If set, the step marks the beginning of a new section
+        that is called the value of section. The user can jump to that step by
+        selecting that name from the drop-down section selector. Each section
+        name must be unique.
         """
+        # this assumes that the first call to add_step includes a section.
+        # so far this assumption is ensured by the __init__ function.
+        if section is None:
+            cur_section = self._sections[-1][0]
+        else:
+            self._sections.append((section, len(self._steps)-1))
+            cur_section = section
+            
         step = {
             'output': '',
-            'content': ''
+            'content': '',
+            'section': cur_section
         }
         
         # instead of leaving as None when specified, give it same text
@@ -498,8 +572,15 @@ class FlowWindow(tk.Toplevel):
         
     def start(self):
         """
-        Start flow from the beginning.
+        Start flow from the beginning. Once called, more sections
+        cannot be added.
         """
+        if self._section_selector is None:
+            sec_names = [x[0] for x in self._sections]
+            self._section_selector = QueryableOptionMenu(self._section_selector_frame, *sec_names)
+            self._section_selector.pack(side=tk.TOP, fill=tk.X)
+            self._section_selector.bind_change(self._section_selected)
+        
         self._step_index = -1
         self.next()
         
@@ -555,6 +636,19 @@ class FlowWindow(tk.Toplevel):
             self._next_button.config(state=tk.NORMAL)
         else:
             self._next_button.config(state=tk.DISABLED)
+            
+        if step['section'] != self._section_selector.get():
+            self._ignore_selector_change = True
+            self._section_selector.set(step['section'])
+            self._ignore_selector_change = False
+            
+    def _section_selected(self, *args):
+        if self._ignore_selector_change:
+            return
+        selected_idx = self._section_selector.get_index()
+        sec_name, step_idx = self._sections[selected_idx]
+        self._step_index = step_idx
+        self._run_current_step()
         
     def _create_main_content_frame(self, master) -> Tuple[tk.Widget, tk.Text]:
         """
@@ -573,26 +667,32 @@ class FlowWindow(tk.Toplevel):
         
         return frm_main, mc_field
         
-    def _create_entry_frame(self, master) -> Tuple[tk.Frame, tk.Button, tk.Button]:
+    def _create_entry_frame(self, master) -> Tuple[tk.Frame]:
         """
         Return the entry frame with all children configured. Additionally,
-        return the previous and next buttons that were created so their state
-        can be updated later.
+        the previous and next buttons and the section selector frame that
+        were created are stored in self so their state can be updated later.
         
         The returned frame will not have had its geometry manager set.
         """
         entry_frame = tk.Frame(master=master)
         
+        self._section_selector_frame = tk.Frame(master=entry_frame, borderwidth=3, relief=tk.GROOVE)
+        self._section_selector_frame.pack(side=tk.TOP, fill=tk.X, padx=4, pady=4)
+        lbl_select = tk.Label(master=self._section_selector_frame, text="Section:")
+        lbl_select.pack(side=tk.TOP)
+        
+        
         frm_bot_buttons = tk.Frame(master=entry_frame)
         frm_bot_buttons.pack(side=tk.BOTTOM, fill=tk.X)
         
-        next_btn = tk.Button(master=frm_bot_buttons, text="Next ->", command=self.next)
-        next_btn.pack(side=tk.RIGHT)
+        self._next_button = tk.Button(master=frm_bot_buttons, text="Next ->", command=self.next)
+        self._next_button.pack(side=tk.RIGHT)
         
-        prev_btn = tk.Button(master=frm_bot_buttons, text="<- Prev", command=self.prev)
-        prev_btn.pack(side=tk.LEFT)
+        self._prev_button = tk.Button(master=frm_bot_buttons, text="<- Prev", command=self.prev)
+        self._prev_button.pack(side=tk.LEFT)
         
-        return entry_frame, prev_btn, next_btn
+        return entry_frame
         
     def _create_output_frame(self, master, output_lines) -> Tuple[tk.Widget, tk.Text]:
         """

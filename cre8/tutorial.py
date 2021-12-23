@@ -7,6 +7,7 @@ class StepBuilder:
         self.default_content = default_content
         self.output = default_output
         self.content = default_content
+        self.section = None
         
     def outln(self, line=''):
         if self.output is None:
@@ -21,15 +22,16 @@ class StepBuilder:
             self.content += '\n' + line
             
     def reset(self):
+        self.section = None
         self.output = self.default_output
         self.content = self.default_content
             
 
 
-def generate(add_step: Callable[[str, str], Any], status_line):
+def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb = StepBuilder()
     def add():
-        add_step(sb.output, sb.content)
+        add_step(sb.output, sb.content, sb.section)
         sb.reset()
     
     sb.outln("This game is an idle clicker where you try to earn money to fund a buncha creative stuff!")
@@ -50,6 +52,7 @@ def generate(add_step: Callable[[str, str], Any], status_line):
     
     sb.mainln(status_line)
     sb.default_content = status_line
+    sb.section = "1. Status Line"
     sb.outln("- Okay, so this thing is the main status line.")
     sb.outln("- mmm, glub? the what now? which part?")
     add()
