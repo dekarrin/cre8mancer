@@ -186,7 +186,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     add()
     
     # +------------------------------------------------+--------------+
-    # | Eat Bagels                    ($20) x242193:IN |    (No auto) |
+    # | Eat Bagels                          ($20) x1:0 |    (No auto) |
     # | $100 (0J)                     $100/C, 0.03CJ/C |        x{:d} |
     # | |                                 | 999h60m55s |      RUNNING |
     # +------------------------------------------------+--------------+
