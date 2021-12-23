@@ -1,6 +1,8 @@
 import math
 from datetime import timedelta
 
+from typing import Tuple
+
 # power of 10, abbreiviation, full
 NumberNames = [
     (6, 'M', 'million'),
@@ -14,6 +16,59 @@ NumberNames = [
     (30, 'N', 'nonillion'),
     (33, 'd', 'decillion')
 ]
+
+
+def draw_rect(upper_left: Tuple[int, int], lower_right: Tuple[int, int], text: str, horz='-', vert='|', corner='+') -> str:
+    """
+    Draw a rectangle in a block of text. Block is not extended to make rect fit; the rect coords must lie entirely
+    within the given block.
+    """
+    lines = text.split('\n')
+    x1, y1 = upper_left
+    x2, y2 = lower_right
+    
+    if y1 >= len(lines) or y1 < 0:
+        raise ValueError("Upper left Y-coord out of bounds: {!r}".format(y1))
+    if y2 >= len(lines) or y2 < 0:
+        raise ValueError("Lower right Y-coord out of bounds: {!r}".format(y2))
+    
+    if x1 >= len(lines[y1]) or x1 < 0:
+        raise ValueError("Upper left X-coord out of bounds: {!r}".format(x1))
+    if x2 >= len(lines[y2]) or x1 < 0:
+        raise ValueError("Lower right X-coord out of bounds: {!r}".format(x2))
+        
+    # correct user error/confusion
+    upper_left = (min(x1, x2), min(y1, y2))
+    lower_right = (max(x1, x2), max(y1, y2))
+    x1, y1 = upper_left
+    x2, y2 = lower_right
+        
+    if y1 == y2:
+        if x1 == x2:
+            lines[y1] = lines[y1][:x1] + corner + lines[y1][x1 + 1:]
+        else:
+            # no corners or horz, only vert
+            lines[y1] = lines[y1][:x1] + vert + lines[y1][x1 + 1:]
+            lines[y1] = lines[y1][:x2] + vert + lines[y1][x2 + 1:]
+    else:
+        if x1 == x2:
+            lines[y1] = lines[y1][:x1] + horz + lines[y1][x1 + 1:]
+            lines[y2] = lines[y2][:x1] + horz + lines[y2][x1 + 1:]
+        else:
+            horz_len = x2 - x1 + 1
+            horz_line = corner + (horz * (horz_len - 2)) + corner
+            
+            # top and bottom:
+            lines[y1] = lines[y1][:x1] + horz_line + lines[y1][x2 + 1:]
+            lines[y2] = lines[y2][:x1] + horz_line + lines[y2][x2 + 1:]
+            
+            # verts in between:
+            for i in range(1, y2 - y1):
+                lines[y1+i] = lines[y1+i][:x1] + vert + lines[y1+i][x1 + 1:]
+                lines[y1+i] = lines[y1+i][:x2] + vert + lines[y1+i][x2 + 1:]
+                
+    return '\n'.join(lines)
+    
 
 def money(amt: int, full=False) -> str:
     # TODO: O(1) time func, O(n) is fine for this small number of n but

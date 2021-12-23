@@ -2,6 +2,7 @@ from typing import Callable, Any, Optional
 
 from .activities import OwnedActivities
 from . import layout
+from . import format
 
 
 class StepBuilder:
@@ -189,10 +190,18 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     # | $100 (0J)                     $100/C, 0.03CJ/C |        x{:d} |
     # | |                                 | 999h60m55s |      RUNNING |
     # +------------------------------------------------+--------------+
-    act_card = layout.make_act_card(example_job, 0.0)
+    act_card = layout.bar() + '\n' + layout.make_act_card(example_job, 0.0) + '\n' + layout.bar()
     sb.default_content = act_card
     sb.content = act_card
     sb.section = "2. Activities"
     sb.outln("- this is the activity card, glub. you see these on the main screen")
+    add()
+    
+    sb.outln("Every activity is either a 'job' or an 'outlet'. This one happens to be a Job, but they all look pretty much the same as this!")
+    add()
+    
+    sb.section = '2.1. Activity Name'
+    sb.content = format.draw_rect((1, 0), (12, 2), sb.content)
+    sb.outln("- this is the name of the activity! This one is called 'Eat Bagels', it's a v important job!")
     add()
     
