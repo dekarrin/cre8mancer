@@ -25,8 +25,7 @@ class StepBuilder:
         self.section = None
         self.output = self.default_output
         self.content = self.default_content
-            
-
+        
 
 def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb = StepBuilder()
@@ -69,6 +68,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb.outln("- Oh my gog, calm down, I was getting to that! Now, check this...")
     add()
     
+    sb.section = "1.1 Money"
     sb.mainln('\/')
     sb.outln("- This first num8er here, that's how much money you got.")
     sb.outln("- it says 0 glub")
@@ -81,6 +81,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb.outln("- Yeah, having that show up IN this tutorial would have 8een a little too complic8ed.")
     add()
     
+    sb.section = "1.2 Creative Juice"
     sb.mainln("   \___________/")
     sb.outln("- okay! i got the next one! so, this here is how much juice you have.")
     sb.outln("- Hahahahahahahaha, juice, huh? Sounds lewd.")
@@ -98,6 +99,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb.outln("- Easy, I got this. Check it.")
     add()
     
+    sb.section = "1.3 Seeds & (i)deas"
     sb.mainln("                   \_____/")
     sb.outln("- So this one is pretty complic8ed, 8ut don't worry, you got *me* telling you a8out it ::::) Just the kind of friend that I am.")
     sb.outln("- shes SUCH a good friend that she brags about it instead of actually explaining 383")
@@ -166,6 +168,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line):
     sb.outln("- You should! Hey, wanna take the last part of the status line? To make up for that crap 8efore.")
     add()
     
+    sb.section = "1.4 Game Time"
     sb.mainln("                             \____/")
     sb.outln("- sure! it's p easy, the last one is just game time! it's the number of seconds since the game was started.")
     sb.outln("- Perfect! See, I told you you were a little 8adass :::;)")
