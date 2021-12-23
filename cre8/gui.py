@@ -3,6 +3,7 @@ import traceback
 
 from .activities import Jobs, Outlets
 from .engine import Engine, RulesViolationError
+from . import tutorial
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -726,11 +727,7 @@ class Gui:
         tut = FlowWindow(self.root, intro_text=initial_msg)
         tut.title("Tutorial")
         
-          
-        
-        
-        
-        
+        tutorial.generate(tut.add_step, mock_game.game.status_line)
         
         tut.start()
         
