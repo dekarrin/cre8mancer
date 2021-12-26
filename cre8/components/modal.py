@@ -4,6 +4,15 @@ from typing import Callable, Any, Optional
 import os.path
 
 _warn_path = os.path.join(os.path.dirname(__file__), 'warning.png')
+_warn_pi: tk.PhotoImage = None
+
+
+def _get_warn_image() -> tk.PhotoImage:
+    global _warn_pi
+    if _warn_pi is None:
+        _warn_pi = tk.PhotoImage(file=_warn_path)
+    return _warn_pi
+
 
 class ModalBox(tk.Toplevel):
     def __init__(self, master):
@@ -38,8 +47,8 @@ class ConfirmBox(ModalBox):
         message_frame = tk.Frame(master=self)
         message_frame.pack(side=tk.TOP)
         
-        img = tk.PhotoImage(file=_warn_path)
-        image_label = tk.Label(message_frame, image=img)
+        
+        image_label = tk.Label(message_frame, image=_get_warn_image())
         image_label.pack(side=tk.LEFT)
         
         text_label = tk.Label(message_frame, text=text)
@@ -84,6 +93,7 @@ def confirm(
     result = False
     
     def on_select(value):
+        nonlocal result
         result = value
         
     conf_box = ConfirmBox(
