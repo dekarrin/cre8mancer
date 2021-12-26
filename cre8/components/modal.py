@@ -48,7 +48,7 @@ class ModalBox(tk.Toplevel):
         button_frame.pack(side=tk.TOP, fill=tk.X)
     
         def last_choice_func():
-            self._on_button_click(len(choices)-1, choices[-1])
+            self._on_command(len(choices)-1, choices[-1])
         btn = tk.Button(master=button_frame, text=choices[-1], command=last_choice_func)
         btn.pack(side=tk.RIGHT)
         btn.config(width=10)
@@ -58,7 +58,7 @@ class ModalBox(tk.Toplevel):
         for ch in reversed(choices[:-1]):
             idx -= 1
             def choice_func():
-                self._on_button_click(idx, ch)
+                self._on_command(idx, ch)
                 
             btn = tk.Button(master=button_frame, text=ch, command=choice_func)
             btn.pack(side=tk.RIGHT)
@@ -84,8 +84,10 @@ class ModalBox(tk.Toplevel):
         self.transient(self._master_widget)
         self.wait_window(self)
         
-    def button_widgets(self) -> list[tk.Button]:
-        return list()
+    def _on_command(self, index: int, choice: str):        
+        cmd_func = self._on_button_click
+        self.destroy()
+        cmd_func(index, choice)
         
     def _on_button_click(self, index: int, choice: str):
         pass
@@ -106,18 +108,17 @@ class ConfirmBox(ModalBox):
         if default_no:
             focus = 1
         super().__init__(master, text, title, focus, yes, no)
-        self._select_func = bind
-        self.default_no = default_no
+        
+        if bind is None:
+            self._select_func = lambda x: 0
+        else:
+            self._select_func = bind
         
     def _no(self):
-        select_func = self._select_func
-        self.destroy()
-        select_func(False)
+        self._select_func(False)
         
     def _yes(self):
-        select_func = self._select_func
-        self.destroy()
-        select_func(True)
+        self._select_func(True)
         
     def _on_button_click(self, index: int, choice: str):
         if index == 0:
@@ -125,11 +126,19 @@ class ConfirmBox(ModalBox):
         else:
             self._no()
     
+    
+def message(
+    title: str,
+    text: str,
+    button_text: str = "OK"
+):
+    msg_box = ModalBox(master=None, text=text, title=title, default_focus=0)
+    msg_box.make_modal()
 
         
 def confirm(
+    title: str,
     text: str,
-    title: Optional[str] = None,
     yes: str = 'Yes',
     no: str = 'No',
     default_no: bool = False

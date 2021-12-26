@@ -5,6 +5,7 @@ from .activities import Jobs, Outlets
 from .engine import Engine, RulesViolationError
 from . import tutorial
 from . import layout
+from .version import VERSION
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -728,7 +729,7 @@ class Gui:
         self.update_main_content = True
         self.g = g
         self.root = tk.Tk()
-        self.root.title("Cre8or Forge v0.0a")
+        self.root.title("Cre8or Forge v" + VERSION)
         self.root.report_callback_exception = self.on_error
         
         # setup root window config
@@ -761,7 +762,7 @@ class Gui:
 
         msg = 'Oh no it crashed glub! Please tell deka! 38O\n\n\n'
         msg += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-        messagebox.showwarning('Error! Glub!', msg)
+        modal.message('Error! Glub!', msg)
         
     def reset_game(self):
         msg += "Are you sure you want to completely erase all game progress and start fresh?"
@@ -783,12 +784,12 @@ class Gui:
         self.write_output("Manually saved the game.\n\n(Note: This game should autosave on its own)")
         
     def about(self):
-        msg = "A rather long\nand intimiadateing\nseries of\ntext.\nlorum\nipsum\nsit amet."
-        if modal.confirm(msg + " This is a sample test.", title="Hi"):
-            self.write_output("hey")
-        else:
-            self.write_output("no")
-        
+        msg = "Cre8orForge v" + VERSION + "\n"
+        msg += "Game 8y dekarrin | Jello\n"
+        msg += "\n"
+        msg += "This is a GUI alpha tester version, glub! it can also be played\n"
+        msg += "from the command line if you prefer."
+        modal.message(msg + " This is a sample test.", title="About")
         
     def run(self):
         self.root.after(0, self._update)
@@ -869,14 +870,8 @@ class Gui:
         tut.grab_set()
         tut.transient(self.root)
         tut.wait_window(tut)
-        
-    first = True
     
     def _update(self):
-        if self.first:
-            self.about()
-            self.first = False
-        
         if self.in_debug_mode:
             self.write_main_content("In debug mode. Switch back to the game to resume display")
             self.update_main_content = True
