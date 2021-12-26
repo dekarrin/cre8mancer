@@ -216,6 +216,9 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     add()
     
     sb.section = '2.2.) Instances'
+    sb.content = draw.rect((36, 0), (49, 2))
+    sb.outln("This section is the number of instances that you have running!")
+    sb.outln("
 
     sb.content = draw.rect((0, 1), (13, 3))
     sb.outln("- this part is how much it costs to start this activity, to 'click' it!")
