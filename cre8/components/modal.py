@@ -15,41 +15,19 @@ def _get_warn_image() -> tk.PhotoImage:
 
 
 class ModalBox(tk.Toplevel):
-    def __init__(self, master):
-        self._master_widget = master
-        super().__init__(master)
-        
-    def make_modal(self):
-        self.focus_set()
-        self.grab_set()
-        self._focus()
-        self.transient(self._master_widget)
-        self.wait_window(self)
-        
-    def _focus(self):
-        pass
-        
+    def __init__(self, master, text: str, title: Optional[str], default_focus: Optional[int], *choices):
+        if len(choices) < 1:
+            choices = ['OK']
     
-class ConfirmBox(ModalBox):
-    def __init__(
-        self,
-        master,
-        text: str,
-        bind: Optional[Callable[[bool], Any]] = None,
-        title: Optional[str] = None,
-        yes: str = 'Yes',
-        no: str = 'No',
-        default_no: bool = False
-    ):
         super().__init__(master)
+        if title is not None:
+            self.title(title)
+        
+        self._master_widget = master
+        self._default_focus_btn: Optional[tk.Button] = None
         
         internal_frame = tk.Frame(self)
         internal_frame.pack(padx=15, pady=15, fill=tk.X)
-        
-        if title:
-            self.title(title)
-        
-        self._select_func = bind
         
         message_frame = tk.Frame(master=internal_frame)
         message_frame.pack(side=tk.TOP, fill=tk.X)
@@ -68,20 +46,68 @@ class ConfirmBox(ModalBox):
         
         button_frame = tk.Frame(master=internal_frame)
         button_frame.pack(side=tk.TOP, fill=tk.X)
-        
-        self.no_button = tk.Button(master=button_frame, text=no, command=self._no)
-        self.no_button.pack(side=tk.RIGHT)
-        self.no_button.config(width=10)
-        self.yes_button = tk.Button(master=button_frame, text=yes, command=self._yes)
-        self.yes_button.pack(side=tk.RIGHT, padx=10)
-        self.yes_button.config(width=10)
-        self.default_no = default_no
+    
+        def last_choice_func():
+            self._on_button_click(len(choices)-1, choices[-1])
+        btn = tk.Button(master=button_frame, text=choices[-1], command=last_choice_func)
+        btn.pack(side=tk.RIGHT)
+        btn.config(width=10)
+        if default_focus == len(choices)-1:
+            self._default_focus_btn = btn
+        idx = len(choices)-1
+        for ch in reversed(choices[:-1]):
+            idx -= 1
+            def choice_func():
+                self._on_button_click(idx, ch)
+                
+            btn = tk.Button(master=button_frame, text=ch, command=choice_func)
+            btn.pack(side=tk.RIGHT)
+            btn.config(width=10)
+            
+            if default_focus == idx:
+                self._default_focus_btn = btn
 
         self.update()
         self.resizable(0, 0)
         self.attributes("-toolwindow", 1)
         self.minsize(max(self.winfo_width(), 300), self.winfo_height())
         self.maxsize(self.winfo_width(), self.winfo_height())
+        
+        
+    def make_modal(self):
+        self.focus_set()
+        self.grab_set()
+        
+        if self._default_focus_btn is not None:
+            self._default_focus_btn.focus_set()
+        
+        self.transient(self._master_widget)
+        self.wait_window(self)
+        
+    def button_widgets(self) -> list[tk.Button]:
+        return list()
+        
+    def _on_button_click(self, index: int, choice: str):
+        pass
+        
+    
+class ConfirmBox(ModalBox):
+    def __init__(
+        self,
+        master,
+        text: str,
+        bind: Optional[Callable[[bool], Any]] = None,
+        title: Optional[str] = None,
+        yes: str = 'Yes',
+        no: str = 'No',
+        default_no: bool = False
+    ):
+        focus = 0
+        if default_no:
+            focus = 1
+        super().__init__(master, text, title, focus, yes, no)
+        self._select_func = bind
+        self.default_no = default_no
         
     def _no(self):
         select_func = self._select_func
@@ -93,11 +119,11 @@ class ConfirmBox(ModalBox):
         self.destroy()
         select_func(True)
         
-    def _focus(self):
-        if self.default_no:
-            self.no_button.focus_set()
+    def _on_button_click(self, index: int, choice: str):
+        if index == 0:
+            self._yes()
         else:
-            self.yes_button.focus_set()
+            self._no()
     
 
         
