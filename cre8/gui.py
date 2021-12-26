@@ -783,7 +783,8 @@ class Gui:
         self.write_output("Manually saved the game.\n\n(Note: This game should autosave on its own)")
         
     def about(self):
-        if modal.confirm("This is a sample test.", title="Hi"):
+        msg = "A rather long\nand intimiadateing\nseries of\ntext.\nlorum\nipsum\nsit amet."
+        if modal.confirm(msg + " This is a sample test.", title="Hi"):
             self.write_output("hey")
         else:
             self.write_output("no")
@@ -869,7 +870,13 @@ class Gui:
         tut.transient(self.root)
         tut.wait_window(tut)
         
+    first = True
+    
     def _update(self):
+        if self.first:
+            self.about()
+            self.first = False
+        
         if self.in_debug_mode:
             self.write_main_content("In debug mode. Switch back to the game to resume display")
             self.update_main_content = True

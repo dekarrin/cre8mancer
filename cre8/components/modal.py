@@ -22,8 +22,12 @@ class ModalBox(tk.Toplevel):
     def make_modal(self):
         self.focus_set()
         self.grab_set()
+        self._focus()
         self.transient(self._master_widget)
         self.wait_window(self)
+        
+    def _focus(self):
+        pass
         
     
 class ConfirmBox(ModalBox):
@@ -39,36 +43,44 @@ class ConfirmBox(ModalBox):
     ):
         super().__init__(master)
         
+        internal_frame = tk.Frame(self)
+        internal_frame.pack(padx=15, pady=15, fill=tk.X)
+        
         if title:
             self.title(title)
         
         self._select_func = bind
         
-        message_frame = tk.Frame(master=self)
-        message_frame.pack(side=tk.TOP)
-        
+        message_frame = tk.Frame(master=internal_frame)
+        message_frame.pack(side=tk.TOP, fill=tk.X)
         
         image_label = tk.Label(message_frame, image=_get_warn_image())
-        image_label.pack(side=tk.LEFT)
+        image_label.pack(side=tk.LEFT, anchor="n")
         
-        text_label = tk.Label(message_frame, text=text)
+        spacer_frame = tk.Frame(master=message_frame)
+        spacer_frame.pack(side=tk.LEFT, padx=5)
+        
+        text_label = tk.Label(message_frame, text=text, anchor="e", justify=tk.LEFT)
         text_label.pack(side=tk.LEFT)
         
-        button_frame = tk.Frame(master=self)
-        button_frame.pack(side=tk.TOP)
+        spacer_frame = tk.Frame(master=internal_frame)
+        spacer_frame.pack(side=tk.TOP, pady=2)
         
-        no_button = tk.Button(master=button_frame, text=no, command=self._no)
-        no_button.pack(side=tk.RIGHT)
-        yes_button = tk.Button(master=button_frame, text=yes, command=self._yes)
-        yes_button.pack(side=tk.RIGHT)
+        button_frame = tk.Frame(master=internal_frame)
+        button_frame.pack(side=tk.TOP, fill=tk.X)
         
-        if default_no:
-            no_button.focus_set()
-        else:
-            yes_button.focus_set()
+        self.no_button = tk.Button(master=button_frame, text=no, command=self._no)
+        self.no_button.pack(side=tk.RIGHT)
+        self.no_button.config(width=10)
+        self.yes_button = tk.Button(master=button_frame, text=yes, command=self._yes)
+        self.yes_button.pack(side=tk.RIGHT, padx=10)
+        self.yes_button.config(width=10)
+        self.default_no = default_no
 
         self.update()
-        self.minsize(self.winfo_width(), self.winfo_height())
+        self.resizable(0, 0)
+        self.attributes("-toolwindow", 1)
+        self.minsize(max(self.winfo_width(), 300), self.winfo_height())
         self.maxsize(self.winfo_width(), self.winfo_height())
         
     def _no(self):
@@ -80,6 +92,12 @@ class ConfirmBox(ModalBox):
         select_func = self._select_func
         self.destroy()
         select_func(True)
+        
+    def _focus(self):
+        if self.default_no:
+            self.no_button.focus_set()
+        else:
+            self.yes_button.focus_set()
     
 
         
