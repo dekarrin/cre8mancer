@@ -10,6 +10,8 @@ from tkinter import ttk
 from tkinter import messagebox
 import math
 
+from .components import modal
+
 from typing import Tuple, Optional, Union, Callable, Any
 
 Numeric = Union[int, float, str]
@@ -704,7 +706,7 @@ class FlowWindow(tk.Toplevel):
         The returned frame will not have had its geometry manager set.
         """
         frm = tk.Frame(master=master)
-        output = tk.Text(master=frm, height=output_lines, width=103)
+        output = tk.Text(master=frm, height=output_lines, width=103, wrap=tk.WORD)
         output.config(state=tk.DISABLED)
         output.pack(fill=tk.X)
         return frm, output
@@ -741,6 +743,9 @@ class Gui:
         
         # setup up output frame and store it for later outputting
         _, self.output = self._build_output_frame(self.root, output_lines)
+        
+        mb = self._build_menubar(self.root)
+        self.root.config(menu=mb)
 
         # do a single update to get window size then set it as the minimum
         # so user cant resize smaller than the elements
@@ -757,6 +762,32 @@ class Gui:
         msg = 'Oh no it crashed glub! Please tell deka! 38O\n\n\n'
         msg += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
         messagebox.showwarning('Error! Glub!', msg)
+        
+    def reset_game(self):
+        msg += "Are you sure you want to completely erase all game progress and start fresh?"
+        msg = "\n\nThis will wipe out your current game and all progress, INCLUDING PRESTIGES AND AUTOMATION."
+        if not messagebox.askyesno("Erase current game?", msg, default='no'):
+            return
+            
+        old_filename = self.g.state_file
+            
+        self.g = Engine(state_file=None)
+        self.g.state_file = old_filename
+        self.g.save()
+        
+        self.write_output("Game has been reset to a new one!")
+        
+    def save_game(self):
+        self.g.save()
+        
+        self.write_output("Manually saved the game.\n\n(Note: This game should autosave on its own)")
+        
+    def about(self):
+        if modal.confirm("This is a sample test.", title="Hi"):
+            self.write_output("hey")
+        else:
+            self.write_output("no")
+        
         
     def run(self):
         self.root.after(0, self._update)
@@ -1121,3 +1152,20 @@ class Gui:
         output.config(state=tk.DISABLED)
         output.pack(fill=tk.X)
         return frm, output
+        
+    def _build_menubar(self, master) -> tk.Widget:
+        menubar = tk.Menu(master=master)
+        
+        file = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file)
+        file.add_command(label="New Game", command=self.reset_game)
+        file.add_command(label="Save", command=self.save_game)
+        file.add_separator()
+        file.add_command(label="Quit", command=self.root.destroy)
+        
+        help = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help)
+        help.add_command(label="Tutorial", command=self.tutorial)
+        help.add_command(label="About...", command=self.about)
+        
+        return menubar

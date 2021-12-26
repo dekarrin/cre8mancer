@@ -187,7 +187,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     
     # +------------------------------------------------+--------------+
     # | Eat Bagels                          ($20) x1:0 |    (No auto) |
-    # | $0 (0.00J)                    $100/C, 0.03CJ/C |        x{:d} |
+    # | $0 (0.00J)                      $1/C 0.0000J/C |        x{:d} |
     # | |                                 | 999h60m55s |      RUNNING |
     # +------------------------------------------------+--------------+
     act_card = layout.bar() + '\n' + layout.make_act_card(example_job, 0.0) + '\n' + layout.bar()
@@ -199,17 +199,23 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     
     sb.outln("Every activity is either a 'job' or an 'outlet'. This one happens to be a Job, but they all look pretty much the same as this!")
     add()
+    # more on differences should move here
 
     draw = format.Draw(act_card, mutate=False)
     draw.corner_char = draw.horz_char = draw.vert_char = '*'
 
-    sb.section = '2.1.) Name and Cost'
+    sb.section = '2.1.) Name'
     sb.content = draw.rect((0, 0), (13, 2))
     sb.outln("- this is the name of the activity!")
     add()
 
     sb.outln("This one is called 'Eat Bagels', it's a v important job!")
     add()
+    
+    sb.outln("The names don't really mean much, but they are a fun way to categorize the different levels of tasks!")
+    add()
+    
+    sb.section = '2.2.) Instances'
 
     sb.content = draw.rect((0, 1), (13, 3))
     sb.outln("- this part is how much it costs to start this activity, to 'click' it!")
@@ -219,8 +225,24 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("Remember, you'll get the juice back once its done running! The dollars you will not get back.")  # note about jobs always giving more than they cost
     sb.outln("The costs are updated for the number of instances of that active that you have active, more on that in a bit.")
     add()
+    
+    sb.section = '2.2.) Production'
+    sb.content = draw.rect((33, 1), (50, 3))
+    sb.outln("- This section here is the production numbers for the activity! It tells you how much juice and money you'll get once the activity finishes")
+    sb.outln("- this one will give you $1 and no juice. That's really sad! How can you get more juice?")
+    add()
+    
+    sb.outln("- Remember how there are both jobs and outlets? Jobs are best for giving money back and usually won't get you a whole lotta juice, but they dont cost very much to start.")
+    add()
+    
+    sb.content = "SHOW OUTLET CARD HERE"
+    sb.outln("Outlets are the opposite! You need a lot of money to get them going, and they don't usually give you much back, but they give you permanent increases to juice.")
+    add()
+    
+    sb.outln("Okay! Back to the job we were looking at before.")
+    add()
 
-    sb.section = "2.2.) Duration"
+    sb.section = "2.3.) Duration"
     sb.content = draw.rect((0, 2), (36, 4))
     sb.outln("Ooh, this is the exciting part, the progress bar! This tells how long you have to wait for the activity to finish!")
     add()
@@ -235,8 +257,12 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.content = draw.overtype_lines((0, 1), running_card.split('\n'))
     sb.outln("Then the progress bar shows up!")
     add()
-
+    
+    sb.content = draw.overtype_lines((0, 1), running_card.split('\n'))
     sb.outln("Once it finishes, it'll go back to being an X")
+    add()
+    
+    sb.outln("There it is!")
     add()
 
 
