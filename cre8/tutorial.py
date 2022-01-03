@@ -1,6 +1,6 @@
 from typing import Callable, Any, Optional
 
-from .activities import OwnedActivities
+from .activities import OwnedActivities, Jobs
 from . import layout
 from . import format
 
@@ -72,7 +72,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- Oh my gog, calm down, I was getting to that! Now, check this...")
     add()
     
-    sb.section = "1.1.) Money"
+    sb.section = "1.1.) -- Money"
     sb.mainln('\/')
     sb.outln("- This first num8er here, that's how much money you got.")
     sb.outln("- it says 0 glub")
@@ -85,7 +85,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- Yeah, having that show up IN this tutorial would have 8een a little too complic8ed.")
     add()
     
-    sb.section = "1.2.) Creative Juice"
+    sb.section = "1.2.) -- Creative Juice"
     sb.mainln("   \___________/")
     sb.outln("- okay! i got the next one! so, this here is how much juice you have.")
     sb.outln("- Hahahahahahahaha, juice, huh? Sounds lewd.")
@@ -103,7 +103,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- Easy, I got this. Check it.")
     add()
     
-    sb.section = "1.3.) Seeds & (i)deas"
+    sb.section = "1.3.) -- Seeds & (i)deas"
     sb.mainln("                   \_____/")
     sb.outln("- So this one is pretty complic8ed, 8ut don't worry, you got *me* telling you a8out it ::::) Just the kind of friend that I am.")
     sb.outln("- shes SUCH a good friend that she brags about it instead of actually explaining 383")
@@ -172,7 +172,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- You should! Hey, wanna take the last part of the status line? To make up for that crap 8efore.")
     add()
     
-    sb.section = "1.4.) Game Time"
+    sb.section = "1.4.) -- Game Time"
     sb.mainln("                             \____/")
     sb.outln("- sure! it's p easy, the last one is just game time! it's the number of seconds since the game was started.")
     sb.outln("- Perfect! See, I told you you were a little 8adass :::;)")
@@ -194,17 +194,27 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.default_content = act_card
     sb.content = act_card
     sb.section = "2.) Activities"
-    sb.outln("- this is the activity card, glub. you see these on the main screen")
+    sb.outln("- this is an activity, glub. you see these on the main screen!")
     add()
     
-    sb.outln("Every activity is either a 'job' or an 'outlet'. This one happens to be a Job, but they all look pretty much the same as this!")
+    sb.outln("- Easy, this is a clicker, right? So those have gotta 8e the things you click on.")
+    sb.outln("- yeah, you're exactly right!")
+    sb.outln("- Am I ever wrong? ::::)")
+    sb.outln("- p frequently but not this time! glub 38D")
     add()
-    # more on differences should move here
+    
+    sb.outln("- okay, now every activity is either a 'job' or an 'outlet'. this one is a job, but outlets and jobs all look p much the same as this one!")
+    sb.outln("- W8. If they all look the same, then it's really dum8 to have different kinds of activities.")
+    sb.outln("- theres a difference tho! jobs will almost always get you more money, but outlets are better for getting more juice. oh and also outlets usually require a lotta juice to go.")
+    sb.outln("- But some jo8s cost juice too! It's waaaaaaaay ar8itrary.")
+    sb.outln("- ofc its arbitrary its a game 383")
+    sb.outln("- Fair, I guess. For now. Still seems really, really dum8 to me 8ut I can roll with it.")
+    add()
 
     draw = format.Draw(act_card, mutate=False)
     draw.corner_char = draw.horz_char = draw.vert_char = '*'
 
-    sb.section = '2.1.) Name'
+    sb.section = '2.1.) -- Name'
     sb.content = draw.rect((0, 0), (13, 2))
     sb.outln("- this is the name of the activity!")
     add()
@@ -215,11 +225,25 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("The names don't really mean much, but they are a fun way to categorize the different levels of tasks!")
     add()
     
-    sb.section = '2.2.) Instances'
-    sb.content = draw.rect((36, 0), (49, 2))
-    sb.outln("This section is the number of instances that you have running!")
-    sb.outln("
+    sb.section = '2.2.) -- Instances'
+    sb.outln("So, next thing up! You can have more than one copy of an activity running.")
+    add()
+    
+    sb.outln("These are called 'instances'")
+    add()    
+    
+    sb.content = draw.rect((37, 0), (50, 2))
+    sb.outln("This part here gives information on your copies of the activity!")
+    sb.outln("The first number in parenthesis is how much buying another copy will cost.")
+    sb.outln("$20 here!")
+    sb.outln("And the '1x' after that shows how many copies of this activity there are!")
+    sb.outln("But it's only the ones that are 'active'. You can set some of them to inactive if you want to lower the costs to run the activity, but it also lowers the reward!")
+    add()
+    
+    sb.outln("If you do set some instances inactive, the number of inactive copies that you have will be shown after the colon, where it says ':0' is the example.")
+    add()
 
+    sb.section = "2.3.) -- Costs"
     sb.content = draw.rect((0, 1), (13, 3))
     sb.outln("- this part is how much it costs to start this activity, to 'click' it!")
     sb.outln("the first number is how many dollars it costs to start, and the second one is how much juice it will take up while running.")
@@ -229,7 +253,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("The costs are updated for the number of instances of that active that you have active, more on that in a bit.")
     add()
     
-    sb.section = '2.2.) Production'
+    sb.section = '2.4.) -- Production'
     sb.content = draw.rect((33, 1), (50, 3))
     sb.outln("- This section here is the production numbers for the activity! It tells you how much juice and money you'll get once the activity finishes")
     sb.outln("- this one will give you $1 and no juice. That's really sad! How can you get more juice?")
@@ -245,7 +269,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("Okay! Back to the job we were looking at before.")
     add()
 
-    sb.section = "2.3.) Duration"
+    sb.section = "2.5.) -- Duration"
     sb.content = draw.rect((0, 2), (36, 4))
     sb.outln("Ooh, this is the exciting part, the progress bar! This tells how long you have to wait for the activity to finish!")
     add()
@@ -267,9 +291,137 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     
     sb.outln("There it is!")
     add()
-
-
-    #put this one down for circling the next item cost
-    #sb.content = draw.rect((36, 0), (44, 2))
-    sb.outln("- ooh, this number is important for buying more instances!")
     
+    sb.outln("And of course, the number to the right is the countdown to completion!")
+    add()
+    
+    sb.section = '2.6.) -- Automations'
+    sb.outln("The last item on the activity card is the Automations section! Glub!")
+    add()
+    
+    sb.content = draw.rect((50, 0), (64, 4))
+    sb.outln("That's this side on the right")
+    add()
+    
+    sb.outln("You won't have any at first, but, glub! you will eventually. glub.")
+    
+    auto_job = example_job.copy()
+    auto_job.automations += 1
+    auto_job.automated = True
+    auto_card = layout.make_act_card(auto_job, 0.0)
+    sb.content = draw.overtype_lines((0, 1), auto_card.split('\n'))
+    sb.default_content = sb.content
+    sb.outln("Here's how it looks when you DO get automations!")
+    add()
+    
+    sb.outln("The multiplier tells how much the automations are multiplying your production!")
+    sb.outln("The first automation tier you buy doesn't give you any multiplier, but every one after that does.")
+    add()
+    
+    sb.default_content = None
+    sb.content = ''
+    sb.section = "3.) Store"
+    sb.outln("Next we gotta talk about the store! It's where you buy more copies and glub! Also more automations!")
+    add()
+    
+    example_jobdef = Jobs[0]
+    sb.content = layout.bar() + '\n'
+    sb.content += layout.make_act_store_listing(example_jobdef, 1, 0) + '\n'
+    sb.content += layout.bar()
+    sb.default_content = sb.content
+    draw = format.Draw(text=sb.content, mutate=False)
+    draw.corner_char = draw.vert_char = draw.horz_char = '*'
+    sb.outln("So this is what an item in the store looks like! glub!")
+    add()
+    
+    sb.section = '3.1.) -- Price'
+    sb.content = draw.rect((0, 0), (17, 2))
+    sb.outln("This is the item and how much it costs.")
+    add()
+    
+    sb.outln("The price will go up slowly with each one that you buy!")
+    add()
+        
+    # +---------------------------------------------------------------+
+    # | $20 Eat Bagels                 - $0/C (0.00J)   | AUTO x1     |
+    # | 1s                             + $1/C (0.0000J) | 1i          |
+    # +---------------------------------------------------------------+
+    
+    sb.section = "3.2.) -- Duration"
+    sb.content = draw.rect((0, 1), (5, 3))
+    sb.outln("Right there is a reminder of how long that task takes.")
+    add()
+    
+    sb.outln("It doesn't really mean anyfin in the store, its just a reminder 38)")
+    add()
+    
+    sb.section = "3.3.) -- Cost & Production"
+    sb.content = draw.rect((31, 0), (50, 3))
+    sb.outln("Glub! This section is tells you what will happen after you buy another copy of this activity.")
+    add()
+    
+    sb.outln("There's two different lines there, one to show cost, and one to show production.")
+    add()
+    
+    sb.content = draw.rect((31, 0), (50, 2))
+    sb.outln("The line starting with a '-' is what it costs to run the instance of the activity after you've bought it.")
+    add()
+    
+    sb.outln("This is the eat bagels task, which doesnt ever cost anything to run. So let's take a look at something that DOES cost something!")
+    add()
+    
+    example_cost_act = Jobs[1]
+    next_task_card = layout.make_act_store_listing(example_cost_act, 1, 0) + '\n'
+    sb.content = draw.overtype_lines((0, 1), next_task_card.split('\n'))
+    mcost = format.money(example_cost_act.money_cost(1))[1:]  # no dollar sign
+    s = "s" if example_cost_act.money_cost(1) != 1 else ""
+    jcost = "{:.4f}".format(example_cost_act.juice_cost(1))
+    
+    sb.outln("These numbers are much more interesting glub!")
+    sb.outln()
+    sb.outln("If you bought a copy of the {:s} activity, starting a run of it would take {:s} dollar{:s} and {:s} juice, plus whatever it costs to run any copies you already have.".format(example_cost_act.name, mcost, s, jcost))
+    add()
+    
+    sb.outln("Back to our friend, {:s}!".format(example_jobdef.name))
+    add()
+    
+    sb.content = draw.rect((31, 1), (50, 3))
+    sb.outln("The line starting with a '+' is how much stuff you'll get from running the activity once you've bought another copy.")
+    add()
+    
+    mprod = format.money(example_jobdef.money_rate(1))[1:]  # no dollar sign
+    s = "s" if example_jobdef.money_rate(1) != 1 else ""
+    sb.outln("{:s} is a p low-tier activity, so it only gives you {:s} dollar{:s}. And it doesn't give you any juice at all!".format(example_jobdef.name, mprod, s))
+    sb.outln()
+    sb.outln("But if it did, that's where it would be!")
+    add()
+    
+    sb.outln("Just like with cost, the production gets added to all other active instances once you start a run.")
+    add()
+    
+    sb.section = "3.4.) -- Automation Price"
+    sb.outln("Next up, the automation section!")
+    add()
+    
+    sb.content = draw.rect((50, 0), (64, 3))
+    sb.outln("This part gives how much it costs to buy the next tier of automation, and how much it will multiply your production.")
+    add()
+    
+    sb.outln("Automations are really good, so they aren't cheap glub! The price for automations will always be in (i)deas, which you can only get by meditating.")
+    add()
+    
+    sb.content = ''
+    sb.default_content = ''
+    sb.section = "4.) Good Luck"
+    sb.outln("- Welp, looks like that's it.")
+    sb.outln("- yeah that's all we got for you here! you should give playing a shot!")
+    sb.outln("- Right, and if you can't figure something out, don't worry! We got your 8ack ::::)")
+    sb.outln("- yush! you can send jello a DM on our main discord at dekarrin#0314, or you can open an issue on the GitHub page!")
+    add()
+    
+    sb.outln("- i hope ur clicking goes well!")
+    sb.outln("- Awwwwwwww yeah. Good luck out there.")
+    add()
+    
+    sb.outln("(close this window to end the tutorial)")
+    add()

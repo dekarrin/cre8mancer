@@ -60,8 +60,13 @@ def make_act_store_listing(act: Activity, count: int, auto_count: int, width=Def
     # calculate the size of both and add right padding to the shorter
     mcost_fmt = format.money(act.money_cost(count))
     mrate_fmt = format.money(act.money_rate(count))
-    lc_top_right = "- {:s}/C ({:.2f}J)".format(mcost_fmt, act.juice_cost(count))
-    lc_bot_right = "+ {:s}/C ({:.4f}J)".format(mrate_fmt, act.juice_rate(count))
+    lc_top_right_dollars = "- {:s}/C".format(mcost_fmt)
+    lc_bot_right_dollars = "+ {:s}/C".format(mrate_fmt)
+    dollars_width = max(len(lc_top_right_dollars), len(lc_bot_right_dollars))
+    lc_top_right_dollars = format.pad_right(dollars_width, lc_top_right_dollars)
+    lc_bot_right_dollars = format.pad_right(dollars_width, lc_bot_right_dollars)
+    lc_top_right = "{:s} ({:.4f}J)".format(lc_top_right_dollars, act.juice_cost(count))
+    lc_bot_right = "{:s} ({:.4f}J)".format(lc_bot_right_dollars, act.juice_rate(count))
     if len(lc_top_right) > len(lc_bot_right):
         lc_bot_right += (' ' * (len(lc_top_right) - len(lc_bot_right)))
     else:
@@ -79,7 +84,7 @@ def make_act_store_listing(act: Activity, count: int, auto_count: int, width=Def
     # still need to subtract 2 for the padding tho
     rc_text_space = _RightColumnWidth - 1 - 2
     rc_top_text = pad_right(rc_text_space, "AUTO x{:d}".format(2 ** auto_count))
-    rc_bot_text = pad_right(rc_text_space, "{:d}i".format(act.auto_price(auto_count)))
+    rc_bot_text = pad_right(rc_text_space, "{:d}(i)".format(act.auto_price(auto_count)))
     
     # now put 'em all together!!!!!!!!
     full_text = ''
