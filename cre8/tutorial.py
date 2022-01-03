@@ -305,13 +305,33 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     add()
 
     sb.section = "2.3.) -- Costs"
+    sb.outln("- Okay, I'm tagging out. You're up, Deka.")
+    sb.outln("- glub! up next, activity costs!")
+    add()
+    
     sb.content = draw.rect((0, 1), (13, 3))
     sb.outln("- this part is how much it costs to start this activity, to 'click' it!")
-    sb.outln("the first number is how many dollars it costs to start, and the second one is how much juice it will take up while running.")
+    sb.outln("- To 'click' it? I thought this was a text-8ased idler.")
+    sb.outln("- yeahhh thats why the ui is so bad. it's a click though. or 'execution'. or 'run'.")
+    sb.outln("- That is way too many words for the same thing!!!!!!!!")
+    sb.outln("- deal w it 3B)")
+    add()
+    
+    sb.outln("- glub! the first number is how many dollars it costs to start, and the second one is how much juice it will take up while running.")
+    sb.outln("- Why exactly does it cost dollars to start something that *makes* dollars? Sounds like 8ad game design to me!")
+    sb.outln("- no! bc, sometimes there are some activities that gotta 8e limited! or things would get v v v *v* unbalanced later on!")
+    sb.outln("- If you say so.")
+    sb.outln("- i do! glub!")
     add()
 
-    sb.outln("Remember, you'll get the juice back once its done running! The dollars you will not get back.")  # note about jobs always giving more than they cost
-    sb.outln("The costs are updated for the number of instances of that active that you have active, more on that in a bit.")
+    sb.outln("- you dont get those dollars back, either. but you DO get the juice back.")
+    sb.outln("- But if it's a jo8 you DO get the dollars 8ack, kind of. Don't jo8s always give more money than they take to start?")
+    sb.outln("- yeah that's right!")
+    add()
+    
+    sb.outln("- one more thing! the costs that you see are updated for the number of active copies of that activity. if you update them, the cost changes")
+    sb.outln("- That... makes a surprising amount of sense.")
+    sb.outln("- i do that sometimes 38>")
     add()
     
     sb.section = '2.4.) -- Production'
