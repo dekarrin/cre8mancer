@@ -335,19 +335,49 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     add()
     
     sb.section = '2.4.) -- Production'
+    sb.outln("- Ooh, this next part is gr8. Making money!")
+    sb.outln("- none of it is reel glub but okay")
+    sb.outln("- Doesn't matter, I'm still going to have the most. 8ecause, as we all know, I'm the 8est.")
+    sb.outln("- thats only gonna happen if you can tell what is going on with production !!")
+    add()
+    
     sb.content = draw.rect((33, 1), (50, 3))
-    sb.outln("- This section here is the production numbers for the activity! It tells you how much juice and money you'll get once the activity finishes")
-    sb.outln("- this one will give you $1 and no juice. That's really sad! How can you get more juice?")
+    sb.outln("- You mean this thing? It's super simp, I'll 8e okay.")
+    sb.outln("- well you shore arent gonna 'make money' w this one! it's only gonna give you $1")
+    sb.outln("- Yeah, and no juice at all. 8ut that's 8ecause of all the example activities, you chose the one that's the worst!!!!!!!!")
+    sb.outln("- tutorials should be simple glub")
+    sb.outln("- Only if you're too simple minded for the good shit :::;)")
     add()
     
-    sb.outln("- Remember how there are both jobs and outlets? Jobs are best for giving money back and usually won't get you a whole lotta juice, but they dont cost very much to start.")
+    sb.outln("- okay well its what we got so deal w it")
+    sb.outln("- It's fiiiiiiiine I can take it.")
+    sb.outln("- so take it already. answer some questions! glub! like, how do you get more juice?")
     add()
     
-    sb.content = "SHOW OUTLET CARD HERE"
-    sb.outln("Outlets are the opposite! You need a lot of money to get them going, and they don't usually give you much back, but they give you permanent increases to juice.")
+    sb.outln("- All right, all right. So we've said it to death already 8ut in case you, dear reader, are skipping the start and jumping str8 to act 5...")
+    sb.outln("- this is a tutorial there are no acts. wtf are you glubbin on about???")
+    sb.outln("- Fine, section, what is this, 2.4? Yeah. Well, in case you did skip here, there's 8oth jobs and outlets.")
+    sb.outln("- mmhmm! and this one is a job!")
     add()
     
-    sb.outln("Okay! Back to the job we were looking at before.")
+    sb.outln("- Which means, it'll 8e a lot 8etter at getting you money 8ack, 8ut it isn't super heavy on the juice.")
+    sb.outln("- and do outlets do the opposite?")
+    add()
+    
+    example_outlet = OwnedActivities(Outlets[0], 1, 1, 0, False)
+    outlet_card = layout.make_act_card(example_outlet, 0.0)
+    sb.content = draw.overtype_lines((0, 1), outlet_card.split('\n'))
+    sb.outln("- Yes! Like this one, {!r}. They give permanent increases to juice.".format(example_outlet.name))
+    sb.outln("- woah it costs a buncha money though")
+    sb.outln("- That's the price you pay to 8e 8adass. Just, get money from the jo8s and it'll 8e fine.")
+    sb.outln("- that is true")
+    add()
+    
+    sb.outln("- ooh, back to this job!")
+    sb.outln("- Wow, your love for 8agels is cringe.")
+    sb.outln("- its not cringe its cool! glub >38T")
+    sb.outln("- You know what? Valid. F8ck the world and what they think.")
+    sb.outln("- yeah! glub!")
     add()
 
     sb.section = "2.5.) -- Duration"
