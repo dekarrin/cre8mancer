@@ -502,7 +502,9 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.default_content = None
     sb.content = ''
     sb.section = "3.) Store"
-    sb.outln("Next we gotta talk about the store! It's where you buy more copies and glub! Also more automations!")
+    sb.outln("- next we gotta talk about the store!")
+    sb.outln("- All right, time to 8uy more instances and autom8ions.")
+    sb.outln("- thats the place to do it 38)")
     add()
     
     example_jobdef = Jobs[0]
@@ -512,15 +514,45 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.default_content = sb.content
     draw = format.Draw(text=sb.content, mutate=False)
     draw.corner_char = draw.vert_char = draw.horz_char = '*'
-    sb.outln("So this is what an item in the store looks like! glub!")
+    sb.outln("- tada! its a store item")
+    sb.outln("- A8solutely gorgeous. And confusing as shit. We're going over each part of this, right?")
+    sb.outln("- ofc ofc! we wouldnt wanna leave the player in the dark")
     add()
     
     sb.section = '3.1.) -- Price'
     sb.content = draw.rect((0, 0), (17, 2))
-    sb.outln("This is the item and how much it costs.")
+    sb.outln("- first up, is this!")
+    sb.outln("- The price tag.")
     add()
     
-    sb.outln("The price will go up slowly with each one that you buy!")
+    sb.outln("- and the item name glub")
+    sb.outln("- Yeah, I was thinking that may8e I didn't need to mention things that were super o8vious.")
+    sb.outln("- its a tutorial idk if ppl jumped here or read everyfin or what")
+    sb.outln("- If they're jumping around then it's on them!")
+    sb.outln("- pls dun yell at the players for using the controls we gave them thats rude")
+    add()
+    
+    sb.outln("- I'll do my 8est. No promises, though.")
+    sb.outln("- good enough")
+    add()
+    
+    sb.outln("- ooh, i just remembered something about price!")
+    sb.outln("- What's that?")
+    sb.outln("- oh its the amount of money it costs to buy something but thats not important right now")
+    add()
+    
+    sb.outln("- ...Why ::::/")
+    sb.outln("- yeshhhhhhh keep making that face i eat your dumb joke misery")
+    sb.outln("- This is revenge isn't it? For all the juice jokes.")
+    sb.outln("- maybe it is and maybe it isn't 38P")
+    sb.outln("- Whatever. Anyways what were you gonna say?")
+    add()
+    
+    sb.outln("- right! so price will go up with each copy of an activity that you buy")
+    sb.outln("- What? Why?!")
+    sb.outln("- to stop you from just buying infinity of the cheapest thing.")
+    sb.outln("- Okay, that's fair. That would 8e a pretty 8oring game!")
+    sb.outln("- exactly! i shore wouldnt wanna play if it were like that")
     add()
         
     # +---------------------------------------------------------------+
