@@ -381,11 +381,19 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     add()
 
     sb.section = "2.5.) -- Duration"
-    sb.content = draw.rect((0, 2), (36, 4))
-    sb.outln("Ooh, this is the exciting part, the progress bar! This tells how long you have to wait for the activity to finish!")
+    sb.outln("- glub! next up, activity duration!")
+    sb.outln("- Dur8ion... so that's how long something takes.")
+    sb.outln("- right")
     add()
-
-    sb.outln("If it's not running at all, it'll be an X, like you see here! But once you give somefin a click...")
+    
+    sb.content = draw.rect((0, 2), (36, 4))
+    sb.outln("- here is the activity progress bar")
+    sb.outln("- 8ar? That is an 'X'.")
+    sb.outln("- yeah, thats cause it's not running yet glub")
+    sb.outln("- Soooooooo, not really a 8ar then.")
+    add()
+    
+    sb.outln("- not *now*, but once we give it a click...")
     add()
 
     # quick make fake act
@@ -393,28 +401,59 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     running_job.execute(0.0)
     running_card = layout.make_act_card(running_job, 0.3)
     sb.content = draw.overtype_lines((0, 1), running_card.split('\n'))
-    sb.outln("Then the progress bar shows up!")
+    sb.outln("- then the progress bar shows up! glub!")
+    sb.outln("- Ayyyyyyyy there it is! Finally.")
+    add()
+    
+    sb.outln("- and ofc, once it finishes...")
     add()
     
     sb.content = draw.overtype_lines((0, 1), running_card.split('\n'))
-    sb.outln("Once it finishes, it'll go back to being an X")
+    sb.outln("- Ah, it goes 8ack to 8eing an 'X'.")
+    sb.outln("- yep! 38)")
     add()
     
-    sb.outln("There it is!")
+    sb.outln("- And there's a number to the right of the 8ar. Let me guess... countdown to compl8ion?")
+    sb.outln("- got it the first time!")
     add()
     
-    sb.outln("And of course, the number to the right is the countdown to completion!")
+    sb.outln("- when it's running, it'll countdown. when it's not running, it's just how long it will take once it starts.")
+    sb.outln("- Easy. Pro8a8ly the most str8forward part of this entire game. Nice jo8.")
+    sb.outln("- tyty")
     add()
     
     sb.section = '2.6.) -- Automations'
-    sb.outln("The last item on the activity card is the Automations section! Glub!")
+    sb.outln("- so i think that's it for activity cards, right?")
+    sb.outln("- What? No, hold on! You missed something!!!!!!!!")
+    sb.outln("- glub?")
+    sb.outln("- Don't 'glu8' me! You skipped the entire right side, the autom8ions section!")
+    sb.outln("- oh right the automations!")
     add()
     
     sb.content = draw.rect((50, 0), (64, 4))
-    sb.outln("That's this side on the right")
+    sb.outln("- Yeah, this whole entire side!")
+    sb.outln("- that is a lot of activity card to miss im sorry glub")
+    sb.outln("- Don't worry a8out it. I got your 8ack :::;)")
+    sb.outln("- ty based co-host T_T")
+    sb.outln("- Anytime.")
     add()
     
-    sb.outln("You won't have any at first, but, glub! you will eventually. glub.")
+    sb.outln("- So the autom8ions are for making the activities run without you clicking on them.")
+    sb.outln("- its the idle part of the idler! 38O")
+    sb.outln("- Yeah, so pretty important stuff!")
+    add()
+    
+    sb.outln("- You don't start out with any, 8ecause that would make the game way too easy.")
+    sb.outln("- then, glub. how do you get some?")
+    sb.outln("- We already covered this! It's-")
+    add()
+    
+    sb.outln("- wait glub i remember! it's (i)deas, right? that you get from prestiging!")
+    sb.outln("- From the medit8ion thing, yeah. Then you go to the store to exchange some of them for autom8ions.")
+    add()
+    
+    sb.outln("- And once you finally 8uy one...")
+    add()
     
     auto_job = example_job.copy()
     auto_job.automations += 1
@@ -422,11 +461,42 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     auto_card = layout.make_act_card(auto_job, 0.0)
     sb.content = draw.overtype_lines((0, 1), auto_card.split('\n'))
     sb.default_content = sb.content
-    sb.outln("Here's how it looks when you DO get automations!")
+    sb.outln("- ...It'll look like this!")
+    sb.outln("- ooh")
     add()
     
-    sb.outln("The multiplier tells how much the automations are multiplying your production!")
-    sb.outln("The first automation tier you buy doesn't give you any multiplier, but every one after that does.")
+    sb.outln("- what is that number with the 'x' by it?")
+    sb.outln("- Aha, I see you found the multiplier!")
+    sb.outln("- multiplier?")
+    sb.outln("- Yeah, see, the 8adass thing a8out automations is that if you get more than one, they start increasing your production.")
+    sb.outln("- that's rly rly good!")
+    add()
+    
+    sb.outln("- Hell yeah it is! And that multiplier number tells how much your production is getting 8umped up.")
+    sb.outln("- but, you said the first one doesn't give you one?")
+    sb.outln("- Nope! Well, if you want to get pedantic a8out it, I guess its multiplier is x1. 8ut who cares a8out that?")
+    sb.outln("- i mean. glub. its good for consistency in the code and making a clean design and having the coupling of separate componen-")
+    add()
+    
+    sb.outln("- Yeah, no8ody cares a8out any of that.")
+    sb.outln("- i care glub >38(")
+    sb.outln("- Okay, no8ody READING this cares.")
+    sb.outln("- you may have a point there")
+    sb.outln("- Yes!")
+    add()
+    
+    sb.outln("- Anyways, the point is that even though the first autom8ion for an activity gives you nothing for a 8onus, every one you 8uy after that does.")
+    sb.outln("- and its still good to automate even without a bonus")
+    sb.outln("- True. It's money for free! And who wouldn't want that?")
+    sb.outln("- fukin nobody thats who! glub!")
+    sb.outln("- Yeah!")
+    add()
+    
+    sb.outln("- Woah.")
+    sb.outln("- what?")
+    sb.outln("- That's it! We covered the entire activity card. It only took us like half a year.")
+    sb.outln("- oh stop your glubbing. if the readers are bored they can just use the handy section jumpy thingy on the right.")
+    sb.outln("- That is true. And hey, at least it was fun. So what's up next?")
     add()
     
     sb.default_content = None
