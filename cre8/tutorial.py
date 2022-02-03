@@ -561,11 +561,20 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     # +---------------------------------------------------------------+
     
     sb.section = "3.2.) -- Duration"
+    sb.outln("- So, not rel8ed, 8ut I have a question.")
+    sb.outln("- what is it?")
+    
     sb.content = draw.rect((0, 1), (5, 3))
-    sb.outln("Right there is a reminder of how long that task takes.")
+    sb.outln("- Why is there a time listed here? Didn't we already see that in the activity cards?")
+    sb.outln("- oh yeah! its just kind of a little reminder glub")
     add()
     
-    sb.outln("It doesn't really mean anyfin in the store, its just a reminder 38)")
+    sb.outln("- 8ut does it do anything?")
+    sb.outln("- in the store? not really. its just a reminder 38)"
+    add()
+    
+    sb.outln("- Okay, I guess it's good to know how long it takes 8efore 8uying it.")
+    sb.outln("- exactly!"
     add()
     
     sb.section = "3.3.) -- Cost & Production"
