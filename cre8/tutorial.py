@@ -1,6 +1,6 @@
 from typing import Callable, Any, Optional
 
-from .activities import OwnedActivities, Jobs
+from .activities import OwnedActivities, Jobs, Outlets
 from . import layout
 from . import format
 
@@ -240,7 +240,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     
     sb.outln("- So, you've got these different kinds of activities, right? 8ut you can get way, way more than just one copy of each.")
     sb.outln("- glub, and each copy is an in-")
-    sb.outln("- Excuse me, I'm talking?"
+    sb.outln("- Excuse me, I'm talking?")
     sb.outln("- okay ur right that one was on me im sorry.")
     sb.outln("- Thank you. Like I was saying, each copy is called an 'instance'.")
     add()
@@ -289,7 +289,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     add()
     
     sb.outln("- It's not, 8ut it also means you don't get the extra reward.")
-    sb.outln("- glub 38x"
+    sb.outln("- glub 38x")
     sb.outln("- I don't know what that means 8ut okay. Now, you can also set the number of active instances lower or higher yourself if you want.")
     
     sb.outln("- why would you do that?")
@@ -570,11 +570,11 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     add()
     
     sb.outln("- 8ut does it do anything?")
-    sb.outln("- in the store? not really. its just a reminder 38)"
+    sb.outln("- in the store? not really. its just a reminder 38)")
     add()
     
     sb.outln("- Okay, I guess it's good to know how long it takes 8efore 8uying it.")
-    sb.outln("- exactly!"
+    sb.outln("- exactly!")
     add()
     
     sb.section = "3.3.) -- Cost & Production"
