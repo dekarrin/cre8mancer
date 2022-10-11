@@ -332,7 +332,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- Why exactly does it cost dollars to start something that *makes* dollars? Sounds like 8ad game design to me!")
     sb.outln("- no! bc, sometimes there are some activities that gotta 8e limited! or things would get v v v *v* unbalanced later on!")
     add()
-    
+
     sb.outln("- If you say so.")
     sb.outln("- i do! glub!")
     add()
@@ -592,17 +592,29 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     
     sb.section = "3.3.) -- Cost & Production"
     sb.content = draw.rect((31, 0), (50, 3))
-    sb.outln("Glub! This section is tells you what will happen after you buy another copy of this activity.")
+    sb.outln("- glub! next up, the cost & production numbers!")
+    sb.outln("- Ah, the part that tells what's going to happen after you 8uy another instance of this activity.")
+    sb.outln("- yeah thats right! how bout you take this one?")
     add()
     
-    sb.outln("There's two different lines there, one to show cost, and one to show production.")
+    sb.outln("- Hell yes, I'll take it!")
+    sb.outln("- tyty glub")
+    sb.outln("- So, there's two different lines there, one to show cost, and one to show production.")
+    sb.outln("- 2 lines in one section! woah 38O")
     add()
     
     sb.content = draw.rect((31, 0), (50, 2))
-    sb.outln("The line starting with a '-' is what it costs to run the instance of the activity after you've bought it.")
+    sb.outln("- Yeah, it's kind of a 8ig deal. The line starting with a '-' is what it costs to run an instance of the activity after you've 8ought it.")
+    sb.outln("- ooh, like, on top of all the instances you already have?")
+    sb.outln("- Yes! Look at that number, it's *waaaaaaaay* too small to be the whole thing.")
+    sb.outln("- got it got it glub")
     add()
     
-    sb.outln("This is the eat bagels task, which doesnt ever cost anything to run. So let's take a look at something that DOES cost something!")
+    sb.outln("- Okay, 8ut right now we're showing this stup8d eat 8agels task.")
+    sb.outln("- why do you hate my bagels so much?")
+    sb.outln("- Like, 1. It's kind of lame 8ut whatever. 8ut also, it doesn't ever cost anything to run!")
+    sb.outln("- okay thats true. it's kind of boring.")
+    sb.outln("- It's super 8oring! ::::( Let's take a look at something that *does* cost something.")
     add()
     
     example_cost_act = Jobs[1]
@@ -612,26 +624,49 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     s = "s" if example_cost_act.money_cost(1) != 1 else ""
     jcost = "{:.4f}".format(example_cost_act.juice_cost(1))
     
-    sb.outln("These numbers are much more interesting glub!")
-    sb.outln()
-    sb.outln("If you bought a copy of the {:s} activity, starting a run of it would take {:s} dollar{:s} and {:s} juice, plus whatever it costs to run any copies you already have.".format(example_cost_act.name, mcost, s, jcost))
+    sb.outln("- There we go.")
+    sb.outln("- ooh, you're right, these numbers are much more interesting glub!")
+    sb.outln("- Yes!")
+    sb.outln("- so how does it work?")
     add()
-    
-    sb.outln("Back to our friend, {:s}!".format(example_jobdef.name))
+
+    sb.content = draw.overtype_lines((0, 1), next_task_card.split('\n'))
+    sb.outln("- Let's say you buy a new instance of this {:s} activity.".format(example_cost_act.name))
+    sb.outln("- okay, shore! merbuyer deka buys one!")
+    sb.outln("- Gr8, so starting a run of it would take {:s} dollar{:s} and {:s} juice, plus whatever it costs to run any copies you already have.".format(example_cost_act.name, mcost, s, jcost))
+    sb.outln("- i think i get it! so its what gets added to the cost to run it.")
+    sb.outln("- Yeah, exactly!")
+    add()
+
+    sb.outln("- So let's go 8ack to our 'friend', {:s}.".format(example_jobdef.name))
+    sb.outln("- dont be rude to the bagels 38T")
+    sb.outln("- Why? They don't care.")
+    sb.outln("- bagels are yummy.")
+    sb.outln("- They aren't, 8ut let's pretend they are. Whatever.")
     add()
     
     sb.content = draw.rect((31, 1), (50, 3))
-    sb.outln("The line starting with a '+' is how much stuff you'll get from running the activity once you've bought another copy.")
+    sb.outln("- See right here, this line starting with a '+'?")
+    sb.outln("- glub! i see it as well as a pre-written scripted character in a tutorial can! 38D")
+    sb.outln("- Good enough for me! So this is how much stuff you'll get from running the activity once you've bought another instance.")
     add()
+
+    sb.content = draw.rect((31, 1), (50, 3))
+    sb.outln("- oh so its the opposite of the cost")
+    sb.outln("- Pretty much! It's kind of the 8est part of the store listing. All the loot you'll get from it!")
+    sb.outln("- like buried treasure!")
+    sb.outln("- Fuck yeah, exactly like 8uried treasure! 8ut 8uying it digs it up and gives it to you forever.")
     
     mprod = format.money(example_jobdef.money_rate(1))[1:]  # no dollar sign
     s = "s" if example_jobdef.money_rate(1) != 1 else ""
-    sb.outln("{:s} is a p low-tier activity, so it only gives you {:s} dollar{:s}. And it doesn't give you any juice at all!".format(example_jobdef.name, mprod, s))
-    sb.outln()
-    sb.outln("But if it did, that's where it would be!")
+    sb.outln("- The thing is, {:s} is a p low-tier activity, so it only gives you {:s} dollar{:s}.".format(example_jobdef.name, mprod, s))
+    sb.outln("- and no juice 38(")
+    sb.outln("- Yeah, no juice ::::( 8ut if it did, that's where it would be.")
     add()
     
-    sb.outln("Just like with cost, the production gets added to all other active instances once you start a run.")
+    sb.outln("- okay, and this extra juice and cash gets added to all other active instances, right?")
+    sb.outln("- Yes! Now you're catching on. It's just like with cost.")
+    sb.outln("- yay 38)")
     add()
     
     sb.section = "3.4.) -- Automation Price"
