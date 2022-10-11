@@ -139,10 +139,14 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- Hmmph >38T")
     sb.outln("- Are you really going to 8e like this?")
     sb.outln("- idk are you really going to keep being a '8itch'?")
+    add()
+
     sb.outln("- *sigh* Look, I'm SORRY, okay?")
     sb.outln("- you mean it?")
     sb.outln("- Sure, whatever. Now may8e give the screen 8ack?")
     sb.outln("- nuh-uh. not until you SOUND like you mean it")
+    add()
+
     sb.outln("- ... Okay. Fine. Deka, I'm sorry. I respect you and your glu88ing, and I was rude. I won't do it again.")
     sb.outln("- okay.")
     sb.outln("- Okay?")
@@ -151,7 +155,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     
     sb.default_content = status_line
     sb.content = status_line
-    sb.outln("- Thank fuck. Okay, sorry a8out interruption, now 8ack to 8usiness.")
+    sb.outln("- Thank fuck. Okay, sorry a8out that little interruption, now 8ack to 8usiness.")
     sb.outln("- yay! now, why wouldn't i want to spend all the time meditating?")
     sb.outln("- Right, so that will reset the entire game. Except for (i)deas you already have, of course.")
     sb.outln("- oooooooooh i get it, so it's like the prestige of this thing!")
@@ -206,6 +210,8 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- okay, now every activity is either a 'job' or an 'outlet'. this one is a job, but outlets and jobs all look p much the same as this one!")
     sb.outln("- W8. If they all look the same, then it's really dum8 to have different kinds of activities.")
     sb.outln("- theres a difference tho! jobs will almost always get you more money, but outlets are better for getting more juice. oh and also outlets usually require a lotta juice to go.")
+    add()
+
     sb.outln("- But some jo8s cost juice too! It's waaaaaaaay ar8itrary.")
     sb.outln("- ofc its arbitrary its a game 383")
     sb.outln("- Fair, I guess. For now. Still seems really, really dum8 to me 8ut I can roll with it.")
@@ -256,6 +262,8 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- that first part looks like a dollar amount to me and not number of copies glub.")
     sb.outln("- The number in parenthesis? Well, yeah, it's not a number of 'copies' or even a number of instances")
     sb.outln("- bluh 38P what is it then?")
+    add()
+
     sb.outln("- That's the price of the next instance of that activity.")
     sb.outln("- ooh, so you can buy them from here?")
     sb.outln("- Nope, just a reminder! It's the same price that's listed in the Store.")
@@ -284,6 +292,8 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- when could you ever NOT have the resources?")
     sb.outln("- That can happen if you're running an activity already and you try to buy more instances to boost the rewards before it finishes. If you don't have enough juice and money to support starting the new instance, you'll still buy the new instance but it won't be set to active.")
     sb.outln("- woah, ill have to be careful not to do that glub!")
+    add()
+
     sb.outln("- It isn't really a 8ig deal when it happens, you just won't 8e a8le to set them active until either the current run finishes or you get the resources.")
     sb.outln("- okay thats not so bad then")
     add()
@@ -291,7 +301,8 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- It's not, 8ut it also means you don't get the extra reward.")
     sb.outln("- glub 38x")
     sb.outln("- I don't know what that means 8ut okay. Now, you can also set the number of active instances lower or higher yourself if you want.")
-    
+    add()
+
     sb.outln("- why would you do that?")
     sb.outln("- I told you, it lowers the cost of runs! Weren't you listening????????")
     sb.outln("- you said it applied to after you bought new ones, when you already had the activity running. i wanted to be sure glub")
@@ -320,6 +331,8 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- glub! the first number is how many dollars it costs to start, and the second one is how much juice it will take up while running.")
     sb.outln("- Why exactly does it cost dollars to start something that *makes* dollars? Sounds like 8ad game design to me!")
     sb.outln("- no! bc, sometimes there are some activities that gotta 8e limited! or things would get v v v *v* unbalanced later on!")
+    add()
+    
     sb.outln("- If you say so.")
     sb.outln("- i do! glub!")
     add()
