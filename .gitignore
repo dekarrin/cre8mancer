@@ -8,6 +8,10 @@
 # state file
 *.p
 
+# pyinstaller build and dist folders
+build/
+dist/
+
 .venv/
 .virtualenv/
 venv/
