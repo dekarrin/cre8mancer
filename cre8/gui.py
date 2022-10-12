@@ -497,8 +497,12 @@ class Gui:
         msg += "Game 8y dekarrin | Jello\n"
         msg += "\n"
         msg += "This is a GUI alpha tester version, glub! it can also be played\n"
-        msg += "from the command line if you prefer."
-        modal.message(msg + " This is a sample test.", title="About")
+        msg += "from the command line if you prefer.\n"
+        msg += "\n"
+        msg += "To report a bug, message Jello on Discord at dekarrin#0413\n"
+        msg += "or report it on the GitHub issues page:\n"
+        msg += "https://github.com/dekarrin/cre8orforge"
+        modal.message("About", msg)
         
     def run(self):
         self.root.after(0, self._update)
