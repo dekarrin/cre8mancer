@@ -1,5 +1,7 @@
 """
-This module launches the GUI and sets up logging to never use a console.
+This module launches the GUI (by default) and sets up logging to never use a console.
+The user could still pass in other actions via CLI and they will replace 'gui', but
+it still will not have console logging.
 
 It is unecessary for typical use. If you want a gui as a dev, you can just run
 `cre8orforge.py gui`. However, python bundlers often need one single script
@@ -27,8 +29,8 @@ def main():
 
     # noinspection PyBroadException
     try:
-        entrypoint.execute()
-    except Exception:
+        entrypoint.execute(default_args=['gui'])
+    except:
         _log.exception("Uncaught problem occured during execution")
         sys.exit(2)
 

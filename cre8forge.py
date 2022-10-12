@@ -4,7 +4,6 @@ from cre8 import entrypoint
 
 import sys
 import logging
-import logging.handlers
 
 
 if __name__ == "__main__":
