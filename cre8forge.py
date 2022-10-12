@@ -3,7 +3,6 @@ from cre8 import logutil
 from cre8 import entrypoint
 
 import sys
-import argparse
 import logging
 import logging.handlers
 

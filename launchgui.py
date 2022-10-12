@@ -9,3 +9,29 @@ arguments if passed, but will default to setting up cre8orforge for a GUI-only
 execution.
 """
 
+import logging
+import sys
+
+from cre8 import logutil, entrypoint
+
+
+if __name__ == "__main__":
+    _log = logging.getLogger('cre8')
+else:
+    _log = logging.getLogger(__name__)
+_log.setLevel(logging.DEBUG)
+
+
+def main():
+    logutil.setup_logging(console_output=False)
+
+    # noinspection PyBroadException
+    try:
+        entrypoint.execute()
+    except Exception:
+        _log.exception("Uncaught problem occured during execution")
+        sys.exit(2)
+
+
+if __name__ == '__main__':
+    main()
