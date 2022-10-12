@@ -36,4 +36,6 @@ EOF
 
 tar czf "${full_folder}.tar.gz" "$full_folder"
 
+rm "$full_folder"
+
 echo "dist/${full_folder}.tar.gz"
