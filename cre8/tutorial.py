@@ -1,6 +1,7 @@
 from typing import Callable, Any, Optional
 
 from .activities import OwnedActivities, Jobs, Outlets
+from . import activities
 from . import layout
 from . import format
 
@@ -36,22 +37,44 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     def add():
         add_step(sb.output, sb.content, sb.section)
         sb.reset()
+
+    goal_activity = activities.from_id(activities.Stage1GoalActivityId)
     
-    sb.outln("This game is an idle clicker where you try to earn money to fund a buncha creative stuff!")
-    sb.outln("It's themed around the creative process.")
+    sb.outln("- hi! welcome to the tutorial! glub. i'm deka! one of the devs on this")
+    sb.outln("- Hey, what's up? I'm Triska, and I'm kind of the 8est.")
+    sb.outln("- she also rly likes 8. and spiders. seriously she is going to use 8 for both 'B' and 'ate' sounds. im sorry in advance")
+    sb.outln("- Pfffffffft whatever. You keep typing 'glub' and have that weird smilie with the '3' hat.")
+    sb.outln("- blasphemy 38O glub is good. anyways we're here to show you how to play this game!")
+    add()
+
+    sb.outln("- This game is an idle clicker where you try to earn money to fund a 8uncha cre8tive stuff.")
+    sb.outln("- yeah, and it's themed around the creative process")
     add()
     
-    sb.outln("It's also designed to be played from the command line, which explains why it looks so 8ad!")
-    sb.outln("Luckily for you, we've put together this little GUI version so you can more easily test it.")
+    sb.outln("- It's also designed to be played from the command line, which explains why it looks so 8ad!")
+    sb.outln("- sorry about that, glub 38(")
+    sb.outln("- Aw, 8ut Luckily for you, we've put together this little GUI version so you can more easily test it.")
     add()
     
     sb.outln("- (ty btw for that, your feedback is v much appreciated glub)")
-    sb.outln("- Mmmmmmmm, yeah, I guess this game wouldn't happen without your tireless efforts, 8eta tester. So we should")
-    sb.outln("thank you for that.")
+    sb.outln("- Mmmmmmmm, yeah, I guess this game wouldn't happen without your tireless efforts, 8eta tester. So we should thank you for that.")
     add()
     
-    sb.outln("Anyways! On to the actual game, glub!")
+    sb.outln("- anyways! on to the actual game, glub!")
     add()
+
+    sb.outln("- Yeah, what's the goal here?")
+    sb.outln("- 'click' on stuff! glub. well using the menu. and see how quick you can get to the ultimate goal!")
+    sb.outln("- Ultim8 goal? And what is that exactly?")
+    sb.outln("- to try and buy the biggest most important thing! the ability to create a construct, glub")
+    sb.outln("- That's... 8izarre. And what does that even mean?")
+    add()
+
+    sb.outln("- it means you're trying to buy {:s}. and its only weird bc we dont have the next phase in the game yet!".format(goal_activity.name))
+    sb.outln("- Yeah, gotta make sure we get phase 1 all good with testers 8efore moving on to the next. Pretty sure it'll 8e weird after that too, though.")
+    sb.outln("- oh well get over it")
+    sb.outln("- Already past it. Let's move on to how to actually play.")
+    sb.outln("- glub!")
     
     sb.mainln(status_line)
     sb.default_content = status_line
@@ -157,7 +180,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.content = status_line
     sb.outln("- Thank fuck. Okay, sorry a8out that little interruption, now 8ack to 8usiness.")
     sb.outln("- yay! now, why wouldn't i want to spend all the time meditating?")
-    sb.outln("- Right, so that will reset the entire game. Except for (i)deas you already have, of course.")
+    sb.outln("- Right, so that will reset the entire game. Except for (i)deas you already have, of course. Oh and Autom8ions. You keep those too.")
     sb.outln("- oooooooooh i get it, so it's like the prestige of this thing!")
     sb.outln("- Exactly!")
     add()
@@ -277,7 +300,7 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     sb.outln("- That's so magnimonious of you!")
     add()
     
-    sb.outln("- 'magnimonious'? idk Vriska that's a p big word for you. u shore u know what it means?")
+    sb.outln("- 'magnimonious'? idk Triska that's a p big word for you. u shore u know what it means?")
     sb.outln("- Yup! The opposite of what you are 8eing.")
     sb.outln("- actually im p sure that is true. yay!")
     add()
@@ -670,27 +693,51 @@ def generate(add_step: Callable[[str, str, str], Any], status_line, example_job:
     add()
     
     sb.section = "3.4.) -- Automation Price"
-    sb.outln("Next up, the automation section!")
+    sb.outln("- Next up for the store is the autom8ion section.")
+    sb.outln("- ooh you're gonna tell us how to buy them finally??")
+    sb.outln("- Hmmmmmmmm, nope! You are. This is 8oring so I'm tagging out, thanks ::::)")
+    sb.outln("- i didnt actually agree to that but! i shall rise to the task! GLUB! >383")
+    sb.outln("- Hell yes!!!!!!!! Take it away.")
     add()
     
     sb.content = draw.rect((50, 0), (64, 3))
-    sb.outln("This part gives how much it costs to buy the next tier of automation, and how much it will multiply your production.")
+    sb.outln("- glub! so this part here gives how much it costs to buy the next tier of automation!")
+    sb.outln("- Oh right, and that num8er is gonna give how much it will multiply production 8y?")
+    sb.outln("- it is. but it doesnt stack glub, bc its already pretty intense and rly good")
+    sb.outln("- Yeah, it's pretty much the first thing that I'd go for. 8ecause it is the 8est.")
     add()
     
-    sb.outln("Automations are really good, so they aren't cheap glub! The price for automations will always be in (i)deas, which you can only get by meditating.")
+    sb.outln("- mmhmm. but they aren't cheap, glub.")
+    sb.outln("- No shit! The price is in (i)deas, which if I'm remem8ering right, you can only get by medit8ing.")
+    sb.outln("- yesssssssss!")
     add()
     
     sb.content = ''
     sb.default_content = ''
     sb.section = "4.) Good Luck"
     sb.outln("- Welp, looks like that's it.")
-    sb.outln("- yeah that's all we got for you here! you should give playing a shot!")
-    sb.outln("- Right, and if you can't figure something out, don't worry! We got your 8ack ::::)")
-    sb.outln("- yush! you can send jello a DM on our main discord at dekarrin#0314, or you can open an issue on the GitHub page!")
+    sb.outln("- yeah that's all we got for you here!")
+    sb.outln("- Seems pretty solid, click the things to get money and juice, get Seeds (pfft)...")
+    sb.outln("- omg")
+    sb.outln("- It's funny! Anyways, get Seeds, medit8 to turn them into (i)deas, use (i)deas to 8uy Autom8ions.")
+    add()
+
+    sb.outln("- oh and see how fast you can get to the ultimate goal! buying one instance of {:s}".format(goal_activity.name))
+    sb.outln("- What happens after that?")
+    sb.outln("- the end of phase 1! which is all thats in the game so far glub.")
+    sb.outln("- So 8asically, getting there makes you a winner.")
+    sb.outln("- yeah!")
+    add()
+
+    sb.outln("- Okay, cool.")
+    sb.outln("- yes! and thats everything. you should give playing a shot!")
+    sb.outln("- And if you can't figure something out, don't worry! We got your 8ack ::::)")
+    sb.outln("- yush! you can send jello a DM on our main discord at dekarrin#0314, or you can open an issue on the GitHub page.")
     add()
     
     sb.outln("- i hope ur clicking goes well!")
-    sb.outln("- Awwwwwwww yeah. Good luck out there.")
+    sb.outln("- Awwwwwwww yeah. Good luck out there. 8ye for now.")
+    sb.outln("- bye-bye! glub 38D")
     add()
     
     sb.outln("(close this window to end the tutorial)")
