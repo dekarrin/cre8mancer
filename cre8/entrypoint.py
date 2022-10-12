@@ -6,7 +6,7 @@ import logging
 import argparse
 import sys
 
-from . import logutil, engine, gui
+from . import logutil, engine, gui, version
 
 _log = logging.getLogger(__name__)
 _log.setLevel(logging.DEBUG)
@@ -100,6 +100,10 @@ def execute(default_args=list()):
     debug_ideas.add_argument('-s', '--set', help="Set ideas to the given value", type=int, dest='amount')
     debug_ideas.set_defaults(func=exec_debug_ideas)
 
+    version_help = "Show the current version of cre8orforge and then exit."
+    version_parser = subparsers.add_parser('version', help=version_help)
+    version_parser.set_defaults(func=exec_version)
+
     if len(sys.argv) > 1:
         args = parser.parse_args()
     else:
@@ -110,6 +114,10 @@ def execute(default_args=list()):
     
     eng = engine.Engine(args.state)
     args.func(eng, args)
+
+
+def exec_version(eng: engine.Engine, args):
+    print(version.VERSION)
 
 
 # noinspection PyUnusedLocal
