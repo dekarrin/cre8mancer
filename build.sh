@@ -15,13 +15,14 @@ pyinstaller launchgui.py --name cre8orforge -y
 cd dist
 mv cre8orforge cre8
 full_folder="cre8orforge-v${cur_version}"
+rm -rf "$full_folder"
 mkdir "$full_folder"
 mv cre8 "$full_folder/cre8orforge"
 
 cat << EOF > "$full_folder/TESTER-README.md"
 Hey! Thanks for volunteering to help test cre8forge.
 
-To start it, open the cre8forge folder and run cre8forge.exe.
+To start it, open the cre8orforge folder and run cre8orforge.exe.
 
 You can launch a silly tutorial on how the game works using the 'Tutorial' button
 on the main window that pops up.
@@ -36,6 +37,6 @@ EOF
 
 tar czf "${full_folder}.tar.gz" "$full_folder"
 
-rm "$full_folder"
+rm -rf "$full_folder"
 
 echo "dist/${full_folder}.tar.gz"
