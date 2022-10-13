@@ -68,3 +68,8 @@ If you need any further help, try running with `-h`:
 ```bash
 ./cf.sh -h
 ```
+
+## Repo Branch Strategy
+
+All changes go into `dev` first. When preparing to cut a release, dev is merged into main and then
+a release is tagged.
