@@ -73,3 +73,6 @@ If you need any further help, try running with `-h`:
 
 All changes go into `dev` first. When preparing to cut a release, dev is merged into main and then
 a release is tagged.
+
+It is acceptable to merge dev into main prior to a release as long as it contains no known-broken
+code commits.
