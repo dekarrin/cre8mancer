@@ -474,8 +474,8 @@ class Gui:
         modal.message('Error! Glub!', msg)
         
     def reset_game(self):
-        msg += "Are you sure you want to completely erase all game progress and start fresh?"
-        msg = "\n\nThis will wipe out your current game and all progress, INCLUDING PRESTIGES AND AUTOMATION."
+        msg = "Are you sure you want to completely erase all game progress and start fresh?"
+        msg += "\n\nThis will wipe out your current game and all progress, INCLUDING PRESTIGES AND AUTOMATION."
         if not messagebox.askyesno("Erase current game?", msg, default='no'):
             return
             

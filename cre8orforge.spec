@@ -8,7 +8,7 @@ a = Analysis(
     ['launchgui.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('cre8/components/warning.png', 'assets')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

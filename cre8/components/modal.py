@@ -1,16 +1,28 @@
+import logging
 import tkinter as tk
 from tkinter import ttk
 from typing import Callable, Any, Optional
 import os.path
+import sys
 
-_warn_path = os.path.join(os.path.dirname(__file__), 'warning.png')
+
 _warn_pi: tk.PhotoImage = None
+
+
+def _get_resource_path(resource_path: str) -> str:
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # in a pyinstaller bundle
+        assets_path = os.path.join(sys._MEIPASS, 'assets')
+    else:
+        assets_path = os.path.dirname(__file__)
+    full_path = os.path.abspath(os.path.join(assets_path, resource_path))
+    return full_path
 
 
 def _get_warn_image() -> tk.PhotoImage:
     global _warn_pi
     if _warn_pi is None:
-        _warn_pi = tk.PhotoImage(file=_warn_path)
+        _warn_pi = tk.PhotoImage(file=_get_resource_path('warning.png'))
     return _warn_pi
 
 

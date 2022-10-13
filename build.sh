@@ -10,7 +10,26 @@ set -e
 cd "$(dirname "$0")"
 cur_version="$(./cf.sh version)"
 
-pyinstaller launchgui.py --name cre8orforge -y
+# pyinstaller REQUIRES using the correct pathsep
+on_windows=
+case "$(uname -a)" in
+  *CYGWIN*)
+    on_windows=1
+    ;;
+  *MINGW64*)
+    on_windows=1
+    ;;
+esac
+
+if [[ -n "$on_windows" ]]
+then
+  pathsep=';'
+else
+  pathsep=':'
+fi
+
+pyinstaller launchgui.py --name cre8orforge -y \
+  --add-data cre8/components/warning.png${pathsep}assets
 
 cd dist
 mv cre8orforge cre8
