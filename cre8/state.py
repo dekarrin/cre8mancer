@@ -1,9 +1,10 @@
 import pickle
 from datetime import datetime, timezone
-from typing import Tuple, Optional, Dict, Any
+from typing import Tuple, Optional, Dict, Any, Sequence
 
 from .activities import OwnedActivities
 from . import format
+from cre8 import activities
 
 
 CurrentVersion = 1
@@ -89,11 +90,11 @@ class GameState:
         self.last_advancement = datetime.now(timezone.utc)
         self.money = 0
         self.juice = 0.0
-        self.jobs = []
-        self.outlets = []
-        self.time = 0.0
-        self.ideas = 0  # prestiging gives you ideas on what to do
-        self.seeds = 0.0  # seeds sprout into ideas on prestige
+        self.jobs: Sequence[activities.OwnedActivities] = []
+        self.outlets: Sequence[activities.OwnedActivities] = []
+        self.time: float = 0.0
+        self.ideas: int = 0  # prestiging gives you ideas on what to do
+        self.seeds: float = 0.0  # seeds sprout into ideas on prestige
         self.history = History(time=0.0, money=0, juice=0, prestiges=0)
         
     @property
