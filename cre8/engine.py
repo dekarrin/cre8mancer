@@ -9,6 +9,8 @@ import sys
 import math
 import logging
 
+from cre8 import logutil
+
 
 _log = logging.getLogger(__name__)
 
@@ -55,6 +57,14 @@ class Advancement:
         self.money = money
         self.idle_seconds = idle_seconds
         self.seeds = seeds
+
+    def __str__(self):
+        fmtstr = "Advancement<idle_seconds: {:.8f}, money: {:d}, juice: {:.6f}, seeds: {:.8f}>"
+        return fmtstr.format(self.idle_seconds, self.money, self.juice, self.seeds)
+
+    def __repr__(self):
+        fmtstr = "Advancement(idle_seconds={!r}, money={!r}, juice={!r}, seeds={!r})"
+        return fmtstr.format(self.idle_seconds, self.money, self.juice, self.seeds)
 
 
 class Engine:
@@ -566,9 +576,12 @@ class Engine:
         """
         adv = Advancement(idle_seconds, 0, 0, 0.0)
         now = self.game.time + idle_seconds
+        _log.log(logutil.TRACE, "Starting advance")
         for oa in self.game.jobs + self.game.outlets:
+            _log.log(logutil.TRACE, "ADV: Checking OA {!r}".format(oa))
             while oa.execution is not None and oa.execution.remaining(now).total_seconds() <= 0:
                 cur_exec = oa.execution
+                _log.log(logutil.TRACE, "ADV->OA: Completing Execution: {!r}".format(cur_exec))
                 
                 adv.money += cur_exec.money
                 adv.juice += cur_exec.juice
@@ -578,21 +591,30 @@ class Engine:
                 
                 # if automated, get set up to calculate next execution.
                 if oa.automated:
+                    _log.log(logutil.TRACE, "ADV->OA: is automated so starting new execution".format(cur_exec))
                     # make sure running the next execution doesn't violate constraints
                     
                     free_juice = self.game.free_juice + adv.juice
                     free_money = self.game.money + adv.money
+                    _log.log(logutil.TRACE, "ADV->OA: free money: {:d}, free juice: {:.8f}".format(free_money, free_juice))
                     if free_juice >= oa.juice_cost and free_money >= oa.money_cost:
+                        _log.log(logutil.TRACE, "ADV->OA: requirements met, starting auto-execution")
                         oa.execute(cur_exec.end)
                         self.game.money -= oa.price
+                        _log.log(logutil.TRACE, "ADV->OA: subtracted price: {!s}".format(oa.price))
                     else:
+                        _log.log(logutil.TRACE, "ADV->OA: requirements not met, halting auto")
                         oa.automation = False
+                else:
+                    _log.log(logutil.TRACE, "ADV->OA: not automated so cleared execution".format(cur_exec))
+            _log.log(logutil.TRACE, "ADV: Done with OA".format(oa))
                 
         self.game.time += adv.idle_seconds
         self.game.money += adv.money
         self.game.juice += adv.juice
         self.game.seeds += adv.seeds
         self.game.last_advancement = datetime.now(timezone.utc)
+        _log.log(logutil.TRACE, "Ending advance, calculated: {!r}".format(adv))
         return adv
     
     def _find_target(self, target_type: str, target_idx: int) -> Tuple[Optional[OwnedActivities], Activity]:
