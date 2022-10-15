@@ -6,8 +6,10 @@ set -e
 
 repo_root="$(dirname "$0")/.."
 
-built_package="$("$repo_root/scripts/run_pyinstaller.sh")"
-versioned_package="$("$repo_root/scripts/create_versioned_package.sh" "$built_package")"
+cd "$repo_root"
+
+built_package="$("scripts/run_pyinstaller.sh")"
+versioned_package="$("scripts/create_versioned_package.sh" "$built_package")"
 
 # now tar it up
 cd "$(dirname "$versioned_package")"

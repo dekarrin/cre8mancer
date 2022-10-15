@@ -10,12 +10,12 @@ set -e
 repo_root="$(dirname "$0")/.."
 
 file_to_package="$repo_root/dist/cre8orforge"
-if [[ "@#" -ge 1 ]]
+if [[ "$#" -ge 1 ]]
 then
   file_to_package="$1"
 fi
 
-if [[ ! -f "$file_to_package" -a ! -d "$file_to_package" ]]
+if ! [[ -f "$file_to_package" || -d "$file_to_package" ]]
 then
   echo "$file_to_package doesn't appear to exist. Make sure to run run_pyinstaller.sh first." >&2
   exit 1
@@ -57,8 +57,9 @@ the issue happened.
 Thanks again!
 EOF
 
-mv "$full_folder" "$repo_root/dist/$full_folder"
-cd "$repo_root/dist"
+rm -rf "../$full_folder"
+mv "$full_folder" "../$full_folder"
+cd ".."
 rm -rf .package
 
 echo "$repo_root/dist/${full_folder}"
