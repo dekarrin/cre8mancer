@@ -600,7 +600,7 @@ class Engine:
                     if free_juice >= oa.juice_cost and free_money >= oa.money_cost:
                         _log.log(logutil.TRACE, "ADV->OA: requirements met, starting auto-execution")
                         oa.execute(cur_exec.end)
-                        self.game.money -= oa.price
+                        self.game.money -= oa.money_cost
                         _log.log(logutil.TRACE, "ADV->OA: subtracted price: {!s}".format(oa.price))
                     else:
                         _log.log(logutil.TRACE, "ADV->OA: requirements not met, halting auto")
