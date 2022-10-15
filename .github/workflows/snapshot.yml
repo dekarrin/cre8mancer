@@ -34,7 +34,8 @@ jobs:
           package_dir="$(dirname "${{ env.package_path }}")"
           package_name="$(basename "${{ env.package_path }}")"
           cd "$package_dir"
-          zip -r "$package_name.zip" "$package_name"
+          7z a "$package_name.zip" "$package_name"
+          archive_path="$package_dir/$package_name.zip"
           echo "archive_path=$archive_path" >> $GITHUB_ENV
       - name: Echo output
         shell: bash
