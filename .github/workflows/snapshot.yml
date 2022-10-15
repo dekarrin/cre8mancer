@@ -6,30 +6,13 @@ on:
     
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
-      - name: Package for Windows
-        uses: JackMcKew/pyinstaller-action-windows@main
+      - name: Set up python
+        uses: actions/setup-python@v4
         with:
-          path: .
-          spec: cre8orforge.spec
-      - name: Run package script
-        run: |
-          package_path="$(scripts/create_versioned_package.sh dist/windows win)"
-          echo "package_path=$package_path" >> $GITHUB_ENV
-      - name: Create package archive
-        run: |
-          package_dir="$(dirname "${{ env.package_path }}")"
-          package_name="$(basename "${{ env.package_path }}")"
-          cd "$package_dir"
-          zip -r "$package_name".zip "$package_name"
-          echo "archive_path=$package_dir/$package_name.zip" >> $GITHUB_ENV
-          echo "archive_name=$package_name.zip" >> $GITHUB_ENV
-      - name: Upload archive to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.archive_name }}
-          path: ${{ env.archive_path }}
-          
+          python-version: '3.10'
+      - name: Version check
+        run: python cre8orforge.py version
