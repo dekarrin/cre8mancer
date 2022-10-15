@@ -11,7 +11,6 @@ a = Analysis(
     datas=[('cre8/components/warning.png', 'assets')],
     hiddenimports=[],
     hookspath=[],
-    hooksconfig={},
     runtime_hooks=[],
     excludes=[],
     win_no_prefer_redirects=False,
