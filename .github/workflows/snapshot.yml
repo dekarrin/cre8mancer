@@ -36,7 +36,7 @@ jobs:
           cd "$package_dir"
           7z a "$package_name.zip" "$package_name"
           archive_name="$package_name.zip"
-          archive_path="$package_dir/$archive_name"
+          archive_path="$(pwd)/$archive_name"
           echo "archive_path=$archive_path" >> $GITHUB_ENV
           echo "archive_name=$archive_name" >> $GITHUB_ENV
       - name: Upload artifact
