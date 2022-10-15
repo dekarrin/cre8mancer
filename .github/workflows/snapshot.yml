@@ -18,6 +18,13 @@ jobs:
         run: python cre8forge.py version
       - name: Install pyinstaller
         run: pip install -U pyinstaller
-      - name: Run packager
+      - name: Run exec bundler
         shell: bash
-        run: scripts/run_pyinstaller.sh
+        run: |
+          bundle_path="$(scripts/run_pyinstaller.sh)
+          echo "bundle_path=$bundle_path" >> $GITHUB_ENV
+      - name: Create package dir
+        shell: bash
+        run: |
+          archive_path="$(scripts/create_versioned_package.sh "${{ env.bundle_path }}" win)"
+          echo "archive_path=$archive_path" >> $GITHUB_ENV
