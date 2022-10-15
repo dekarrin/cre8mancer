@@ -21,7 +21,7 @@ jobs:
       - name: Run exec bundler
         shell: bash
         run: |
-          bundle_path="$(scripts/run_pyinstaller.sh)
+          bundle_path="$(scripts/run_pyinstaller.sh)"
           echo "bundle_path=$bundle_path" >> $GITHUB_ENV
       - name: Create package dir
         shell: bash
