@@ -18,3 +18,6 @@ jobs:
         run: python cre8forge.py version
       - name: Install pyinstaller
         run: pip install -U pyinstaller
+      - name: Run packager
+        shell: bash
+        run: scripts/run_pyinstaller.sh
