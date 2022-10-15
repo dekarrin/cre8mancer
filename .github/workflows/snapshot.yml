@@ -43,5 +43,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.archive_name }}
-          path: ${{ env.archive_path }}
+          path: dist/${{ env.archive_name }}
         
