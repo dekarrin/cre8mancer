@@ -35,9 +35,13 @@ jobs:
           package_name="$(basename "${{ env.package_path }}")"
           cd "$package_dir"
           7z a "$package_name.zip" "$package_name"
-          archive_path="$package_dir/$package_name.zip"
+          archive_name="$package_name.zip"
+          archive_path="$package_dir/$archive_name"
           echo "archive_path=$archive_path" >> $GITHUB_ENV
-      - name: Echo output
-        shell: bash
-        run: echo ${{ env.archive_path }}
+          echo "archive_name=$archive_name" >> $GITHUB_ENV
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.archive_name }}
+          path: ${{ env.arvhice_path }}
         
