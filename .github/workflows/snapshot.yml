@@ -23,8 +23,20 @@ jobs:
         run: |
           bundle_path="$(scripts/run_pyinstaller.sh)"
           echo "bundle_path=$bundle_path" >> $GITHUB_ENV
-      - name: Create package dir
+      - name: Create package
         shell: bash
         run: |
-          archive_path="$(scripts/create_versioned_package.sh "${{ env.bundle_path }}" win)"
+          package_path="$(scripts/create_versioned_package.sh "${{ env.bundle_path }}" win)"
+          echo "package_path=$package_path" >> $GITHUB_ENV
+      - name: Create archive
+        shell: bash
+        run: |
+          package_dir="$(dirname "${{ env.package_path }}")"
+          package_name="$(basename "${{ env.package_path }}")"
+          cd "$package_dir"
+          zip -r "$package_name.zip" "$package_name"
           echo "archive_path=$archive_path" >> $GITHUB_ENV
+      - name: Echo output
+        shell: bash
+        run: echo ${{ env.archive_path }}
+        
