@@ -20,8 +20,11 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - name: Version check
-        run: python cre8forge.py version
+      - name: Append snapshot info to version
+        shell: bash
+        run: |
+          sed -i 's/\(VERSION = "[^"]*\)"/\1'"${{ env.snapshot_slugline }}"'"/' cre8/version.py
+          python cre8forge.py version
       - name: Install pyinstaller
         run: pip install -U pyinstaller
       - name: Run exec bundler
