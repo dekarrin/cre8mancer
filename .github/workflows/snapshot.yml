@@ -92,6 +92,15 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: ./artifacts/
+      - name: Gather builds
+        working-directory: artifacts
+        run: |
+          rm -rf VERSION_VARS
+          mkdir ../builds
+          for file in * ; do mv "$file/$file" "../builds/$file" ; done
+          rm -rf *
+          mv ../builds/* .
+          rm -rf ../builds
       - name: Show artifacts
         run: ls -la ./artifacts/
           
