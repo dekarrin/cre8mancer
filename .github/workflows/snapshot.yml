@@ -39,11 +39,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: VERSION_VARS
-          path: ./.artifacts/VERSION_VARS
       - name: Load version strings
         shell: bash
         run: |
-          . .artifacts/VERSION_VARS
+          . VERSION_VARS/VERSION_VARS
           rm -rf .artifacts
           echo "version=$version" >> $GITHUB_ENV
           echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
