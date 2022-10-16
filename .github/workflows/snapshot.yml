@@ -92,6 +92,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: ./artifacts/
+      - name: Load version strings
+        shell: bash
+        run: |
+          . .artifacts/VERSION_VARS/VERSION_VERS
+          echo "version=$version" >> $GITHUB_ENV
+          echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
       - name: Gather builds
         working-directory: artifacts
         run: |
@@ -103,4 +109,12 @@ jobs:
           rm -rf ../builds
       - name: Show artifacts
         run: ls -la ./artifacts/
+      - name: Create snapshot release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./artifacts/*.zip
+          name: ${{ env.version }}
+          body: This is a snapshot release from the last merge to main branch
+          prerelease: true
+          fail_on_unmatched_files: true
           
