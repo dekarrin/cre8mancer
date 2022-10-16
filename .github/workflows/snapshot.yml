@@ -43,7 +43,7 @@ jobs:
         shell: bash
         run: |
           . VERSION_VARS/VERSION_VARS
-          rm -rf .artifacts
+          rm -rf VERSION_VARS
           echo "version=$version" >> $GITHUB_ENV
           echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
       - name: Set up python
