@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     
 jobs:
-  build:
+  build-win:
     name: "Build For Windows"
     runs-on: windows-latest
     steps:
@@ -53,4 +53,14 @@ jobs:
         with:
           name: ${{ env.archive_name }}
           path: dist/${{ env.archive_name }}
-        
+  publish:
+    name: Publish snapshot
+    runs-on: ubuntu-latest
+    needs: build-win
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts/
+      - name: Show artifacts
+        run: ls -la ./artifacts/
