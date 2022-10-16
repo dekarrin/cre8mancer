@@ -5,17 +5,48 @@ on:
     branches: [ main ]
     
 jobs:
-  build-win:
-    name: "Build For Windows"
-    runs-on: windows-latest
+  set-version-slug:
+    name: "Set version slugline for all"
+    runs-on: ubuntu-latest
     steps:
-      - name: Set environment vars
-        shell: bash
-        run: |
-          snapshot_slugline="-snapshot-$(date +'%Y%m%d')-${GITHUB_SHA:0:6}"
-          echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
       - name: Checkout Repo
         uses: actions/checkout@v3
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Append snapshot info to version
+        run: |
+          snapshot_slugline="-snapshot-$(date +'%Y%m%d')-${GITHUB_SHA:0:6}"
+          sed -i 's/\(VERSION = "[^"]*\)"/\1'"$snapshot_slugline"'"/' cre8/version.py
+          version="$(python cre8forge.py version)"
+          echo "$version"
+          echo "version=$version" > VERSION_VARS
+          echo "snapshot_slugline=$snapshot_slugline" >> VERSION_VARS
+      - name: Upload version strings
+        uses: actions/upload-artifact@v3
+        with:
+          name: VERSION_VARS
+          path: VERSION_VARS
+  build-win:
+    name: "Build for Windows"
+    needs: set-version-slug
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Get version vars
+        uses: actions/download-artifact@v3
+        with:
+          name: VERSION_VARS
+          path: ./.artifacts/VERSION_VARS
+      - name: Load version strings
+        shell: bash
+        run: |
+          . .artifacts/VERSION_VARS
+          rm -rf .artifacts
+          echo "version=$version" >> $GITHUB_ENV
+          echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
       - name: Set up python
         uses: actions/setup-python@v4
         with:
@@ -48,7 +79,7 @@ jobs:
           archive_path="$(pwd)/$archive_name"
           echo "archive_path=$archive_path" >> $GITHUB_ENV
           echo "archive_name=$archive_name" >> $GITHUB_ENV
-      - name: Upload artifact
+      - name: Upload build to artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.archive_name }}
@@ -64,3 +95,4 @@ jobs:
           path: ./artifacts/
       - name: Show artifacts
         run: ls -la ./artifacts/
+          
