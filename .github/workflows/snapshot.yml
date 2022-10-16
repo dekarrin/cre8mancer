@@ -44,4 +44,9 @@ jobs:
         with:
           name: ${{ env.archive_name }}
           path: dist/${{ env.archive_name }}
+      - name: Give slug
+        shell: bash
+        run: |
+          echo "$(date +'%Y%m%d')"
+          echo "-snapshot-$(date +'%Y%m%d')-${GITHUB_SHA:0:10}"
         
