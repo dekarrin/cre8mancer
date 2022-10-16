@@ -41,7 +41,7 @@ cd "$caller_wd"
 cp -R "$file_to_package" "$repo_root/dist/.package/cre8"
 cd "$repo_root/dist/.package"
 
-full_folder="cre8orforge-${os_arch}-v${cur_version}"
+full_folder="cre8orforge-v${cur_version}-${os_arch}"
 rm -rf "$full_folder"
 mkdir "$full_folder"
 mv cre8 "$full_folder/cre8orforge"
