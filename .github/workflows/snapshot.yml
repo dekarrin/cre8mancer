@@ -42,7 +42,7 @@ jobs:
       - name: Load version strings
         shell: bash
         run: |
-          . VERSION_VARS/VERSION_VARS
+          . VERSION_VARS
           rm -rf VERSION_VARS
           echo "version=$version" >> $GITHUB_ENV
           echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
