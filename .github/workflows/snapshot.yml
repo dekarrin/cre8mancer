@@ -5,12 +5,14 @@ on:
     branches: [ main ]
     
 jobs:
-  set-version-slug:
-    name: "Set version slugline for all"
+  set-version-and-notes:
+    name: "Set version slug and release notes"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Set up python
         uses: actions/setup-python@v4
         with:
@@ -23,14 +25,41 @@ jobs:
           echo "$version"
           echo "version=$version" > VERSION_VARS
           echo "snapshot_slugline=$snapshot_slugline" >> VERSION_VARS
+          cat VERSION_VARS >> $GITHUB_ENV
       - name: Upload version strings
         uses: actions/upload-artifact@v3
         with:
           name: VERSION_VARS
           path: VERSION_VARS
+      - name: "Get tag of last release"
+        id: last-release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: ${{ github.repository }}
+          excludes: draft
+      - name: "Get commits since last release"
+        shell: bash
+        run: |
+          last_tag="${{ steps.last-release.outputs.release }}"
+          echo "last tag was: $last_tag"
+          git log "$last_tag"..HEAD --oneline --no-decorate --no-merges >> INCLUDED_COMMITS
+          snapshot_slugline="${{ env.snapshot_slugline }}"
+          snapshot_tag="${snapshot_slugline:1}"
+          echo "This is snapshot build "'`'"$snapshot_tag"'`'" created from the last merge to "'`'"main"'`'" branch." > RELEASE_NOTES
+          echo "" >> RELEASE_NOTES
+          echo "It includes the following commits since the last release:" >> RELEASE_NOTES
+          cat INCLUDED_COMMITS | sed 's/^/* /' >> RELEASE_NOTES
+          echo ""
+          echo "RELEASE_NOTES generated, contents:"
+          cat RELEASE_NOTES
+      - name: "Upload release notes"
+        uses: actions/upload-artifact@v3
+        with:
+          name: RELEASE_NOTES
+          path: RELEASE_NOTES
   build-win:
     name: "Build for Windows"
-    needs: set-version-slug
+    needs: set-version-and-notes
     runs-on: windows-latest
     steps:
       - name: Checkout Repo
@@ -83,10 +112,118 @@ jobs:
         with:
           name: ${{ env.archive_name }}
           path: dist/${{ env.archive_name }}
+  build-linux:
+    name: "Build for Linux"
+    needs: set-version-and-notes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Get version vars
+        uses: actions/download-artifact@v3
+        with:
+          name: VERSION_VARS
+      - name: Load version strings
+        run: |
+          . VERSION_VARS
+          rm -rf VERSION_VARS
+          echo "version=$version" >> $GITHUB_ENV
+          echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Append snapshot info to version
+        run: |
+          sed -i 's/\(VERSION = "[^"]*\)"/\1'"${{ env.snapshot_slugline }}"'"/' cre8/version.py
+          python cre8forge.py version
+      - name: Install pyinstaller
+        run: pip install -U pyinstaller
+      - name: Run exec bundler
+        run: |
+          bundle_path="$(scripts/run_pyinstaller.sh)"
+          echo "bundle_path=$bundle_path" >> $GITHUB_ENV
+      - name: Create package
+        run: |
+          package_path="$(scripts/create_versioned_package.sh "${{ env.bundle_path }}" linux)"
+          echo "package_path=$package_path" >> $GITHUB_ENV
+      - name: Create archive
+        run: |
+          package_dir="$(dirname "${{ env.package_path }}")"
+          package_name="$(basename "${{ env.package_path }}")"
+          cd "$package_dir"
+          tar czf "$package_name.tar.gz" "$package_name"
+          archive_name="$package_name.tar.gz"
+          archive_path="$(pwd)/$archive_name"
+          echo "archive_path=$archive_path" >> $GITHUB_ENV
+          echo "archive_name=$archive_name" >> $GITHUB_ENV
+      - name: Upload build to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.archive_name }}
+          path: dist/${{ env.archive_name }}
+  build-mac:
+    name: "Build for Mac"
+    needs: set-version-and-notes
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Get version vars
+        uses: actions/download-artifact@v3
+        with:
+          name: VERSION_VARS
+      - name: Load version strings
+        shell: bash
+        run: |
+          . VERSION_VARS
+          rm -rf VERSION_VARS
+          echo "version=$version" >> $GITHUB_ENV
+          echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Append snapshot info to version
+        shell: bash
+        run: |
+          # ah yes, BSD sed (Mac sed)'s version of -i:
+          sed 's/\(VERSION = "[^"]*\)"/\1'"${{ env.snapshot_slugline }}"'"/' cre8/version.py >> NEW_VERSION
+          mv NEW_VERSION cre8/version.py
+          python cre8forge.py version
+      - name: Install pyinstaller
+        shell: bash
+        run: pip install -U pyinstaller
+      - name: Run exec bundler
+        shell: bash
+        run: |
+          bundle_path="$(scripts/run_pyinstaller.sh)"
+          echo "bundle_path=$bundle_path" >> $GITHUB_ENV
+      - name: Create package
+        shell: bash
+        run: |
+          package_path="$(scripts/create_versioned_package.sh "${{ env.bundle_path }}" darwin)"
+          echo "package_path=$package_path" >> $GITHUB_ENV
+      - name: Create archive
+        shell: bash
+        run: |
+          package_dir="$(dirname "${{ env.package_path }}")"
+          package_name="$(basename "${{ env.package_path }}")"
+          cd "$package_dir"
+          tar czf "$package_name.tar.gz" "$package_name"
+          archive_name="$package_name.tar.gz"
+          archive_path="$(pwd)/$archive_name"
+          echo "archive_path=$archive_path" >> $GITHUB_ENV
+          echo "archive_name=$archive_name" >> $GITHUB_ENV
+      - name: Upload build to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.archive_name }}
+          path: dist/${{ env.archive_name }}
   publish:
     name: Publish snapshot
     runs-on: ubuntu-latest
-    needs: build-win
+    needs: [ build-win, build-linux, build-mac ]
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -103,6 +240,8 @@ jobs:
       - name: Gather builds
         working-directory: artifacts
         run: |
+          mv RELEASE_NOTES/RELEASE_NOTES ../RELEASE_NOTES
+          rm -rf RELEASE_NOTES
           rm -rf VERSION_VARS
           mkdir ../builds
           for file in * ; do mv "$file/$file" "../builds/$file" ; done
@@ -114,9 +253,12 @@ jobs:
       - name: Create snapshot release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./artifacts/*.zip
+          files: |
+            ./artifacts/*.zip
+            ./artifacts/*.tar.gz
           name: ${{ env.version }}
           body: This is a snapshot release from the last merge to main branch
+          body_path: RELEASE_NOTES
           prerelease: true
           fail_on_unmatched_files: true
           tag_name: ${{ env.snapshot_tag }}
