@@ -5,8 +5,8 @@ on:
     branches: [ main ]
     
 jobs:
-  set-version-slug:
-    name: "Set version slugline for all"
+  set-version-and-notes:
+    name: "Set version slug and release notes"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -28,9 +28,32 @@ jobs:
         with:
           name: VERSION_VARS
           path: VERSION_VARS
+      - name: "Get tag of last release"
+        id: last-release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: ${{ github.repository }}
+          excludes: draft
+      - name: "Get commits since last release"
+        shell: bash
+        run: |
+          last_tag="${{ steps.last-release.outputs.release }}"
+          echo "last tag was: $last_tag"
+          git log "$last_tag"..HEAD --oneline --no-decorate --no-merges >> INCLUDED_COMMITS
+          cat INCLUDED_COMMITS
+          echo "This is snapshot build "'`'"${{ env.snapshot.tag }}"'`' created from the last merge to "'`'"main"'`'" branch." > RELEASE_NOTES
+          echo "" >> RELEASE_NOTES
+          echo "It includes the following commits since the last release:" >> RELEASE_NOTES
+          cat INCLUDED_COMMITS | sed 's/^/* /' >> RELEASE_NOTES
+          cat RELEASE_NOTES
+      - name: "Upload release notes"
+        uses: actions/upload-artifact@v3
+        with:
+          name: RELEASE_NOTES
+          path: RELEASE_NOTES
   build-win:
     name: "Build for Windows"
-    needs: set-version-slug
+    needs: set-version-and-notes
     runs-on: windows-latest
     steps:
       - name: Checkout Repo
@@ -85,7 +108,7 @@ jobs:
           path: dist/${{ env.archive_name }}
   build-linux:
     name: "Build for Linux"
-    needs: set-version-slug
+    needs: set-version-and-notes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -135,7 +158,7 @@ jobs:
           path: dist/${{ env.archive_name }}
   build-mac:
     name: "Build for Mac"
-    needs: set-version-slug
+    needs: set-version-and-notes
     runs-on: macos-latest
     steps:
       - name: Checkout Repo
@@ -212,6 +235,7 @@ jobs:
         working-directory: artifacts
         run: |
           rm -rf VERSION_VARS
+          mv RELEASE_NOTES/RELEASE_NOTES ../RELEASE_NOTES
           mkdir ../builds
           for file in * ; do mv "$file/$file" "../builds/$file" ; done
           rm -rf *
@@ -227,6 +251,7 @@ jobs:
             ./artifacts/*.tar.gz
           name: ${{ env.version }}
           body: This is a snapshot release from the last merge to main branch
+          body_path: RELEASE_NOTES
           prerelease: true
           fail_on_unmatched_files: true
           tag_name: ${{ env.snapshot_tag }}
