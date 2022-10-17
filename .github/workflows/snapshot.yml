@@ -95,10 +95,11 @@ jobs:
       - name: Load version strings
         shell: bash
         run: |
-          ls -Ral artifacts
           . artifacts/VERSION_VARS/VERSION_VARS
+          snapshot_tag="${snapshot_slugline:1}"
           echo "version=$version" >> $GITHUB_ENV
           echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
+          echo "snapshot_tag=$snapshot_tag" >> $GITHUB_ENV
       - name: Gather builds
         working-directory: artifacts
         run: |
@@ -118,4 +119,5 @@ jobs:
           body: This is a snapshot release from the last merge to main branch
           prerelease: true
           fail_on_unmatched_files: true
+          tag_name: ${{ env.snapshot_tag }}
           
