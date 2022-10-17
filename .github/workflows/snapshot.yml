@@ -25,6 +25,7 @@ jobs:
           echo "$version"
           echo "version=$version" > VERSION_VARS
           echo "snapshot_slugline=$snapshot_slugline" >> VERSION_VARS
+          cat VERSION_VARS >> $GITHUB_ENV
       - name: Upload version strings
         uses: actions/upload-artifact@v3
         with:
@@ -43,13 +44,14 @@ jobs:
           echo "last tag was: $last_tag"
           git tag -l
           git log "$last_tag"..HEAD --oneline --no-decorate --no-merges >> INCLUDED_COMMITS
-          cat INCLUDED_COMMITS
           snapshot_slugline="${{ env.snapshot_slugline }}"
           snapshot_tag="${snapshot_slugline:1}"
           echo "This is snapshot build "'`'"$snapshot_tag"'`'" created from the last merge to "'`'"main"'`'" branch." > RELEASE_NOTES
           echo "" >> RELEASE_NOTES
           echo "It includes the following commits since the last release:" >> RELEASE_NOTES
           cat INCLUDED_COMMITS | sed 's/^/* /' >> RELEASE_NOTES
+          echo ""
+          echo "RELEASE_NOTES generated, contents:"
           cat RELEASE_NOTES
       - name: "Upload release notes"
         uses: actions/upload-artifact@v3
@@ -239,9 +241,9 @@ jobs:
       - name: Gather builds
         working-directory: artifacts
         run: |
-          ls -Ral .
-          rm -rf VERSION_VARS
           mv RELEASE_NOTES/RELEASE_NOTES ../RELEASE_NOTES
+          rm -rf RELEASE_NOTES
+          rm -rf VERSION_VARS
           mkdir ../builds
           for file in * ; do mv "$file/$file" "../builds/$file" ; done
           rm -rf *
