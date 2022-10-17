@@ -44,7 +44,9 @@ jobs:
           git tag -l
           git log "$last_tag"..HEAD --oneline --no-decorate --no-merges >> INCLUDED_COMMITS
           cat INCLUDED_COMMITS
-          echo "This is snapshot build "'`'"${{ env.snapshot.tag }}"'`'" created from the last merge to "'`'"main"'`'" branch." > RELEASE_NOTES
+          snapshot_slugline="${{ env.snapshot_slugline }}"
+          snapshot_tag="${snapshot_slugline:1}"
+          echo "This is snapshot build "'`'"$snapshot_tag"'`'" created from the last merge to "'`'"main"'`'" branch." > RELEASE_NOTES
           echo "" >> RELEASE_NOTES
           echo "It includes the following commits since the last release:" >> RELEASE_NOTES
           cat INCLUDED_COMMITS | sed 's/^/* /' >> RELEASE_NOTES
@@ -199,7 +201,7 @@ jobs:
       - name: Create package
         shell: bash
         run: |
-          package_path="$(scripts/create_versioned_package.sh "${{ env.bundle_path }}" linux)"
+          package_path="$(scripts/create_versioned_package.sh "${{ env.bundle_path }}" darwin)"
           echo "package_path=$package_path" >> $GITHUB_ENV
       - name: Create archive
         shell: bash
@@ -237,6 +239,7 @@ jobs:
       - name: Gather builds
         working-directory: artifacts
         run: |
+          ls -Ral .
           rm -rf VERSION_VARS
           mv RELEASE_NOTES/RELEASE_NOTES ../RELEASE_NOTES
           mkdir ../builds
