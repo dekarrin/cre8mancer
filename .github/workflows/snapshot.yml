@@ -42,7 +42,6 @@ jobs:
         run: |
           last_tag="${{ steps.last-release.outputs.release }}"
           echo "last tag was: $last_tag"
-          git tag -l
           git log "$last_tag"..HEAD --oneline --no-decorate --no-merges >> INCLUDED_COMMITS
           snapshot_slugline="${{ env.snapshot_slugline }}"
           snapshot_tag="${snapshot_slugline:1}"
