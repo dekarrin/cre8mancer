@@ -83,10 +83,60 @@ jobs:
         with:
           name: ${{ env.archive_name }}
           path: dist/${{ env.archive_name }}
+  build-linux:
+    name: "Build for Linux"
+    needs: set-version-slug
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Get version vars
+        uses: actions/download-artifact@v3
+        with:
+          name: VERSION_VARS
+      - name: Load version strings
+        run: |
+          . VERSION_VARS
+          rm -rf VERSION_VARS
+          echo "version=$version" >> $GITHUB_ENV
+          echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Append snapshot info to version
+        run: |
+          sed -i 's/\(VERSION = "[^"]*\)"/\1'"${{ env.snapshot_slugline }}"'"/' cre8/version.py
+          python cre8forge.py version
+      - name: Install pyinstaller
+        run: pip install -U pyinstaller
+      - name: Run exec bundler
+        run: |
+          bundle_path="$(scripts/run_pyinstaller.sh)"
+          echo "bundle_path=$bundle_path" >> $GITHUB_ENV
+      - name: Create package
+        run: |
+          package_path="$(scripts/create_versioned_package.sh "${{ env.bundle_path }}" linux)"
+          echo "package_path=$package_path" >> $GITHUB_ENV
+      - name: Create archive
+        run: |
+          package_dir="$(dirname "${{ env.package_path }}")"
+          package_name="$(basename "${{ env.package_path }}")"
+          cd "$package_dir"
+          tar czf "$package_name.tar.gz" "$package_name"
+          archive_name="$package_name.tar.gz"
+          archive_path="$(pwd)/$archive_name"
+          echo "archive_path=$archive_path" >> $GITHUB_ENV
+          echo "archive_name=$archive_name" >> $GITHUB_ENV
+      - name: Upload build to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.archive_name }}
+          path: dist/${{ env.archive_name }}
   publish:
     name: Publish snapshot
     runs-on: ubuntu-latest
-    needs: build-win
+    needs: [ build-win, build-linux ]
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -114,7 +164,9 @@ jobs:
       - name: Create snapshot release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./artifacts/*.zip
+          files: |
+            ./artifacts/*.zip
+            ./artifacts/*.tar.gz
           name: ${{ env.version }}
           body: This is a snapshot release from the last merge to main branch
           prerelease: true
