@@ -44,7 +44,7 @@ jobs:
           git tag -l
           git log "$last_tag"..HEAD --oneline --no-decorate --no-merges >> INCLUDED_COMMITS
           cat INCLUDED_COMMITS
-          echo "This is snapshot build "'`'"${{ env.snapshot.tag }}"'`' created from the last merge to "'`'"main"'`'" branch." > RELEASE_NOTES
+          echo "This is snapshot build "'`'"${{ env.snapshot.tag }}"'`'" created from the last merge to "'`'"main"'`'" branch." > RELEASE_NOTES
           echo "" >> RELEASE_NOTES
           echo "It includes the following commits since the last release:" >> RELEASE_NOTES
           cat INCLUDED_COMMITS | sed 's/^/* /' >> RELEASE_NOTES
