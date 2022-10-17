@@ -381,7 +381,7 @@ class Engine:
                 elif gs.free_juice >= target.juice_cost and gs.money >= target.money_cost:
                     target.automated = True
                     target.execute(gs.time)
-                    gs.money -= target.price
+                    gs.money -= target.money_cost
                 # otherwise, don't activate the execution
             
             msg += "Bought automation for {!r}".format(target.name)
@@ -604,7 +604,7 @@ class Engine:
                         _log.log(logutil.TRACE, "ADV->OA: subtracted price: {!s}".format(oa.price))
                     else:
                         _log.log(logutil.TRACE, "ADV->OA: requirements not met, halting auto")
-                        oa.automation = False
+                        oa.automated = False
                 else:
                     _log.log(logutil.TRACE, "ADV->OA: not automated so cleared execution".format(cur_exec))
             _log.log(logutil.TRACE, "ADV: Done with OA".format(oa))
