@@ -95,7 +95,7 @@ jobs:
       - name: Load version strings
         shell: bash
         run: |
-          . .artifacts/VERSION_VARS/VERSION_VERS
+          . .artifacts/VERSION_VARS/VERSION_VARS
           echo "version=$version" >> $GITHUB_ENV
           echo "snapshot_slugline=$snapshot_slugline" >> $GITHUB_ENV
       - name: Gather builds
