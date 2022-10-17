@@ -158,7 +158,9 @@ jobs:
       - name: Append snapshot info to version
         shell: bash
         run: |
-          sed -i 's/\(VERSION = "[^"]*\)"/\1'"${{ env.snapshot_slugline }}"'"/' cre8/version.py
+          # ah yes, BSD sed (Mac sed)'s version of -i:
+          sed 's/\(VERSION = "[^"]*\)"/\1'"${{ env.snapshot_slugline }}"'"/' cre8/version.py >> NEW_VERSION
+          mv NEW_VERSION cre8/version.py
           python cre8forge.py version
       - name: Install pyinstaller
         shell: bash
