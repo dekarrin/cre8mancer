@@ -121,6 +121,13 @@ class Activity:
         return msg.format(self.id, self.name, self.duration)
             
             
+job_alt_titles = [
+  'Database Administration',
+  'Budget Massages',
+  'Board Filibuster',
+]
+
+
 # TODO: consistent order of args in Jobs and Outlets
 Jobs = [
     Activity(
@@ -216,6 +223,14 @@ Jobs = [
 ]
 
 
+outlet_alt_titles = [
+  'Paint the Town',
+  'Cry onto the page',
+  'Fix broken hands',
+  'Mindbending',
+]
+
+
 Outlets = [
     Activity(
         1024, 'Binge Netflix Show', 3,
@@ -244,7 +259,60 @@ Outlets = [
         juice_rate=5.0,
         auto_price=10000
     ),
-    # TODO: More activities
+    Activity(
+        1027, 'Listen to Podfic', 200,
+        price=100000,
+        money_cost=1000,
+        juice_cost=420.0,
+        money_rate=0,
+        juice_rate=5.0,
+        auto_price=10000
+    ),
+    Activity(
+        1028, 'Attend Fan Convention', 200,
+        price=100000,
+        money_cost=1000,
+        juice_cost=420.0,
+        money_rate=0,
+        juice_rate=5.0,
+        auto_price=10000
+    ),
+    Activity(
+        1029, 'Enter Drawing Contest', 200,
+        price=100000,
+        money_cost=1000,
+        juice_cost=420.0,
+        money_rate=0,
+        juice_rate=5.0,
+        auto_price=10000
+    ),
+    Activity(
+        1030, 'Create Animated Short', 200,
+        price=100000,
+        money_cost=1000,
+        juice_cost=420.0,
+        money_rate=0,
+        juice_rate=5.0,
+        auto_price=10000
+    ),
+    Activity(
+        1030, 'Multimedia Collab', 200,
+        price=100000,
+        money_cost=1000,
+        juice_cost=420.0,
+        money_rate=0,
+        juice_rate=5.0,
+        auto_price=10000
+    ),
+    Activity(
+        1030, 'Make Masterpiece', 200,
+        price=100000,
+        money_cost=1000,
+        juice_cost=420.0,
+        money_rate=0,
+        juice_rate=5.0,
+        auto_price=10000
+    ),
     Activity(
         Stage1GoalActivityId, 'Generate Construct', timedelta(weeks=2),
         price=lambda x: round((5*(10**9) - 1)+(5**x)),
